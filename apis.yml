@@ -1,0 +1,76 @@
+name: RoxyAPI
+description: >-
+  Multi-domain spiritual intelligence API exposing 164+ endpoints across 12 domains (Western Astrology, Vedic Astrology,
+  Numerology, Tarot, Human Design, Forecast, Biorhythm, I-Ching, Crystals, Dreams, Angel Numbers, Location/Timezone)
+  under a single API key. Powered by the proprietary Roxy Ephemeris engine verified against NASA JPL Horizons DE441.
+  Offers REST API, OpenAPI 3.1 contract, per-domain remote MCP servers, llms.txt, and an AGENTS.md agent playbook.
+url: https://roxyapi.apievangelist.com/apis.yml
+created: '2026-07-09'
+modified: '2026-07-09'
+specificationVersion: '0.21'
+tags:
+  - astrology
+  - vedic-astrology
+  - numerology
+  - tarot
+  - human-design
+  - forecast
+  - biorhythm
+  - iching
+  - crystals
+  - dreams
+  - angel-numbers
+  - location
+  - spiritual
+  - wellness
+  - mcp-server
+  - openapi
+  - llms-txt
+  - agent-native
+apis:
+  - name: RoxyAPI REST API v2
+    description: >-
+      Production REST API covering 12 spiritual intelligence domains with 164+ endpoints under a single API key,
+      authenticated via X-API-Key header. Documented by a live OpenAPI 3.1 spec and interactive reference playground.
+    humanURL: https://roxyapi.com/api-reference
+    baseURL: https://roxyapi.com/api/v2
+    tags:
+      - astrology
+      - vedic-astrology
+      - numerology
+      - tarot
+      - human-design
+      - forecast
+      - biorhythm
+      - iching
+      - crystals
+      - dreams
+      - angel-numbers
+      - location
+      - spiritual
+      - wellness
+      - mcp-server
+      - openapi
+      - llms-txt
+      - agent-native
+    properties:
+      - type: OpenAPI
+        url: https://roxyapi.com/api/v2/openapi.json
+      - type: Documentation
+        url: https://roxyapi.com/docs/introduction
+      - type: PostmanCollection
+        url: https://www.postman.com/roxylabs-7113570/roxyapi
+      - type: LLMSTxt
+        url: https://roxyapi.com/llms.txt
+      - type: AgentSkills
+        url: https://roxyapi.com/AGENTS.md
+      - type: MCP
+        url: https://roxyapi.com/mcp/docs
+maintainers:
+  - FN: RoxyAPI (RoxyLabs)
+    url: https://roxyapi.com
+generated:
+  by: apis.io/add
+  model: claude-opus-4-8
+  confidence: 97
+  at: '2026-07-09T01:23:18.519Z'
