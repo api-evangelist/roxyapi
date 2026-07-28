@@ -1,0 +1,39 @@
+generated: '2026-07-28'
+method: probed
+source: https://roxyapi.com/.well-known/agent-card.json
+description: 'A2A Agent Card observed at /.well-known/agent-card.json on roxyapi.com. Grade is measured
+  against the A2A 1.0.0 AgentCard object: ''conformant'' passes every structural check, ''near-conformant''
+  is correctly shaped but omits optional fields, ''flavored'' fails a hard check and is an agent card
+  in spirit rather than in schema. Provider-published by construction — served from the provider''s own
+  host; nothing here is derived or generated.'
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: roxyapi.com
+conformance:
+  spec: A2A 1.0.0
+  grade: flavored
+  protocol_version: null
+  preferred_transport: null
+  deviations:
+  - no-protocolVersion
+  - no-preferredTransport
+  - nonstandard-supportedInterfaces
+  - no-url
+card:
+  name: RoxyAPI
+  description: AI-native data API for insight, prediction, and spiritual intelligence apps. 12 API domains
+    with 166+ production endpoints covering astrology, vedic, forecast, human design, numerology, tarot,
+    biorhythm, i-ching, crystals, dreams, angel numbers, location. All endpoints return clean JSON with
+    no wrapper objects. Remote MCP servers for zero-config AI agent integration.
+  url: null
+  version: 2.0.0
+  documentation_url: https://roxyapi.com/llms.txt
+  skills: 12
+  file: roxyapi-agent-card.json
+x-evidence:
+  fetched: '2026-07-28'
+  url: https://roxyapi.com/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+  note: Verbatim body saved alongside this manifest. No field inferred.

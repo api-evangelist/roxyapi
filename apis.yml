@@ -74,3 +74,8 @@ generated:
   model: claude-opus-4-8
   confidence: 97
   at: '2026-07-09T01:23:18.519Z'
+common:
+- type: AgentCard
+  url: a2a/roxyapi-a2a.yml
+  name: A2A Agent Card
+  description: Agent Card served at /.well-known/agent-card.json (flavored against A2A 1.0.0).
