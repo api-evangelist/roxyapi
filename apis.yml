@@ -64,7 +64,7 @@ apis:
         url: https://roxyapi.com/llms.txt
       - type: AgentSkills
         url: https://roxyapi.com/AGENTS.md
-      - type: MCP
+      - type: Documentation
         url: https://roxyapi.com/mcp/docs
 maintainers:
   - FN: RoxyAPI (RoxyLabs)
