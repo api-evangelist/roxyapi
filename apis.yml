@@ -9,6 +9,25 @@ created: '2026-07-09'
 modified: '2026-07-09'
 specificationVersion: '0.23'
 tags:
+  - Astrology
+  - Vedic Astrology
+  - numerology
+  - tarot
+  - human-design
+  - Forecast
+  - biorhythm
+  - iching
+  - crystals
+  - dreams
+  - angel-numbers
+  - Location
+  - spiritual
+  - Wellness
+  - MCP Server
+  - OpenAPI
+  - llms-txt
+  - agent-native
+tags_raw:
   - astrology
   - vedic-astrology
   - numerology
@@ -35,6 +54,25 @@ apis:
     humanURL: https://roxyapi.com/api-reference
     baseURL: https://roxyapi.com/api/v2
     tags:
+      - Astrology
+      - Vedic Astrology
+      - numerology
+      - tarot
+      - human-design
+      - Forecast
+      - biorhythm
+      - iching
+      - crystals
+      - dreams
+      - angel-numbers
+      - Location
+      - spiritual
+      - Wellness
+      - MCP Server
+      - OpenAPI
+      - llms-txt
+      - agent-native
+    tags_raw:
       - astrology
       - vedic-astrology
       - numerology
