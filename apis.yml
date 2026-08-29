@@ -5,6 +5,17 @@ description: >-
   under a single API key. Powered by the proprietary Roxy Ephemeris engine verified against NASA JPL Horizons DE441.
   Offers REST API, OpenAPI 3.1 contract, per-domain remote MCP servers, llms.txt, and an AGENTS.md agent playbook.
 url: https://raw.githubusercontent.com/api-evangelist/roxyapi/refs/heads/main/apis.yml
+deliveryModel:
+  model: unknown
+  open_source: false
+  commercial: false
+  callable_host: false
+  label: Delivery model not determined — needs a product licence on record
+  confidence: low
+  source:
+  - none
+  generated: '2026-08-28'
+  method: derived
 created: '2026-07-09'
 modified: '2026-07-09'
 specificationVersion: '0.23'
