@@ -20,8 +20,8 @@ created: '2026-07-09'
 modified: '2026-07-09'
 specificationVersion: '0.23'
 tags:
-  - Astrology
-  - Vedic Astrology
+  - astrology
+  - vedic-astrology
   - numerology
   - tarot
   - human-design
@@ -29,12 +29,12 @@ tags:
   - biorhythm
   - iching
   - crystals
-  - dreams
+  - Dreams
   - angel-numbers
   - Location
   - spiritual
-  - Wellness
-  - MCP Server
+  - wellness
+  - mcp-server
   - OpenAPI
   - llms-txt
   - agent-native
@@ -65,8 +65,8 @@ apis:
     humanURL: https://roxyapi.com/api-reference
     baseURL: https://roxyapi.com/api/v2
     tags:
-      - Astrology
-      - Vedic Astrology
+      - astrology
+      - vedic-astrology
       - numerology
       - tarot
       - human-design
@@ -74,12 +74,12 @@ apis:
       - biorhythm
       - iching
       - crystals
-      - dreams
+      - Dreams
       - angel-numbers
       - Location
       - spiritual
-      - Wellness
-      - MCP Server
+      - wellness
+      - mcp-server
       - OpenAPI
       - llms-txt
       - agent-native
