@@ -20,8 +20,8 @@ created: '2026-07-09'
 modified: '2026-07-09'
 specificationVersion: '0.23'
 tags:
-  - astrology
-  - vedic-astrology
+  - Astrology
+  - Vedic Astrology
   - numerology
   - tarot
   - human-design
@@ -33,8 +33,8 @@ tags:
   - angel-numbers
   - Location
   - spiritual
-  - wellness
-  - mcp-server
+  - Wellness
+  - MCP Server
   - OpenAPI
   - llms-txt
   - agent-native
@@ -65,8 +65,8 @@ apis:
     humanURL: https://roxyapi.com/api-reference
     baseURL: https://roxyapi.com/api/v2
     tags:
-      - astrology
-      - vedic-astrology
+      - Astrology
+      - Vedic Astrology
       - numerology
       - tarot
       - human-design
@@ -78,8 +78,8 @@ apis:
       - angel-numbers
       - Location
       - spiritual
-      - wellness
-      - mcp-server
+      - Wellness
+      - MCP Server
       - OpenAPI
       - llms-txt
       - agent-native
