@@ -1,0 +1,43 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/changelog
+scheme: dated entries, newest first, categorized (Platform / New domain / AI & MCP / Docs & proof)
+current_version: v2 (API), OpenAPI info.version 2.0.0
+note: Recent window as rendered on the changelog page 2026-09-03. SDK registry releases (all five SDKs republished 2026-08-29, @roxyapi/ui 0.35.0 on 2026-09-03) confirm the platform ships continuously beyond the page's newest entry.
+entries:
+- date: '2026-08-10'
+  category: Platform
+  breaking: false
+  highlights: 'Lunar nodes: true node now the default on Western charts, with a nodeType option (mean available); Vedic keeps mean node, Human Design true node.'
+- date: '2026-08-03'
+  category: Platform
+  breaking: false
+  highlights: Heliacal rising/setting endpoint — Guru Asta and Shukra Asta visibility windows per graha, Surya Siddhanta limits.
+- date: '2026-08-02'
+  category: Platform
+  breaking: false
+  highlights: Bhava Bala and Bhav Chalit house chart endpoints (Sripati bhava frame); transit readings down to the kaksha; KP horary and dosha readings in all eight languages; sidereal frame (ayanamsa) selectable on every Vedic endpoint.
+- date: '2026-08-02'
+  category: Docs & proof
+  breaking: false
+  highlights: Full KP 1-249 sub-lord series published, verified row by row.
+- date: '2026-08-01'
+  category: Platform
+  breaking: false
+  highlights: Faster transit and aspect calculations.
+- date: '2026-07-26'
+  category: New domain
+  breaking: false
+  highlights: Vimshottari dasha four levels deep (Mahadasha through Sookshma).
+- date: '2026-07-22'
+  category: AI & MCP
+  breaking: false
+  highlights: Compact responses for AI agents (compact:true, 40-52% fewer LLM tokens, lossless).
+- date: '2026-07-14'
+  category: Docs & proof
+  breaking: false
+  highlights: Practitioner website template released.
+- date: '2026-07-12'
+  category: New domain
+  breaking: false
+  highlights: Human Design interpretations in eight languages.

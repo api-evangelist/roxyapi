@@ -1,0 +1,38 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/docs/authentication.md
+limit_count: 4
+note: 'Quota model is a monthly request allowance per subscription, not a per-second throttle; no published
+  per-second/burst limits. Every response carries the four X-RateLimit-* headers. Quotas reset on the 1st of
+  every calendar month at 00:00 UTC (calendar month, not billing anniversary); unused requests do not roll
+  over. Over the limit every call returns 429 with stable code rate_limit_exceeded. tools/list on MCP is free;
+  MCP tool calls count 1 request, identical to REST. Custom limits available on Business/Enterprise.'
+limits:
+- scope: per-subscription (Starter)
+  window: calendar month
+  limit: 50000
+  burst: null
+- scope: per-subscription (Professional)
+  window: calendar month
+  limit: 500000
+  burst: null
+- scope: per-subscription (Business)
+  window: calendar month
+  limit: 3000000
+  burst: null
+- scope: per-subscription (Enterprise)
+  window: calendar month
+  limit: custom (from 10000000)
+  burst: null
+headers:
+- name: X-RateLimit-Limit
+  meaning: monthly request allowance
+- name: X-RateLimit-Remaining
+  meaning: requests left this month
+- name: X-RateLimit-Used
+  meaning: requests consumed this month
+- name: X-RateLimit-Reset
+  meaning: Unix timestamp (seconds, UTC) of the next quota reset
+exhaustion:
+  status: 429
+  code: rate_limit_exceeded

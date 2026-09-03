@@ -1,0 +1,60 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/docs/authentication.md + https://roxyapi.com/llms.txt + openapi/roxyapi-openapi-original.json
+authentication:
+  style: api-key
+  header: X-API-Key
+  alternatives:
+  - api_key query parameter
+  - 'Authorization: Bearer <pk_...> for publishable keys from browsers'
+  key_classes:
+  - prefix: [sk_live_, sk_test_]
+    class: secret
+    use: server, MCP, scripts, CLIs
+  - prefix: [pk_live_, pk_test_]
+    class: publishable
+    use: browser, widgets, no-code embeds; origin-allowlisted; rejected on /mcp/*
+  cross_link: authentication/roxyapi-authentication.yml
+idempotency:
+  coverage: na
+  note: 'The entire 210-operation surface is stateless deterministic computation (same input always returns
+    the same result; RoxyAPI stores no end-user data). POST is used to carry request bodies, not to create
+    or mutate resources, so there is no replay risk and no Idempotency-Key mechanism to document. na, not
+    none: there is no mutating surface for a mechanism to cover.'
+reversibility:
+  coverage: na
+  note: 'No write surface: no operation creates, mutates, or deletes provider-side state, so there is
+    nothing to reverse. Read-only/compute API.'
+dry_run_mode:
+  coverage: na
+  note: No write surface; every call is already side-effect-free. Deterministic results (seeded endpoints accept an explicit seed).
+pagination:
+  style: offset
+  params: [limit, offset]
+  response_fields: [total, limit, offset]
+  note: 'List surfaces (e.g. GET /location/search) return { total, limit, offset, cities: [...] }; most endpoints return complete results in one call by design.'
+error_envelope:
+  shape: '{ "error": message, "code": stable_code }'
+  cross_link: errors/roxyapi-problem-types.yml
+  agent_behaviors:
+  - 400 returns ALL validation issues at once in issues[]
+  - 404 returns a fuzzy-matched suggestion field plus docs link
+rate_limit_signaling:
+  headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Reset]
+  exhaustion_status: 429
+  cross_link: rate-limits/roxyapi-rate-limits.yml
+versioning:
+  style: uri-path
+  current: v2
+  cross_link: lifecycle/roxyapi-lifecycle.yml
+localization:
+  param: lang
+  codes: [en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant]
+  note: 12 of 14 domains translate the full editorial payload; unsupported codes fall back to English per field rather than erroring. Machine identifiers stay canonical English; display text arrives in *Localized siblings.
+token_optimization:
+  param: 'compact: true'
+  note: Opt-in lossless token-optimized responses on MCP tool calls (each field name sent once; 40-52% fewer LLM tokens, same quota).
+determinism:
+  note: Results are deterministic — same birth data always returns the same chart; seeded daily endpoints accept a seed. Provider recommends caching computed results client-side (docs/guides/caching).
+request_tracing:
+  note: No documented request-id header.

@@ -1,0 +1,17 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/roxyapi-openapi-original.json
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - header
+schemes:
+- name: apiKey
+  type: apiKey
+  in: header
+  parameter: X-API-Key
+  description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as
+    a query parameter "api_key".
+  sources:
+  - openapi/roxyapi-openapi-original.json

@@ -1,0 +1,29 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for RoxyAPI
+  version: 1.0.0
+extends: openapi/roxyapi-openapi-original.json
+x-provenance:
+  generated: '2026-09-03'
+  method: generated
+  note: Non-destructive catalog annotations over the harvested spec; the original is never mutated.
+actions:
+- target: $.info
+  update:
+    x-apievangelist:
+      slug: roxyapi
+      profile: https://raw.githubusercontent.com/api-evangelist/roxyapi/refs/heads/main/apis.yml
+      mcp: mcp/roxyapi-mcp.yml
+      tool_crosswalk: mcp/roxyapi-tool-crosswalk.yml
+      conventions: conventions/roxyapi-conventions.yml
+      errors: errors/roxyapi-problem-types.yml
+- target: $.info
+  update:
+    x-agent-notes:
+      rule0: Call GET /location/search first for any coordinate-taking endpoint; never ask users for coordinates.
+      compact_mode: Pass compact:true on MCP tool calls for lossless 40-52% token reduction.
+      rate_limit_headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Reset]
+- target: $.servers
+  update:
+  - url: https://roxyapi.com/api/v2
+    description: Production API v2 (absolute form of the spec's relative /api/v2 server)

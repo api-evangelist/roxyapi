@@ -1,0 +1,17 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/docs/authentication.md + https://roxyapi.com/api-reference + a2a/roxyapi-agent-card.json
+test_live_separation:
+  key_prefixes:
+    live: [sk_live_, pk_live_]
+    test: [sk_test_, pk_test_]
+  note: Two key classes follow the Stripe convention (secret vs publishable, live vs test prefixes); publishable keys are origin-allowlisted and browser-safe.
+console:
+  url: https://roxyapi.com/api-reference
+  note: 'Interactive API playground on the reference — the provider states it returns real production responses,
+    not a mocked sandbox, so buyers audit before paying. The agent card documents a free test key available at
+    the playground. Included on every plan (pricing page: "Interactive API playground").'
+keyless_surface:
+  url: https://roxyapi.com/mcp/docs
+  note: Public keyless Docs MCP server (search_docs) — agents can explore the whole surface without any key; tools/list is free on every MCP server.
+magic_test_values: none published — deterministic compute API; seeded endpoints accept an explicit seed for reproducible outputs.

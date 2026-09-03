@@ -1,0 +1,48 @@
+generated: '2026-09-03'
+method: searched
+source: live probes of https://roxyapi.com (registrable domain = API host = docs host; single-host provider)
+note: 'RoxyAPI serves a real machine discovery surface: RFC 9116 security.txt, an RFC 9727 api-catalog
+  linkset (application/linkset+json pointing every domain anchor at its per-domain OpenAPI), an
+  ai-plugin.json manifest, and an APIs.json index at the domain root (/.well-known/apis.json 301s to
+  /apis.json, the specification''s primary location). A2A agent card at /.well-known/agent-card.json is
+  captured in a2a/. OAuth/OIDC discovery correctly absent — the API is key-auth only. Negative control
+  /.well-known/roxyapi-negative-control-b91f3a2c.json returned 404, so the host does not path-echo;
+  the 404 bodies are the site''s HTML 404 page with a real 404 status.'
+path_echo_control: passed
+hosts:
+- host: https://roxyapi.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: roxyapi-security.txt
+  - path: /.well-known/api-catalog
+    status: 200
+    file: roxyapi-api-catalog.json
+    content_type: application/linkset+json
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    file: roxyapi-ai-plugin.json
+  - path: /apis.json
+    status: 200
+    file: roxyapi-apis.json
+    note: APIs.json 0.21, 15 API entries (the platform root plus all 14 domains); /.well-known/apis.json 301s here.
+  - path: /.well-known/apis.json
+    status: 301
+    note: redirects to /apis.json
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/roxyapi-agent-card.json
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /apis.yml
+    status: 404

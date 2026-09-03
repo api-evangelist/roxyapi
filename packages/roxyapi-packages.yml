@@ -1,0 +1,90 @@
+generated: '2026-09-03'
+method: searched
+source: registry.npmjs.org, pypi.org, repo.packagist.org, api.nuget.org, proxy.golang.org, github.com/RoxyAPI, roxyapi.com/docs/sdk
+note: 'All SDKs are first-party (github.com/RoxyAPI org) and in active release: every registry package
+  last published 2026-08-29 or later, in lockstep with the API. SDKs bundle AGENTS.md and llms.txt for
+  AI coding agents. The UI component family (@roxyapi/ui) is a separate client-side library — also
+  indexed in components/roxyapi-components.yml.'
+packages:
+- language: typescript
+  registry: npm
+  name: "@roxyapi/sdk"
+  url: https://www.npmjs.com/package/@roxyapi/sdk
+  install: npm install @roxyapi/sdk
+  official: true
+  version: 1.2.73
+  published: '2026-08-29'
+  source_code: https://github.com/RoxyAPI/sdk-typescript
+- language: python
+  registry: pypi
+  name: roxy-sdk
+  url: https://pypi.org/project/roxy-sdk/
+  install: pip install roxy-sdk
+  official: true
+  version: 0.1.70
+  published: '2026-08-29'
+  source_code: https://github.com/RoxyAPI/sdk-python
+- language: php
+  registry: packagist
+  name: roxyapi/sdk
+  url: https://packagist.org/packages/roxyapi/sdk
+  install: composer require roxyapi/sdk
+  official: true
+  version: 0.1.50
+  published: '2026-08-29'
+  source_code: https://github.com/RoxyAPI/sdk-php
+- language: csharp
+  registry: nuget
+  name: RoxyApi.Sdk
+  url: https://www.nuget.org/packages/RoxyApi.Sdk
+  install: dotnet add package RoxyApi.Sdk
+  official: true
+  version: 0.1.41
+  published: '2026-08-29'
+  source_code: https://github.com/RoxyAPI/sdk-dotnet
+- language: go
+  registry: go
+  name: github.com/RoxyAPI/sdk-go
+  url: https://pkg.go.dev/github.com/RoxyAPI/sdk-go
+  install: go get github.com/RoxyAPI/sdk-go
+  official: true
+  version: v0.1.37
+  published: '2026-08-29'
+  source_code: https://github.com/RoxyAPI/sdk-go
+- language: javascript
+  registry: npm
+  name: "@roxyapi/ui"
+  url: https://www.npmjs.com/package/@roxyapi/ui
+  install: npm install @roxyapi/ui
+  official: true
+  version: 0.35.0
+  published: '2026-09-03'
+  source_code: https://github.com/RoxyAPI/ui
+  note: Framework-agnostic web components rendering API responses (natal wheels, kundli, panchang, bodygraph, tarot).
+- language: javascript
+  registry: npm
+  name: "@roxyapi/ui-react"
+  url: https://www.npmjs.com/package/@roxyapi/ui-react
+  install: npm install @roxyapi/ui-react
+  official: true
+  version: 0.35.0
+  published: '2026-09-03'
+  source_code: https://github.com/RoxyAPI/ui
+- language: javascript
+  registry: npm
+  name: "@roxyapi/ui-vue"
+  url: https://www.npmjs.com/package/@roxyapi/ui-vue
+  install: npm install @roxyapi/ui-vue
+  official: true
+  version: 0.35.0
+  published: '2026-09-03'
+  source_code: https://github.com/RoxyAPI/ui
+- language: php
+  registry: none
+  name: sdk-wordpress
+  url: https://github.com/RoxyAPI/sdk-wordpress
+  install: WordPress plugin (Gutenberg blocks and shortcodes)
+  official: true
+  version: null
+  published: null
+  note: Distributed as a WordPress plugin from the GitHub repo; no package-registry metadata endpoint to read a version from.

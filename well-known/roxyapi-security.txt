@@ -1,0 +1,5 @@
+Contact: https://roxyapi.com/contact?subject=security
+Policy: https://github.com/RoxyAPI/.github/blob/main/SECURITY.md
+Preferred-Languages: en
+Canonical: https://roxyapi.com/.well-known/security.txt
+Expires: 2027-04-03T00:00:00.000Z

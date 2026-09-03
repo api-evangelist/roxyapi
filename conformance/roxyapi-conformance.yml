@@ -1,0 +1,47 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/roxyapi-openapi-original.json + live well-known probes + https://roxyapi.com/policy/dpa
+standards:
+- id: apis-json
+  conforms: true
+  evidence: 'Serves APIs.json 0.21 at https://roxyapi.com/apis.json (15 API entries); /.well-known/apis.json 301s to it. Saved: well-known/roxyapi-apis.json.'
+- id: rfc9727-api-catalog
+  conforms: true
+  evidence: 'Serves /.well-known/api-catalog as application/linkset+json with per-domain anchors, service-desc (OpenAPI), service-doc and service-meta links. Saved: well-known/roxyapi-api-catalog.json.'
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: '/.well-known/security.txt with Contact, Policy, Canonical, Expires. Saved: well-known/roxyapi-security.txt.'
+- id: mcp
+  conforms: true
+  evidence: 15 remote MCP servers over Streamable HTTP (tools/list probed live 2026-09-03); see mcp/roxyapi-mcp.yml.
+- id: a2a-agent-card
+  conforms: false
+  evidence: Publishes /.well-known/agent-card.json but the card fails A2A 1.0.0 hard checks (no protocolVersion, no url); graded flavored in a2a/roxyapi-a2a.yml.
+- id: llms-txt
+  conforms: true
+  evidence: /llms.txt (and llms-full.txt) published on the docs host; saved verbatim to llms/roxyapi-llms.txt.
+- id: openapi-3.1
+  conforms: true
+  evidence: Live auto-generated OpenAPI 3.1.0 at https://roxyapi.com/api/v2/openapi.json (210 operations) plus per-domain specs; saved to openapi/.
+- id: oauth2
+  conforms: false
+  evidence: API-key auth only (X-API-Key header / api_key query / Bearer for publishable keys); no oauth2 securitySchemes, no OAuth discovery documents (probed 404).
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration 404.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: 'Errors use a custom stable-code envelope { "error": message, "code": stable_code }, not application/problem+json; catalogued in errors/roxyapi-problem-types.yml.'
+- id: gdpr
+  conforms: true
+  evidence: 'Published GDPR program: Article 28 DPA (https://roxyapi.com/policy/dpa), EU SCCs, dated subprocessor register (https://roxyapi.com/policy/subprocessors), EU (Germany) data residency on every plan, request bodies never written to disk (https://roxyapi.com/docs/data-protection).'
+- id: pagination
+  conforms: true
+  evidence: 'Offset pagination on list surfaces (location search envelope { total, limit, offset, cities[] }).'
+- id: idempotency
+  conforms: false
+  evidence: No Idempotency-Key mechanism and none needed — the surface is stateless deterministic computation with no state-changing writes; see conventions (idempotency na).
+note: 'Domain-standard signature: no cross-vendor machine standard exists for the astrology/spiritual-data
+  market, so domain_standard_conformance is honestly not applicable — reward-only, not penalised.
+  The provider does publish its own accuracy methodology (NASA JPL Horizons DE441 verification,
+  https://roxyapi.com/methodology) with an MIT reproducible benchmark (github.com/RoxyAPI/astrology-api-benchmark).'

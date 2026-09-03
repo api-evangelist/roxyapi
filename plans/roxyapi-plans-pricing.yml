@@ -1,0 +1,46 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/pricing
+currency: USD
+note: 'All 14 domains included in every plan; flat metering (1 request = 1 quota unit, REST and MCP identical,
+  no credit weighting, no per-domain fees). Quotas reset on the 1st of each calendar month 00:00 UTC and do
+  not roll over. Instant API key delivery at checkout, no approval queue. Annual billing shows ~2 months free
+  (Starter $32/mo, Professional $124/mo, Business $291/mo billed annually). Also priced in INR and EUR.'
+plan_count: 4
+plans:
+- name: Starter
+  price: 39
+  currency: USD
+  period: month
+  annual_price_per_month: 32
+  included_quota: 50000 requests/month
+  overage: none — 429 rate_limit_exceeded until the monthly reset
+  limits: 50K requests/month, REST or MCP
+  highlights: [all 14 domains, remote MCP servers + docs MCP, commercial use, 9 MIT templates, playground, WordPress plugin, UI components + widgets, SDKs, email support]
+- name: Professional
+  price: 149
+  currency: USD
+  period: month
+  annual_price_per_month: 124
+  included_quota: 500000 requests/month
+  overage: none — 429 until reset
+  limits: 500K requests/month; multiple API keys with per-key analytics; usage dashboard with rate-limit alerts
+  sla: '99.9%'
+  highlights: [everything in Starter, priority email support]
+- name: Business
+  price: 349
+  currency: USD
+  period: month
+  annual_price_per_month: 291
+  included_quota: 3000000 requests/month
+  overage: custom rate limits on request
+  limits: 3M requests/month
+  highlights: [everything in Professional, dedicated channel, priority response, quarterly business review]
+- name: Enterprise
+  price: null
+  currency: USD
+  period: custom
+  included_quota: custom volume from 10M requests/month
+  limits: custom
+  sla: '99.95% with service credits'
+  highlights: [dedicated account manager, custom integration support, security/data-protection questionnaires, negotiated terms, named data protection contact with response SLA]

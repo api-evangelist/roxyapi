@@ -1,0 +1,38 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/docs/ui.md + https://roxyapi.com/widgets + https://github.com/RoxyAPI/ui
+note: 'Drop-in client-side rendering layer, distinct from the server SDKs: framework-agnostic web components
+  that render RoxyAPI responses directly (natal wheels, kundli, panchang, human design bodygraph, forecast,
+  tarot, numerology, biorhythm). Ships its own AGENTS.md integration playbook (github.com/RoxyAPI/ui/blob/main/AGENTS.md,
+  also inside each package). For no-code sites, every embeddable component is a copy-paste widget at
+  https://roxyapi.com/widgets — a one-tag snippet or hosted embed URL powered by an origin-locked publishable
+  pk_ key (Squarespace, Wix, Shopify, any HTML block).'
+families:
+- family: '@roxyapi/ui'
+  kind: web components (framework-agnostic)
+  registry: npm
+  version: 0.35.0
+  published: '2026-09-03'
+  targets: [React, Vue, Svelte, Angular, vanilla HTML, WordPress]
+- family: '@roxyapi/ui-react'
+  kind: typed React components
+  registry: npm
+  version: 0.35.0
+  published: '2026-09-03'
+- family: '@roxyapi/ui-vue'
+  kind: typed Vue components
+  registry: npm
+  version: 0.35.0
+  published: '2026-09-03'
+- family: CDN build
+  kind: script-tag build of @roxyapi/ui
+  registry: cdn
+  version: null
+  note: Documented for no-build usage; version floats with the npm package unless pinned by the consumer.
+- family: Hosted widgets
+  kind: hosted embeds / one-tag snippets
+  url: https://roxyapi.com/widgets
+  auth: origin-locked publishable pk_ key
+- family: WordPress plugin
+  kind: Gutenberg blocks and shortcodes
+  source: https://github.com/RoxyAPI/sdk-wordpress

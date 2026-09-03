@@ -1,11 +1,14 @@
-generated: '2026-07-28'
+generated: '2026-09-03'
 method: probed
 source: https://roxyapi.com/.well-known/agent-card.json
 description: 'A2A Agent Card observed at /.well-known/agent-card.json on roxyapi.com. Grade is measured
   against the A2A 1.0.0 AgentCard object: ''conformant'' passes every structural check, ''near-conformant''
   is correctly shaped but omits optional fields, ''flavored'' fails a hard check and is an agent card
   in spirit rather than in schema. Provider-published by construction — served from the provider''s own
-  host; nothing here is derived or generated.'
+  host; nothing here is derived or generated. Re-probed 2026-09-03: the card has been substantially
+  upgraded since the 2026-07-28 probe — capabilities is now a proper object, skills is a 14-entry array
+  (one per domain), securitySchemes declares the X-API-Key scheme, and defaultInputModes/defaultOutputModes
+  are present — but protocolVersion and url are still missing, so it remains flavored.'
 discovery:
   path: /.well-known/agent-card.json
   canonical: true
@@ -17,22 +20,26 @@ conformance:
   preferred_transport: null
   deviations:
   - no-protocolVersion
+  - no-url
   - no-preferredTransport
   - nonstandard-supportedInterfaces
-  - no-url
 card:
   name: RoxyAPI
-  description: AI-native data API for insight, prediction, and spiritual intelligence apps. 12 API domains
-    with 166+ production endpoints covering astrology, vedic, forecast, human design, numerology, tarot,
-    biorhythm, i-ching, crystals, dreams, angel numbers, location. All endpoints return clean JSON with
-    no wrapper objects. Remote MCP servers for zero-config AI agent integration.
+  description: AI-native data API for insight, prediction, and spiritual intelligence apps. 14 API domains
+    with 210+ production endpoints. Remote MCP servers per domain; the card's supportedInterfaces list
+    the 14 REST domain bases as HTTP+JSON interfaces.
   url: null
   version: 2.0.0
   documentation_url: https://roxyapi.com/llms.txt
-  skills: 12
+  skills: 14
+  capabilities:
+    streaming: false
+    pushNotifications: false
+    extendedAgentCard: false
+  security_schemes: [apiKey (X-API-Key header)]
   file: roxyapi-agent-card.json
 x-evidence:
-  fetched: '2026-07-28'
+  fetched: '2026-09-03'
   url: https://roxyapi.com/.well-known/agent-card.json
   http_status: 200
   content_type: application/json

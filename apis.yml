@@ -1,10 +1,12 @@
 name: RoxyAPI
-description: >-
-  Multi-domain spiritual intelligence API exposing 164+ endpoints across 12 domains (Western Astrology, Vedic Astrology,
-  Numerology, Tarot, Human Design, Forecast, Biorhythm, I-Ching, Crystals, Dreams, Angel Numbers, Location/Timezone)
-  under a single API key. Powered by the proprietary Roxy Ephemeris engine verified against NASA JPL Horizons DE441.
-  Offers REST API, OpenAPI 3.1 contract, per-domain remote MCP servers, llms.txt, and an AGENTS.md agent playbook.
+description: Multi-domain spiritual intelligence API exposing 210+ endpoints across 14 domains (Western Astrology,
+  Vedic Astrology, Forecast, Human Design, Chinese Astrology, Feng Shui, Numerology, Tarot, Biorhythm, I-Ching,
+  Crystals, Dreams, Angel Numbers, Location/Timezone) under a single API key. Powered by the proprietary Roxy Ephemeris
+  engine verified against NASA JPL Horizons DE441. Offers a live OpenAPI 3.1 contract, 15 remote MCP servers (14
+  per-domain plus a keyless docs server), llms.txt, an AGENTS.md agent playbook, an APIs.json index, an RFC 9727
+  api-catalog, typed SDKs in five languages, and drop-in UI components.
 url: https://raw.githubusercontent.com/api-evangelist/roxyapi/refs/heads/main/apis.yml
+image: https://roxyapi.com/logo.png
 deliveryModel:
   model: unknown
   open_source: false
@@ -17,9 +19,55 @@ deliveryModel:
   generated: '2026-08-28'
   method: derived
 created: '2026-07-09'
-modified: '2026-07-09'
+modified: '2026-09-03'
 specificationVersion: '0.23'
 tags:
+- Astrology
+- Vedic Astrology
+- numerology
+- tarot
+- human-design
+- Forecast
+- biorhythm
+- iching
+- crystals
+- Dreams
+- angel-numbers
+- Location
+- spiritual
+- Wellness
+- MCP Server
+- OpenAPI
+- llms-txt
+- agent-native
+tags_raw:
+- astrology
+- vedic-astrology
+- numerology
+- tarot
+- human-design
+- forecast
+- biorhythm
+- iching
+- crystals
+- dreams
+- angel-numbers
+- location
+- spiritual
+- wellness
+- mcp-server
+- openapi
+- llms-txt
+- agent-native
+apis:
+- name: RoxyAPI REST API v2
+  description: Production REST API covering 14 spiritual intelligence domains with 210+ endpoints under a single
+    API key, authenticated via X-API-Key header. Documented by a live OpenAPI 3.1 spec and interactive reference
+    playground.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  image: https://roxyapi.com/logo.png
+  tags:
   - Astrology
   - Vedic Astrology
   - numerology
@@ -38,7 +86,7 @@ tags:
   - OpenAPI
   - llms-txt
   - agent-native
-tags_raw:
+  tags_raw:
   - astrology
   - vedic-astrology
   - numerology
@@ -57,74 +105,126 @@ tags_raw:
   - openapi
   - llms-txt
   - agent-native
-apis:
-  - name: RoxyAPI REST API v2
-    description: >-
-      Production REST API covering 12 spiritual intelligence domains with 164+ endpoints under a single API key,
-      authenticated via X-API-Key header. Documented by a live OpenAPI 3.1 spec and interactive reference playground.
-    humanURL: https://roxyapi.com/api-reference
-    baseURL: https://roxyapi.com/api/v2
-    tags:
-      - Astrology
-      - Vedic Astrology
-      - numerology
-      - tarot
-      - human-design
-      - Forecast
-      - biorhythm
-      - iching
-      - crystals
-      - Dreams
-      - angel-numbers
-      - Location
-      - spiritual
-      - Wellness
-      - MCP Server
-      - OpenAPI
-      - llms-txt
-      - agent-native
-    tags_raw:
-      - astrology
-      - vedic-astrology
-      - numerology
-      - tarot
-      - human-design
-      - forecast
-      - biorhythm
-      - iching
-      - crystals
-      - dreams
-      - angel-numbers
-      - location
-      - spiritual
-      - wellness
-      - mcp-server
-      - openapi
-      - llms-txt
-      - agent-native
-    properties:
-      - type: OpenAPI
-        url: https://roxyapi.com/api/v2/openapi.json
-      - type: Documentation
-        url: https://roxyapi.com/docs/introduction
-      - type: PostmanCollection
-        url: https://www.postman.com/roxylabs-7113570/roxyapi
-      - type: LLMSTxt
-        url: https://roxyapi.com/llms.txt
-      - type: AgentSkills
-        url: https://roxyapi.com/AGENTS.md
-      - type: Documentation
-        url: https://roxyapi.com/mcp/docs
+  properties:
+  - type: OpenAPI
+    url: https://roxyapi.com/api/v2/openapi.json
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: OpenAPI
+    url: openapi/roxyapi-openapi-original.json
+    name: RoxyAPI OpenAPI 3.1 (harvested 2026-09-03, 210 operations)
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+  - type: MCPServer
+    url: mcp/roxyapi-mcp.yml
+    name: RoxyAPI remote MCP servers (14 per-domain + keyless docs server)
 maintainers:
-  - FN: RoxyAPI (RoxyLabs)
-    url: https://roxyapi.com
+- FN: RoxyAPI (RoxyLabs)
+  url: https://roxyapi.com
 generated:
   by: apis.io/add
   model: claude-opus-4-8
   confidence: 97
   at: '2026-07-09T01:23:18.519Z'
 common:
+- type: Website
+  url: https://roxyapi.com
+- type: VulnerabilityDisclosure
+  url: security/roxyapi-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/roxyapi-domain-security.yml
+- type: Authentication
+  url: authentication/roxyapi-authentication.yml
 - type: AgentCard
   url: a2a/roxyapi-a2a.yml
   name: A2A Agent Card
-  description: Agent Card served at /.well-known/agent-card.json (flavored against A2A 1.0.0).
+  description: Agent Card served at /.well-known/agent-card.json (re-probed 2026-09-03; upgraded by the provider
+    but still flavored against A2A 1.0.0 — no protocolVersion/url).
+- type: Packages
+  url: packages/roxyapi-packages.yml
+- type: SDKs
+  url: packages/roxyapi-packages.yml
+  description: First-party typed SDKs for TypeScript, Python, PHP, C# and Go, all released 2026-08-29, plus UI packages.
+- type: WellKnown
+  url: well-known/roxyapi-well-known.yml
+  description: Served discovery surface — security.txt, RFC 9727 api-catalog linkset, ai-plugin.json, APIs.json
+    at /apis.json.
+- type: SecurityTxt
+  url: well-known/roxyapi-security.txt
+- type: MCPServer
+  url: mcp/roxyapi-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/roxyapi-tool-crosswalk.yml
+- type: LLMsTxt
+  url: llms/roxyapi-llms.txt
+- type: AgentSkill
+  url: skills/_index.yml
+  description: Provider-published AGENTS.md playbook (saved verbatim) plus two generated flow skills grounded in
+    real operationIds.
+- type: Overlay
+  url: overlays/roxyapi-openapi-overlay.yaml
+- type: Conformance
+  url: conformance/roxyapi-conformance.yml
+- type: Compliance
+  url: https://roxyapi.com/policy/dpa
+  description: Published GDPR program — Article 28 DPA, EU SCCs, dated subprocessor register, EU (Germany) data
+    residency on every plan.
+- type: ErrorCatalog
+  url: errors/roxyapi-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/roxyapi-lifecycle.yml
+- type: StatusPage
+  url: https://stats.uptimerobot.com/T0kPZKlAjf
+  description: Public status page, linked from the provider's own /.well-known/api-catalog.
+- type: ChangeLog
+  url: changelog/roxyapi-changelog.yml
+- type: Conventions
+  url: conventions/roxyapi-conventions.yml
+- type: Sandbox
+  url: sandbox/roxyapi-sandbox.yml
+  description: Interactive API playground (live responses), sk_test_/pk_test_ key classes, and a keyless docs MCP
+    server.
+- type: Components
+  url: components/roxyapi-components.yml
+- type: Plans
+  url: plans/roxyapi-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/roxyapi-rate-limits.yml
+- type: Security
+  url: https://github.com/RoxyAPI/.github/blob/main/SECURITY.md
+  description: Security policy named in the provider's RFC 9116 security.txt.
+- type: DeveloperPortal
+  url: https://roxyapi.com/docs/introduction
+- type: APIReference
+  url: https://roxyapi.com/api-reference
+- type: GettingStarted
+  url: https://roxyapi.com/docs/quickstart
+- type: Support
+  url: https://roxyapi.com/contact
+- type: Blog
+  url: https://roxyapi.com/blogs
+- type: GitHubOrganization
+  url: https://github.com/RoxyAPI
+- type: Pricing
+  url: https://roxyapi.com/pricing
+- type: Login
+  url: https://roxyapi.com/account/login
+- type: TermsOfService
+  url: https://roxyapi.com/policy/terms
+- type: PrivacyPolicy
+  url: https://roxyapi.com/policy/privacy
+- type: Postman
+  url: https://www.postman.com/roxylabs-7113570/roxyapi
+x-enrichment:
+  date: '2026-09-03'
+  status: enriched
+  artifacts_added: 27
+  pass: local-v2

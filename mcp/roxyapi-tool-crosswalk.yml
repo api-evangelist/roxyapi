@@ -1,0 +1,1279 @@
+generated: '2026-09-03'
+method: derived
+source: live tools/list probes of all 14 domain MCP servers + openapi/roxyapi-openapi-original.json
+description: 'Every MCP tool on the 14 domain servers binds 1:1 to a REST operation. The provider publishes the
+  deterministic naming convention (llms.txt "MCP Tool Naming"): {method}_{path with -/_ normalized, braces stripped,
+  repeated words collapsed}. Applying it to the 210 spec operations reproduces all 207 probed tool names exactly,
+  so every binding is mechanical, not guessed. The tool inherits the backing operation parameters+requestBody as
+  its inputSchema (also served live by tools/list). The docs server search_docs tool is MCP-only (documentation
+  retrieval, no REST sibling).'
+surfaces:
+  openapi: openapi/roxyapi-openapi-original.json
+  mcp:
+    url: https://roxyapi.com/mcp/{domain}
+    gated: false
+    note: tools/list open; tool calls need X-API-Key
+  graphql: null
+coverage:
+  tools_named: 208
+  tools_bound: 207
+  mcp_only: 1
+  rest_ops_total: 210
+  rest_ops_with_tool: 207
+mcp_only:
+- tool: search_docs
+  server: https://roxyapi.com/mcp/docs
+  reason: documentation knowledge-base search; retrieval tool with no REST endpoint
+rest_only:
+- operationId: listLanguages
+  path: GET /languages
+  reason: utility endpoint (supported languages list) not exposed as an MCP tool
+- operationId: getFieldLabels
+  path: GET /languages/field-labels
+  reason: utility endpoint (localized field labels) not exposed as an MCP tool
+- operationId: getUsageStats
+  path: GET /usage
+  reason: account usage stats not exposed as an MCP tool
+crosswalk:
+- tool: get_angel_numbers
+  category: angel-numbers
+  rest:
+  - listAngelNumbers
+  binding: rest
+  confidence: high
+- tool: get_angel_numbers_lookup
+  category: angel-numbers
+  rest:
+  - analyzeNumberSequence
+  binding: rest
+  confidence: high
+- tool: get_angel_numbers_number
+  category: angel-numbers
+  rest:
+  - getAngelNumber
+  binding: rest
+  confidence: high
+- tool: get_astrology_horoscope_sign_daily
+  category: astrology
+  rest:
+  - getDailyHoroscope
+  binding: rest
+  confidence: high
+- tool: get_astrology_horoscope_sign_monthly
+  category: astrology
+  rest:
+  - getMonthlyHoroscope
+  binding: rest
+  confidence: high
+- tool: get_astrology_horoscope_sign_weekly
+  category: astrology
+  rest:
+  - getWeeklyHoroscope
+  binding: rest
+  confidence: high
+- tool: get_astrology_horoscope_sign_yearly
+  category: astrology
+  rest:
+  - getYearlyHoroscope
+  binding: rest
+  confidence: high
+- tool: get_astrology_moon_phase_calendar_year_month
+  category: astrology
+  rest:
+  - getMoonCalendar
+  binding: rest
+  confidence: high
+- tool: get_astrology_moon_phase_current
+  category: astrology
+  rest:
+  - getCurrentMoonPhase
+  binding: rest
+  confidence: high
+- tool: get_astrology_moon_phase_upcoming
+  category: astrology
+  rest:
+  - getUpcomingMoonPhases
+  binding: rest
+  confidence: high
+- tool: get_astrology_planet_meanings
+  category: astrology
+  rest:
+  - listPlanetMeanings
+  binding: rest
+  confidence: high
+- tool: get_astrology_planet_meanings_id
+  category: astrology
+  rest:
+  - getPlanetMeaning
+  binding: rest
+  confidence: high
+- tool: get_astrology_signs
+  category: astrology
+  rest:
+  - listZodiacSigns
+  binding: rest
+  confidence: high
+- tool: get_astrology_signs_id
+  category: astrology
+  rest:
+  - getZodiacSign
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_calendar_day_date
+  category: chinese-astrology
+  rest:
+  - getAlmanacDay
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_calendar_monthly
+  category: chinese-astrology
+  rest:
+  - getMonthlyAlmanac
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_calendar_solar_terms_year
+  category: chinese-astrology
+  rest:
+  - listSolarTerms
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_elements
+  category: chinese-astrology
+  rest:
+  - listFiveElements
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_zodiac_animals
+  category: chinese-astrology
+  rest:
+  - listZodiacAnimals
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_zodiac_animals_id
+  category: chinese-astrology
+  rest:
+  - getZodiacAnimal
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_zodiac_compatibility_sign1_sign2
+  category: chinese-astrology
+  rest:
+  - getZodiacCompatibility
+  binding: rest
+  confidence: high
+- tool: get_chinese_astrology_zodiac_id_daily
+  category: chinese-astrology
+  rest:
+  - getDailyZodiacReading
+  binding: rest
+  confidence: high
+- tool: get_crystals
+  category: crystals
+  rest:
+  - listCrystals
+  binding: rest
+  confidence: high
+- tool: get_crystals_birthstone_month
+  category: crystals
+  rest:
+  - getBirthstones
+  binding: rest
+  confidence: high
+- tool: get_crystals_chakra
+  category: crystals
+  rest:
+  - getCrystalsByChakra
+  binding: rest
+  confidence: high
+- tool: get_crystals_colors
+  category: crystals
+  rest:
+  - listCrystalColors
+  binding: rest
+  confidence: high
+- tool: get_crystals_element
+  category: crystals
+  rest:
+  - getCrystalsByElement
+  binding: rest
+  confidence: high
+- tool: get_crystals_id
+  category: crystals
+  rest:
+  - getCrystal
+  binding: rest
+  confidence: high
+- tool: get_crystals_pairings_id
+  category: crystals
+  rest:
+  - getCrystalPairings
+  binding: rest
+  confidence: high
+- tool: get_crystals_planets
+  category: crystals
+  rest:
+  - listCrystalPlanets
+  binding: rest
+  confidence: high
+- tool: get_crystals_random
+  category: crystals
+  rest:
+  - getRandomCrystal
+  binding: rest
+  confidence: high
+- tool: get_crystals_search
+  category: crystals
+  rest:
+  - searchCrystals
+  binding: rest
+  confidence: high
+- tool: get_crystals_zodiac_sign
+  category: crystals
+  rest:
+  - getCrystalsByZodiac
+  binding: rest
+  confidence: high
+- tool: get_dreams_symbols
+  category: dreams
+  rest:
+  - searchDreamSymbols
+  binding: rest
+  confidence: high
+- tool: get_dreams_symbols_id
+  category: dreams
+  rest:
+  - getDreamSymbol
+  binding: rest
+  confidence: high
+- tool: get_dreams_symbols_letters
+  category: dreams
+  rest:
+  - getSymbolLetterCounts
+  binding: rest
+  confidence: high
+- tool: get_dreams_symbols_random
+  category: dreams
+  rest:
+  - getRandomSymbols
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_afflictions_year
+  category: feng-shui
+  rest:
+  - getAnnualAfflictions
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_bagua
+  category: feng-shui
+  rest:
+  - listBaguaSectors
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_bagua_id
+  category: feng-shui
+  rest:
+  - getBaguaSector
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_flying_stars
+  category: feng-shui
+  rest:
+  - listFlyingStars
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_flying_stars_annual_year
+  category: feng-shui
+  rest:
+  - getAnnualFlyingStars
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_flying_stars_monthly
+  category: feng-shui
+  rest:
+  - getMonthlyFlyingStars
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_kua_number
+  category: feng-shui
+  rest:
+  - getKuaNumber
+  binding: rest
+  confidence: high
+- tool: get_feng_shui_periods
+  category: feng-shui
+  rest:
+  - listNinePeriods
+  binding: rest
+  confidence: high
+- tool: get_human_design_centers_id
+  category: human-design
+  rest:
+  - getCenter
+  binding: rest
+  confidence: high
+- tool: get_human_design_gates_number
+  category: human-design
+  rest:
+  - getGate
+  binding: rest
+  confidence: high
+- tool: get_iching_cast
+  category: iching
+  rest:
+  - castReading
+  binding: rest
+  confidence: high
+- tool: get_iching_hexagrams
+  category: iching
+  rest:
+  - listHexagrams
+  binding: rest
+  confidence: high
+- tool: get_iching_hexagrams_lookup
+  category: iching
+  rest:
+  - lookupHexagram
+  binding: rest
+  confidence: high
+- tool: get_iching_hexagrams_number
+  category: iching
+  rest:
+  - getHexagram
+  binding: rest
+  confidence: high
+- tool: get_iching_hexagrams_random
+  category: iching
+  rest:
+  - getRandomHexagram
+  binding: rest
+  confidence: high
+- tool: get_iching_trigrams
+  category: iching
+  rest:
+  - listTrigrams
+  binding: rest
+  confidence: high
+- tool: get_iching_trigrams_id
+  category: iching
+  rest:
+  - getTrigram
+  binding: rest
+  confidence: high
+- tool: get_location_countries
+  category: location
+  rest:
+  - listCountries
+  binding: rest
+  confidence: high
+- tool: get_location_countries_iso2
+  category: location
+  rest:
+  - getCitiesByCountry
+  binding: rest
+  confidence: high
+- tool: get_location_search
+  category: location
+  rest:
+  - searchCities
+  binding: rest
+  confidence: high
+- tool: get_numerology_compound_number
+  category: numerology
+  rest:
+  - getCompoundNumber
+  binding: rest
+  confidence: high
+- tool: get_numerology_meanings_number
+  category: numerology
+  rest:
+  - getNumberMeaning
+  binding: rest
+  confidence: high
+- tool: get_tarot_cards
+  category: tarot
+  rest:
+  - listCards
+  binding: rest
+  confidence: high
+- tool: get_tarot_cards_id
+  category: tarot
+  rest:
+  - getCard
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_avasthas
+  category: vedic-astrology
+  rest:
+  - listAvasthas
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_avasthas_id
+  category: vedic-astrology
+  rest:
+  - getAvastha
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_kp_ayanamsa
+  category: vedic-astrology
+  rest:
+  - getKpAyanamsa
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_nakshatras
+  category: vedic-astrology
+  rest:
+  - listNakshatras
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_nakshatras_id
+  category: vedic-astrology
+  rest:
+  - getNakshatra
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_rashis
+  category: vedic-astrology
+  rest:
+  - listRashis
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_rashis_id
+  category: vedic-astrology
+  rest:
+  - getRashi
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_yoga
+  category: vedic-astrology
+  rest:
+  - listYogas
+  binding: rest
+  confidence: high
+- tool: get_vedic_astrology_yoga_id
+  category: vedic-astrology
+  rest:
+  - getYoga
+  binding: rest
+  confidence: high
+- tool: post_angel_numbers_daily
+  category: angel-numbers
+  rest:
+  - getDailyAngelNumber
+  binding: rest
+  confidence: high
+- tool: post_astrology_arabic_lots
+  category: astrology
+  rest:
+  - calculateArabicLots
+  binding: rest
+  confidence: high
+- tool: post_astrology_aspect_patterns
+  category: astrology
+  rest:
+  - detectAspectPatterns
+  binding: rest
+  confidence: high
+- tool: post_astrology_aspects
+  category: astrology
+  rest:
+  - calculateAspects
+  binding: rest
+  confidence: high
+- tool: post_astrology_aspects_monthly
+  category: astrology
+  rest:
+  - getMonthlyTropicalAspects
+  binding: rest
+  confidence: high
+- tool: post_astrology_asteroids
+  category: astrology
+  rest:
+  - generateAsteroids
+  binding: rest
+  confidence: high
+- tool: post_astrology_astrocartography
+  category: astrology
+  rest:
+  - generateAstrocartography
+  binding: rest
+  confidence: high
+- tool: post_astrology_compatibility_score
+  category: astrology
+  rest:
+  - calculateCompatibility
+  binding: rest
+  confidence: high
+- tool: post_astrology_composite_chart
+  category: astrology
+  rest:
+  - generateCompositeChart
+  binding: rest
+  confidence: high
+- tool: post_astrology_ecliptic_crossings
+  category: astrology
+  rest:
+  - getPlanetaryNodePassages
+  binding: rest
+  confidence: high
+- tool: post_astrology_fixed_stars
+  category: astrology
+  rest:
+  - generateFixedStars
+  binding: rest
+  confidence: high
+- tool: post_astrology_houses
+  category: astrology
+  rest:
+  - calculateHouses
+  binding: rest
+  confidence: high
+- tool: post_astrology_lilith
+  category: astrology
+  rest:
+  - generateLilith
+  binding: rest
+  confidence: high
+- tool: post_astrology_local_space
+  category: astrology
+  rest:
+  - generateLocalSpace
+  binding: rest
+  confidence: high
+- tool: post_astrology_lunar_return
+  category: astrology
+  rest:
+  - generateLunarReturn
+  binding: rest
+  confidence: high
+- tool: post_astrology_natal_chart
+  category: astrology
+  rest:
+  - generateNatalChart
+  binding: rest
+  confidence: high
+- tool: post_astrology_parallels_monthly
+  category: astrology
+  rest:
+  - getMonthlyDeclinationParallels
+  binding: rest
+  confidence: high
+- tool: post_astrology_planetary_returns
+  category: astrology
+  rest:
+  - generatePlanetaryReturn
+  binding: rest
+  confidence: high
+- tool: post_astrology_planets
+  category: astrology
+  rest:
+  - getPlanetaryPositions
+  binding: rest
+  confidence: high
+- tool: post_astrology_planets_monthly
+  category: astrology
+  rest:
+  - getMonthlyTropicalEphemeris
+  binding: rest
+  confidence: high
+- tool: post_astrology_profections
+  category: astrology
+  rest:
+  - generateProfections
+  binding: rest
+  confidence: high
+- tool: post_astrology_progressions
+  category: astrology
+  rest:
+  - generateProgressions
+  binding: rest
+  confidence: high
+- tool: post_astrology_relocation_chart
+  category: astrology
+  rest:
+  - generateRelocationChart
+  binding: rest
+  confidence: high
+- tool: post_astrology_solar_arc
+  category: astrology
+  rest:
+  - generateSolarArc
+  binding: rest
+  confidence: high
+- tool: post_astrology_solar_return
+  category: astrology
+  rest:
+  - generateSolarReturn
+  binding: rest
+  confidence: high
+- tool: post_astrology_synastry
+  category: astrology
+  rest:
+  - calculateSynastry
+  binding: rest
+  confidence: high
+- tool: post_astrology_transit_aspects
+  category: astrology
+  rest:
+  - calculateTransitAspects
+  binding: rest
+  confidence: high
+- tool: post_astrology_transits
+  category: astrology
+  rest:
+  - calculateTransits
+  binding: rest
+  confidence: high
+- tool: post_astrology_transits_monthly
+  category: astrology
+  rest:
+  - getMonthlyTropicalTransits
+  binding: rest
+  confidence: high
+- tool: post_biorhythm_compatibility
+  category: biorhythm
+  rest:
+  - calculateBioCompatibility
+  binding: rest
+  confidence: high
+- tool: post_biorhythm_critical_days
+  category: biorhythm
+  rest:
+  - getCriticalDays
+  binding: rest
+  confidence: high
+- tool: post_biorhythm_daily
+  category: biorhythm
+  rest:
+  - getDailyBiorhythm
+  binding: rest
+  confidence: high
+- tool: post_biorhythm_forecast
+  category: biorhythm
+  rest:
+  - getForecast
+  binding: rest
+  confidence: high
+- tool: post_biorhythm_phases
+  category: biorhythm
+  rest:
+  - getPhases
+  binding: rest
+  confidence: high
+- tool: post_biorhythm_reading
+  category: biorhythm
+  rest:
+  - getReading
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_bazi_annual_forecast
+  category: chinese-astrology
+  rest:
+  - calculateAnnualForecast
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_bazi_chart
+  category: chinese-astrology
+  rest:
+  - generateBaziChart
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_bazi_compatibility
+  category: chinese-astrology
+  rest:
+  - calculateBaziCompatibility
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_bazi_day_master
+  category: chinese-astrology
+  rest:
+  - calculateDayMasterStrength
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_bazi_luck_pillars
+  category: chinese-astrology
+  rest:
+  - calculateLuckPillars
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_calendar_auspicious_days
+  category: chinese-astrology
+  rest:
+  - lookupAuspiciousDays
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_calendar_lunar_date
+  category: chinese-astrology
+  rest:
+  - calculateLunarDate
+  binding: rest
+  confidence: high
+- tool: post_chinese_astrology_zodiac_sign
+  category: chinese-astrology
+  rest:
+  - calculateZodiacAnimal
+  binding: rest
+  confidence: high
+- tool: post_crystals_daily
+  category: crystals
+  rest:
+  - getDailyCrystal
+  binding: rest
+  confidence: high
+- tool: post_dreams_daily
+  category: dreams
+  rest:
+  - getDailyDreamSymbol
+  binding: rest
+  confidence: high
+- tool: post_feng_shui_eight_mansions
+  category: feng-shui
+  rest:
+  - generateEightMansions
+  binding: rest
+  confidence: high
+- tool: post_feng_shui_flying_stars_natal
+  category: feng-shui
+  rest:
+  - generateFlyingStarChart
+  binding: rest
+  confidence: high
+- tool: post_feng_shui_kua
+  category: feng-shui
+  rest:
+  - calculateKuaNumber
+  binding: rest
+  confidence: high
+- tool: post_forecast_digest
+  category: forecast
+  rest:
+  - generateDigest
+  binding: rest
+  confidence: high
+- tool: post_forecast_significant_dates
+  category: forecast
+  rest:
+  - findSignificantDates
+  binding: rest
+  confidence: high
+- tool: post_forecast_solar_return
+  category: forecast
+  rest:
+  - forecastSolarReturn
+  binding: rest
+  confidence: high
+- tool: post_forecast_timeline
+  category: forecast
+  rest:
+  - generateTimeline
+  binding: rest
+  confidence: high
+- tool: post_forecast_transits
+  category: forecast
+  rest:
+  - forecastTransits
+  binding: rest
+  confidence: high
+- tool: post_human_design_bodygraph
+  category: human-design
+  rest:
+  - generateBodygraph
+  binding: rest
+  confidence: high
+- tool: post_human_design_centers
+  category: human-design
+  rest:
+  - calculateCenters
+  binding: rest
+  confidence: high
+- tool: post_human_design_channels
+  category: human-design
+  rest:
+  - calculateChannels
+  binding: rest
+  confidence: high
+- tool: post_human_design_connection
+  category: human-design
+  rest:
+  - calculateConnection
+  binding: rest
+  confidence: high
+- tool: post_human_design_gates
+  category: human-design
+  rest:
+  - calculateGates
+  binding: rest
+  confidence: high
+- tool: post_human_design_penta
+  category: human-design
+  rest:
+  - calculatePenta
+  binding: rest
+  confidence: high
+- tool: post_human_design_profile
+  category: human-design
+  rest:
+  - calculateProfile
+  binding: rest
+  confidence: high
+- tool: post_human_design_transit
+  category: human-design
+  rest:
+  - generateTransit
+  binding: rest
+  confidence: high
+- tool: post_human_design_type
+  category: human-design
+  rest:
+  - calculateType
+  binding: rest
+  confidence: high
+- tool: post_human_design_variables
+  category: human-design
+  rest:
+  - calculateVariables
+  binding: rest
+  confidence: high
+- tool: post_iching_daily
+  category: iching
+  rest:
+  - getDailyHexagram
+  binding: rest
+  confidence: high
+- tool: post_iching_daily_cast
+  category: iching
+  rest:
+  - castDailyReading
+  binding: rest
+  confidence: high
+- tool: post_numerology_birth_day
+  category: numerology
+  rest:
+  - calculateBirthDay
+  binding: rest
+  confidence: high
+- tool: post_numerology_bridge
+  category: numerology
+  rest:
+  - calculateBridgeNumbers
+  binding: rest
+  confidence: high
+- tool: post_numerology_business_name
+  category: numerology
+  rest:
+  - calculateBusinessName
+  binding: rest
+  confidence: high
+- tool: post_numerology_chaldean
+  category: numerology
+  rest:
+  - calculateChaldean
+  binding: rest
+  confidence: high
+- tool: post_numerology_chart
+  category: numerology
+  rest:
+  - generateNumerologyChart
+  binding: rest
+  confidence: high
+- tool: post_numerology_compatibility
+  category: numerology
+  rest:
+  - calculateNumCompatibility
+  binding: rest
+  confidence: high
+- tool: post_numerology_daily
+  category: numerology
+  rest:
+  - getDailyNumber
+  binding: rest
+  confidence: high
+- tool: post_numerology_dual
+  category: numerology
+  rest:
+  - calculateDual
+  binding: rest
+  confidence: high
+- tool: post_numerology_expression
+  category: numerology
+  rest:
+  - calculateExpression
+  binding: rest
+  confidence: high
+- tool: post_numerology_karmic_debt
+  category: numerology
+  rest:
+  - checkKarmicDebt
+  binding: rest
+  confidence: high
+- tool: post_numerology_karmic_lessons
+  category: numerology
+  rest:
+  - analyzeKarmicLessons
+  binding: rest
+  confidence: high
+- tool: post_numerology_life_path
+  category: numerology
+  rest:
+  - calculateLifePath
+  binding: rest
+  confidence: high
+- tool: post_numerology_maturity
+  category: numerology
+  rest:
+  - calculateMaturity
+  binding: rest
+  confidence: high
+- tool: post_numerology_personal_day
+  category: numerology
+  rest:
+  - calculatePersonalDay
+  binding: rest
+  confidence: high
+- tool: post_numerology_personal_month
+  category: numerology
+  rest:
+  - calculatePersonalMonth
+  binding: rest
+  confidence: high
+- tool: post_numerology_personal_year
+  category: numerology
+  rest:
+  - calculatePersonalYear
+  binding: rest
+  confidence: high
+- tool: post_numerology_personality
+  category: numerology
+  rest:
+  - calculatePersonality
+  binding: rest
+  confidence: high
+- tool: post_numerology_soul_urge
+  category: numerology
+  rest:
+  - calculateSoulUrge
+  binding: rest
+  confidence: high
+- tool: post_tarot_daily
+  category: tarot
+  rest:
+  - getDailyCard
+  binding: rest
+  confidence: high
+- tool: post_tarot_draw
+  category: tarot
+  rest:
+  - drawCards
+  binding: rest
+  confidence: high
+- tool: post_tarot_spreads_career
+  category: tarot
+  rest:
+  - castCareerSpread
+  binding: rest
+  confidence: high
+- tool: post_tarot_spreads_celtic_cross
+  category: tarot
+  rest:
+  - castCelticCross
+  binding: rest
+  confidence: high
+- tool: post_tarot_spreads_custom
+  category: tarot
+  rest:
+  - castCustomSpread
+  binding: rest
+  confidence: high
+- tool: post_tarot_spreads_love
+  category: tarot
+  rest:
+  - castLoveSpread
+  binding: rest
+  confidence: high
+- tool: post_tarot_spreads_three_card
+  category: tarot
+  rest:
+  - castThreeCard
+  binding: rest
+  confidence: high
+- tool: post_tarot_yes_no
+  category: tarot
+  rest:
+  - castYesNo
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_arudha
+  category: vedic-astrology
+  rest:
+  - calculateArudhaPadas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_ashtakavarga
+  category: vedic-astrology
+  rest:
+  - calculateAshtakavarga
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_aspects
+  category: vedic-astrology
+  rest:
+  - calculateDrishti
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_aspects_lunar
+  category: vedic-astrology
+  rest:
+  - getLunarAspects
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_aspects_monthly
+  category: vedic-astrology
+  rest:
+  - getMonthlyAspects
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_bhav_chalit
+  category: vedic-astrology
+  rest:
+  - calculateBhavChalit
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_bhava_bala
+  category: vedic-astrology
+  rest:
+  - calculateBhavaBala
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_birth_chart
+  category: vedic-astrology
+  rest:
+  - generateBirthChart
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_chara_karakas
+  category: vedic-astrology
+  rest:
+  - calculateCharaKarakas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_compatibility
+  category: vedic-astrology
+  rest:
+  - calculateGunMilan
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_daily
+  category: vedic-astrology
+  rest:
+  - getVedicDailyReading
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dasha_current
+  category: vedic-astrology
+  rest:
+  - getCurrentDasha
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dasha_major
+  category: vedic-astrology
+  rest:
+  - getMajorDashas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dasha_sub_mahadasha
+  category: vedic-astrology
+  rest:
+  - getSubDashas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dasha_sub_mahadasha_antardasha
+  category: vedic-astrology
+  rest:
+  - getPratyantardashas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dasha_sub_mahadasha_antardasha_pratyantardasha
+  category: vedic-astrology
+  rest:
+  - getSookshmaDashas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dasha_sub_mahadasha_antardasha_pratyantardasha_sookshma
+  category: vedic-astrology
+  rest:
+  - getPranaDashas
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_divisional_chart
+  category: vedic-astrology
+  rest:
+  - generateDivisionalChart
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dosha_kalsarpa
+  category: vedic-astrology
+  rest:
+  - checkKalsarpaDosha
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dosha_manglik
+  category: vedic-astrology
+  rest:
+  - checkManglikDosha
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_dosha_sadhesati
+  category: vedic-astrology
+  rest:
+  - checkSadhesati
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_ecliptic_crossings
+  category: vedic-astrology
+  rest:
+  - getEclipticCrossings
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_heliacal
+  category: vedic-astrology
+  rest:
+  - getHeliacalVisibility
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_chart
+  category: vedic-astrology
+  rest:
+  - generateKpChart
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_cusps
+  category: vedic-astrology
+  rest:
+  - getKpCusps
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_horary
+  category: vedic-astrology
+  rest:
+  - castKpHoraryChart
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_planets
+  category: vedic-astrology
+  rest:
+  - getKpPlanets
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_planets_interval
+  category: vedic-astrology
+  rest:
+  - getKpPlanetsInterval
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_rasi_changes
+  category: vedic-astrology
+  rest:
+  - getKpRasiChanges
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_ruling_planets
+  category: vedic-astrology
+  rest:
+  - getKpRulingPlanets
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_ruling_planets_interval
+  category: vedic-astrology
+  rest:
+  - getKpRulingInterval
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_kp_sublord_changes
+  category: vedic-astrology
+  rest:
+  - getKpSublordChanges
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_navamsa
+  category: vedic-astrology
+  rest:
+  - generateNavamsa
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_panchang_basic
+  category: vedic-astrology
+  rest:
+  - getBasicPanchang
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_panchang_choghadiya
+  category: vedic-astrology
+  rest:
+  - getChoghadiya
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_panchang_detailed
+  category: vedic-astrology
+  rest:
+  - getDetailedPanchang
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_panchang_hora
+  category: vedic-astrology
+  rest:
+  - getHora
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_parallels
+  category: vedic-astrology
+  rest:
+  - calculateParallels
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_parallels_monthly
+  category: vedic-astrology
+  rest:
+  - getMonthlyParallels
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_planetary_positions
+  category: vedic-astrology
+  rest:
+  - getPlanetPositions
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_planetary_positions_monthly
+  category: vedic-astrology
+  rest:
+  - getMonthlyEphemeris
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_shadbala
+  category: vedic-astrology
+  rest:
+  - calculateShadbala
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_transit
+  category: vedic-astrology
+  rest:
+  - calculateTransit
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_transit_monthly
+  category: vedic-astrology
+  rest:
+  - getMonthlyTransits
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_upagraha
+  category: vedic-astrology
+  rest:
+  - getUpagrahaPositions
+  binding: rest
+  confidence: high
+- tool: post_vedic_astrology_yoga_detect
+  category: vedic-astrology
+  rest:
+  - detectYogas
+  binding: rest
+  confidence: high

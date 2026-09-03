@@ -1,0 +1,52 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/roxyapi-openapi-original.json + https://roxyapi.com/docs/authentication.md + https://roxyapi.com/llms.txt
+format: custom-stable-code
+envelope: '{ "error": "<plain-English message>", "code": "<stable machine-readable code>" }'
+note: 'Not RFC 9457: responses are application/json with a flat error/code envelope. The code field is
+  documented as stable and safe to switch on. Two AI-friendly behaviors are provider-documented: 400
+  validation responses return ALL issues at once in an issues[] array (an agent fixes every field in one
+  retry), and 404 responses return a fuzzy-matched suggestion field with the closest existing endpoint
+  plus a docs link. All 210 operations declare 400/401/405/429/500 responses; a handful add 404.'
+problems:
+- status: 400
+  code: validation_error
+  title: Invalid request parameters
+  detail: All validation issues returned at once in an issues[] array; fix every field and retry once.
+- status: 401
+  code: api_key_required
+  title: Missing API key
+  detail: Send X-API-Key header (or Authorization Bearer for publishable pk_ keys).
+- status: 401
+  code: invalid_api_key
+  title: Invalid API key
+- status: 403
+  code: origin_required
+  title: Publishable key with allowlist but no Origin header
+  detail: Call from a browser, or switch to a secret key for server-side use.
+- status: 403
+  code: origin_not_allowed
+  title: Origin not in the publishable key allowlist
+  detail: Add the origin in the account page or use a key bound to this site.
+- status: 402
+  code: subscription_inactive
+  title: Subscription inactive
+- status: 402
+  code: subscription_not_found
+  title: Subscription not found
+- status: 404
+  code: not_found
+  title: Not found
+  detail: Includes a fuzzy-matched `suggestion` field naming the closest existing endpoint plus a `docs` link.
+- status: 405
+  code: method_not_allowed
+  title: Method not allowed
+- status: 429
+  code: rate_limit_exceeded
+  title: Monthly quota exhausted
+  detail: Wait for the calendar-month reset (X-RateLimit-Reset, 1st of month 00:00 UTC) or upgrade the plan.
+- status: 500
+  code: internal_error
+  title: Internal error
+headers:
+- X-Roxy-Warning: 'publishable_key_has_no_origin_restrictions — returned on every response when a pk_ key has no origin allowlist.'

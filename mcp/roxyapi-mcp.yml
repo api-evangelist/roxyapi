@@ -1,0 +1,88 @@
+generated: '2026-09-03'
+method: searched
+status: published
+source: https://roxyapi.com/docs/mcp
+description: 'RoxyAPI ships 15 first-party remote MCP servers over Streamable HTTP: one per intelligence domain
+  at https://roxyapi.com/mcp/{domain} (207 tools total, one per REST endpoint, X-API-Key secret-key auth) plus a
+  keyless public Docs server at https://roxyapi.com/mcp/docs (one search_docs tool answering from the documentation
+  knowledge base). tools/list answers unauthenticated on every server and every tool carries a full JSON Schema
+  inputSchema — probed live 2026-09-03. tools/list calls are free; tool calls count 1 request against the same quota
+  as REST. Optional compact:true on any tool call returns a lossless token-optimized response (40-52% fewer LLM
+  tokens). Publishable pk_ keys are rejected on /mcp/* — secret keys only.'
+deployment:
+  mode: remote
+  endpoint: https://roxyapi.com/mcp/{domain}
+  auth: api-key
+  verified: probed
+  endpoints:
+  - name: astrology
+    url: https://roxyapi.com/mcp/astrology
+    tools: 39
+    auth: api-key (X-API-Key, secret key)
+  - name: vedic-astrology
+    url: https://roxyapi.com/mcp/vedic-astrology
+    tools: 55
+    auth: api-key (X-API-Key, secret key)
+  - name: forecast
+    url: https://roxyapi.com/mcp/forecast
+    tools: 5
+    auth: api-key (X-API-Key, secret key)
+  - name: human-design
+    url: https://roxyapi.com/mcp/human-design
+    tools: 12
+    auth: api-key (X-API-Key, secret key)
+  - name: chinese-astrology
+    url: https://roxyapi.com/mcp/chinese-astrology
+    tools: 16
+    auth: api-key (X-API-Key, secret key)
+  - name: feng-shui
+    url: https://roxyapi.com/mcp/feng-shui
+    tools: 11
+    auth: api-key (X-API-Key, secret key)
+  - name: numerology
+    url: https://roxyapi.com/mcp/numerology
+    tools: 20
+    auth: api-key (X-API-Key, secret key)
+  - name: tarot
+    url: https://roxyapi.com/mcp/tarot
+    tools: 10
+    auth: api-key (X-API-Key, secret key)
+  - name: biorhythm
+    url: https://roxyapi.com/mcp/biorhythm
+    tools: 6
+    auth: api-key (X-API-Key, secret key)
+  - name: iching
+    url: https://roxyapi.com/mcp/iching
+    tools: 9
+    auth: api-key (X-API-Key, secret key)
+  - name: crystals
+    url: https://roxyapi.com/mcp/crystals
+    tools: 12
+    auth: api-key (X-API-Key, secret key)
+  - name: dreams
+    url: https://roxyapi.com/mcp/dreams
+    tools: 5
+    auth: api-key (X-API-Key, secret key)
+  - name: angel-numbers
+    url: https://roxyapi.com/mcp/angel-numbers
+    tools: 4
+    auth: api-key (X-API-Key, secret key)
+  - name: location
+    url: https://roxyapi.com/mcp/location
+    tools: 3
+    auth: api-key (X-API-Key, secret key)
+  - name: docs
+    url: https://roxyapi.com/mcp/docs
+    tools: 1
+    auth: none (public, keyless)
+server:
+  name: roxyapi
+  transport: http
+  url: https://roxyapi.com/mcp/{domain}
+tool_count: 208
+x-evidence:
+  probed: '2026-09-03'
+  method: POST tools/list (jsonrpc 2.0), unauthenticated
+  status: 200
+  note: All 15 servers returned 200 with the full tool list and inputSchemas; counts per server recorded above (sum
+    207 domain tools + 1 docs tool).

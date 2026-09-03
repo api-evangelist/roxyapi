@@ -1,0 +1,21 @@
+generated: '2026-09-03'
+method: searched
+source: https://roxyapi.com/changelog + https://roxyapi.com/.well-known/api-catalog + https://roxyapi.com/pricing
+versioning:
+  scheme: uri-path
+  current: v2
+  docs: https://roxyapi.com/docs/introduction
+  note: 'Base https://roxyapi.com/api/v2; the provider states SDKs, docs, and the OpenAPI spec are generated
+    from live endpoints and stay in lockstep with production, with new endpoints and fields added without
+    breaking changes.'
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: No published deprecation policy or RFC 8594 Sunset/Deprecation header support found; the spec declares no deprecated operations.
+sla:
+  uptime_target: '99.9%'
+  note: '99.9% SLA on the Professional plan; 99.95% with service credits on Enterprise (pricing page).'
+status_page: https://stats.uptimerobot.com/T0kPZKlAjf
+status_page_note: Public UptimeRobot status page, linked as the status resource in the provider's own /.well-known/api-catalog linkset (probed 200).
+changelog: https://roxyapi.com/changelog
+deprecated_operations: []
