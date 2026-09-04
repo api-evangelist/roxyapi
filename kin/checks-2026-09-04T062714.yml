@@ -1,27 +1,23 @@
 ---
 kin_checks:
   slug: roxyapi
-  schema_version: 0.18.1
-  scored_at: '2026-09-03'
-  run_ts: 2026-09-03T161828
+  schema_version: 0.18.2
+  scored_at: '2026-09-04'
+  run_ts: 2026-09-04T062714
   note: Actionable checks only (missed + partial). earned/na are every other check
-    in rubric/scoring-0.18.1.yml; counts below let you verify that.
+    in rubric/scoring-0.18.2.yml; counts below let you verify that.
   counts:
     total: 132
-    earned: 14
-    partial: 2
-    missed: 72
+    earned: 44
+    partial: 5
+    missed: 39
     na: 44
   checks:
-  - id: image_present
-    status: missed
   - id: maintainer_present
     status: missed
   - id: multiple_apis
     status: missed
   - id: well_known_published
-    status: missed
-  - id: llms_txt_published
     status: missed
   - id: apis_json_self_hosted
     status: missed
@@ -55,93 +51,31 @@ kin_checks:
     status: missed
   - id: overlay_published
     status: missed
-  - id: change_log_present
-    status: missed
-  - id: status_page_present
-    status: missed
-  - id: rate_limits_documented
-    status: missed
-  - id: rate_limits_rich
-    status: missed
   - id: deprecation_policy
     status: missed
-  - id: security_disclosure
-    status: missed
   - id: webhooks_advertised
-    status: missed
-  - id: github_org_present
     status: missed
   - id: roadmap_present
     status: missed
   - id: examples_published
     status: missed
-  - id: portal_present
-    status: missed
-  - id: api_reference_present
-    status: missed
-  - id: getting_started_present
-    status: missed
-  - id: authentication_documented
-    status: missed
-  - id: sdk_count_1
-    status: missed
   - id: sdk_count_3
     status: missed
   - id: cli_present
     status: missed
-  - id: console_or_sandbox
-    status: missed
-  - id: support_channel
-    status: missed
-  - id: blog_present
-    status: missed
-  - id: plans_present
-    status: missed
-  - id: plans_multiple
-    status: missed
-  - id: pricing_link
-    status: missed
-  - id: sign_up_present
-    status: missed
-  - id: terms_of_service
-    status: missed
-  - id: privacy_policy
-    status: missed
   - id: finops_mapped
-    status: missed
-  - id: compliance_published
     status: missed
   - id: trust_center
     status: missed
   - id: reg_oauth_scopes
     status: missed
-  - id: reg_authentication_documented
-    status: missed
-  - id: reg_security_disclosure
-    status: missed
-  - id: reg_vulnerability_disclosure
-    status: missed
-  - id: reg_terms_of_service
-    status: missed
-  - id: reg_privacy_policy
-    status: missed
-  - id: reg_compliance_published
-    status: missed
-  - id: reg_standards_conformance
-    status: missed
   - id: agentic_access
     status: missed
   - id: reversibility_documented
     status: missed
-  - id: auth_clarity
-    status: missed
   - id: idempotency
     status: missed
-  - id: error_semantics
-    status: missed
   - id: openapi_examples
-    status: missed
-  - id: rate_limit_signal
     status: missed
   - id: event_surface_described
     status: missed
@@ -160,6 +94,18 @@ kin_checks:
   - id: mcp_server
     status: partial
     earned: 4.8
+    detail: 'grade: documented'
+  - id: auth_clarity
+    status: partial
+    earned: 3.5
+    detail: 'grade: bearer'
+  - id: error_semantics
+    status: partial
+    earned: 4.0
+    detail: 'grade: documented'
+  - id: rate_limit_signal
+    status: partial
+    earned: 3.5
     detail: 'grade: documented'
   - id: agent_card
     status: partial
