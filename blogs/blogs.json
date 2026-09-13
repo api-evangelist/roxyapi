@@ -5,10 +5,17 @@
       "source": "https://roxyapi.com/contact",
       "feed_url": "https://roxyapi.com/blogs/rss.xml",
       "title": "",
-      "saved": 6,
+      "saved": 0,
       "method": "discovered"
+    },
+    {
+      "source": "https://roxyapi.com/blogs/rss.xml",
+      "feed_url": "https://roxyapi.com/blogs/rss.xml",
+      "title": "",
+      "saved": 0,
+      "method": "feed"
     }
   ],
-  "post_count": 6,
-  "fetched": "2026-09-06T19:17:18Z"
+  "post_count": 50,
+  "fetched": "2026-09-13T13:00:00Z"
 }
