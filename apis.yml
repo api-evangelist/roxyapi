@@ -24,9 +24,9 @@ specificationVersion: '0.23'
 tags:
 - Astrology
 - Vedic Astrology
-- numerology
-- tarot
-- human-design
+- Numerology
+- Tarot
+- Human Design
 - Forecast
 - biorhythm
 - iching
@@ -60,54 +60,23 @@ tags_raw:
 - llms-txt
 - agent-native
 apis:
-- name: RoxyAPI REST API v2
-  description: Production REST API covering 14 spiritual intelligence domains with 210+ endpoints under a single
-    API key, authenticated via X-API-Key header. Documented by a live OpenAPI 3.1 spec and interactive reference
-    playground.
+- aid: roxyapi:roxyapi-angel-numbers-api
+  name: RoxyAPI Angel Numbers API
+  description: >-
+    Angel numbers API with meanings for 111, 222, 333, 444, 555, 666, 777, 888, 999, 1111, and 75+ sequences
+    covering every common family. Each reading breaks down into spiritual, love, career, money, and twin
+    flame guidance, plus a biblical perspective and an honest shadow reading. Smart lookup analyzes any
+    number sequence with pattern detection, digit-root calculation, classification, and an optional sighting-context
+    note. Daily angel number endpoint, and filter by type (repeating, sequential, mirror, master, compound).
+    Built for synchronicity apps, spiritual journals, daily guidance features, AI chatbots, and wellness
+    platforms. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.
   humanURL: https://roxyapi.com/api-reference
   baseURL: https://roxyapi.com/api/v2
-  image: https://roxyapi.com/logo.png
   tags:
-  - Astrology
-  - Vedic Astrology
-  - numerology
-  - tarot
-  - human-design
-  - Forecast
-  - biorhythm
-  - iching
-  - crystals
-  - Dreams
-  - angel-numbers
-  - Location
-  - spiritual
-  - Wellness
-  - MCP Server
-  - OpenAPI
-  - llms-txt
-  - agent-native
-  tags_raw:
-  - astrology
-  - vedic-astrology
-  - numerology
-  - tarot
-  - human-design
-  - forecast
-  - biorhythm
-  - iching
-  - crystals
-  - dreams
-  - angel-numbers
-  - location
-  - spiritual
-  - wellness
-  - mcp-server
-  - openapi
-  - llms-txt
-  - agent-native
+  - Angel Numbers
   properties:
   - type: OpenAPI
-    url: https://roxyapi.com/api/v2/openapi.json
+    url: openapi/roxyapi-angel-numbers-api-openapi.yml
   - type: Documentation
     url: https://roxyapi.com/docs/introduction
   - type: PostmanCollection
@@ -118,14 +87,427 @@ apis:
     url: https://roxyapi.com/AGENTS.md
   - type: Documentation
     url: https://roxyapi.com/mcp/docs
-  - type: OpenAPI
-    url: openapi/roxyapi-openapi-original.json
-    name: RoxyAPI OpenAPI 3.1 (harvested 2026-09-03, 210 operations)
   - type: ToolCrosswalk
     url: mcp/roxyapi-tool-crosswalk.yml
-  - type: MCPServer
-    url: mcp/roxyapi-mcp.yml
-    name: RoxyAPI remote MCP servers (14 per-domain + keyless docs server)
+- aid: roxyapi:roxyapi-biorhythm-api
+  name: RoxyAPI Biorhythm API
+  description: >-
+    The most complete biorhythm API: 10 cycle types across 3 primary (physical, emotional, intellectual),
+    4 secondary (intuitive, aesthetic, awareness, spiritual), and 3 composite (passion, mastery, wisdom).
+    Critical-day detection with severity classification, 90-day forecasts with best and worst days, two-person
+    compatibility scoring, phase tracking for dashboards, and seeded daily readings for push notifications.
+    8 languages, deterministic results, and editorial-grade interpretations. One key covers every RoxyAPI
+    domain, with Remote MCP and typed SDKs. Ship a biorhythm feature in hours, not weeks.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Biorhythm
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-biorhythm-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-chinese-astrology-api
+  name: RoxyAPI Chinese Astrology API
+  description: >-
+    Calculate BaZi Four Pillars charts, Chinese zodiac signs, and the Chinese lunisolar calendar from
+    any birth moment: year, month, day and hour pillars with hidden stems, Na Yin and Ten God relations,
+    luck pillars, day master strength, and animal compatibility. The school splits that make two calculators
+    disagree are typed parameters rather than hidden defaults, and every chart echoes the conventions
+    it was computed under. Solar terms come back as astronomical instants, lunar dates convert in both
+    directions with leap months placed correctly, and the Tong Shu almanac covers day officers, lunar
+    mansions and date selection. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Chinese Astrology
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-chinese-astrology-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-crystals-and-healing-stones-api
+  name: RoxyAPI Crystals and Healing Stones API
+  description: >-
+    Crystal healing API covering the most popular and widely-searched healing crystals and gemstones,
+    from Amethyst and Rose Quartz to Moldavite and Selenite, each with its spiritual, emotional, and physical
+    properties. Filter by chakra (Root through Crown), zodiac sign, or element, search by keyword, browse
+    birthstones by month, discover crystal pairings, and get random or daily crystal picks. Includes Mohs
+    hardness, numerological vibration, and planetary associations per stone. Built for wellness apps,
+    crystal shops, chakra-balancing tools, astrology integrations, and AI spiritual advisors. One key
+    covers every RoxyAPI domain, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Crystals and Healing Stones
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-crystals-and-healing-stones-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-dreams-api
+  name: RoxyAPI Dreams API
+  description: >-
+    Dream interpretation API with a 2,000+ symbol dream dictionary and psychological meanings covering
+    animals, objects, emotions, people, scenarios, and abstract concepts. Decode dreams about falling,
+    flying, teeth falling out, being chased, water, snakes, and more. Search, browse A-Z, or discover
+    random symbols. Build dream journal apps, AI dream analysis chatbots, sleep-tracking features, and
+    wellness platforms. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Dreams
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-dreams-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-feng-shui-api
+  name: RoxyAPI Feng Shui API
+  description: >-
+    Compute classical feng shui from one API: Xuan Kong flying star natal charts for any of the nine periods
+    and 24 mountains, Kua numbers and the full Eight Mansions map of favourable and unfavourable directions,
+    annual and monthly star plates, the four annual afflictions with exact degree spans, the compass Bagua
+    map and the 1864 to 2043 period table. Chinese years resolve at Li Chun, computed astronomically,
+    so the boundary is right rather than assumed. One key, Remote MCP, typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Feng Shui
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-feng-shui-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-forecast-api
+  name: RoxyAPI Forecast API
+  description: >-
+    Forecast API that merges upcoming transit aspects, sign ingresses, retrograde stations, new and full
+    moons, biorhythm critical days, and Vimshottari dasha changes into one time-ordered forecast for a
+    single subject. The only cross-domain forecast timeline behind one key, positions verified against
+    NASA JPL Horizons, available over Remote MCP with typed SDKs. Horizon capped at 90 days.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Forecast
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-forecast-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-human-design-api
+  name: RoxyAPI Human Design API
+  description: >-
+    Generate the full Human Design bodygraph from a birth moment: type, strategy, inner authority, profile,
+    definition, incarnation cross, the nine centers, defined channels, and all 26 gate activations, plus
+    two-person connection charts and small-group Penta analysis. Planetary positions verified against
+    NASA JPL Horizons, the Design side solved on the exact 88 degree solar arc. One key, Remote MCP, typed
+    SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Human Design
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-human-design-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-i-ching-api
+  name: RoxyAPI I Ching API
+  description: >-
+    I-Ching oracle API with all 64 hexagrams, 384 changing lines, 8 trigrams, and modern interpretations
+    for love, career, and decision-making. Cast readings with the authentic three-coin method, get a daily
+    hexagram, and explore the Book of Changes programmatically. Built for divination apps, AI oracle chatbots,
+    fortune-telling platforms, daily wisdom features, and spiritual guidance products. One key covers
+    every RoxyAPI domain, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - I-Ching
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-i-ching-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-languages-api
+  name: RoxyAPI Languages API
+  description: >-
+    List the response languages accepted by the `lang` query parameter on every i18n-aware endpoint. Use
+    to populate language pickers, validate user input, or auto-detect available locales in agent integrations.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Languages
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-languages-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-location-and-timezone-api
+  name: RoxyAPI Location and Timezone API
+  description: >-
+    Location and timezone API with city search and geocoding across 235,000+ cities in 240+ countries,
+    returning latitude, longitude, IANA timezone, and DST-aware UTC offset. Coverage goes down to towns
+    of a few hundred people and every administrative seat, so a rural birthplace resolves as reliably
+    as a capital. The location layer for birth chart forms, horoscope apps, event planners, and any feature
+    that needs place-to-coordinates resolution. Fully offline dataset with no third party geocoding call,
+    and fields that map directly to the astrology endpoints. One key covers every RoxyAPI domain, with
+    Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Location and Timezone
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-location-and-timezone-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-numerology-api
+  name: RoxyAPI Numerology API
+  description: >-
+    Numerology API to calculate life path, expression, soul urge, personality, and maturity numbers, with
+    Pinnacle and Challenge life-phase timing, Hidden Passion, Subconscious Self, and Cornerstone and Capstone
+    name analysis. Birth day 1-31 profiles, lucky associations (colors, gemstones, planets), personal
+    year and month forecasts, relationship compatibility, and karmic debt and lessons. Unicode-aware multilingual
+    name handling transliterates Spanish, French, German, Russian, Hindi, Bengali, Tamil, Japanese, Chinese,
+    Korean, Arabic, Greek, and Hebrew names to correct Pythagorean numbers so non-Latin scripts no longer
+    drop letters. Both Pythagorean and Chaldean systems in one call, Cheiro compound numbers (10 to 52)
+    with planetary rulers, and business and brand name analysis. Built for numerology apps, editorial
+    platforms, AI chatbots, and wellness services. One key covers every RoxyAPI domain, with Remote MCP
+    and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Numerology
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-numerology-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-tarot-api
+  name: RoxyAPI Tarot API
+  description: >-
+    Tarot reading API with the complete 78-card Rider-Waite-Smith deck and card meanings for love, career,
+    health, and spiritual growth. Celtic Cross, three-card, love, career, yes/no oracle, daily card, and
+    custom spreads, each with upright and reversed interpretations. Seeded reproducibility for personalized
+    daily readings, and card images included. Built for tarot apps, AI tarot chatbots, fortune-telling
+    platforms, and spiritual wellness products. One key covers every RoxyAPI domain, with Remote MCP and
+    typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Tarot
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-tarot-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-usage-api
+  name: RoxyAPI Usage API
+  description: >-
+    Monitor your API usage, check rate limits, and track request consumption. Get detailed usage breakdowns
+    by endpoint, current month statistics, and recommendations for plan upgrades when approaching limits.
+    Essential for managing API quotas and optimizing subscription plans.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Usage
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-usage-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-vedic-astrology-api
+  name: RoxyAPI Vedic Astrology API
+  description: >-
+    Vedic astrology (Jyotish) and KP API for kundli generation with 15 divisional charts (D1-D60), Ashtakoot
+    Gun Milan kundli matching, Vimshottari Dasha predictions, dosha detection with remedies, a 301-entry
+    planetary yoga glossary with 48 of them chart-detected and evidenced, complete Panchang, and KP horary
+    with 249-level sub-lord analysis. Calculations verified against NASA JPL Horizons at arc-second-level
+    accuracy. Built for matrimonial apps, horoscope platforms, spiritual wellness services, and AI-powered
+    astrology chatbots. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Vedic Astrology
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-vedic-astrology-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-western-astrology-api
+  name: RoxyAPI Western Astrology API
+  description: >-
+    Western astrology API for natal birth charts, daily, weekly, monthly, and yearly horoscopes with unique
+    content per sign and the dated sky events behind every reading, synastry compatibility scores, composite
+    charts, solar and lunar returns, real-time transit aspects, and moon phases. 4 house systems (Placidus,
+    Koch, Whole Sign, Equal) with accurate tropical ephemeris, aspect-pattern detection (Grand Trine,
+    T-Square, Yod), astrocartography planetary lines, relocation charts, and local space maps for location
+    based astrology, plus classical and professional points like fixed star conjunctions, Arabic lots,
+    the asteroid goddesses (Ceres, Pallas, Juno, Vesta), mean and true Black Moon Lilith, and timing techniques
+    like secondary progressions, solar arc directions, and annual profections. Built for horoscope platforms,
+    astrology dating apps, AI chatbots, wellness products, and zodiac content engines. Schedule future
+    horoscopes by date or by year for editorial workflows, no astronomy expertise needed. One key covers
+    every RoxyAPI domain, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Western Astrology
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-western-astrology-api-openapi.yml
+  - type: Documentation
+    url: https://roxyapi.com/docs/introduction
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+  - type: ToolCrosswalk
+    url: mcp/roxyapi-tool-crosswalk.yml
 maintainers:
 - FN: RoxyAPI (RoxyLabs)
   url: https://roxyapi.com
