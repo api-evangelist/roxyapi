@@ -28,11 +28,11 @@ tags:
 - Tarot
 - Human Design
 - Forecast
-- biorhythm
-- iching
+- Biorhythm
+- I-Ching
 - crystals
 - Dreams
-- angel-numbers
+- Angel Numbers
 - Location
 - spiritual
 - Wellness
@@ -317,6 +317,8 @@ apis:
   humanURL: https://roxyapi.com/api-reference
   baseURL: https://roxyapi.com/api/v2
   tags:
+  - Language
+  tags_raw:
   - Languages
   properties:
   - type: OpenAPI
