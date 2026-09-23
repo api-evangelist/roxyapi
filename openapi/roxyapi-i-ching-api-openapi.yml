@@ -1,0 +1,2376 @@
+openapi: 3.2.0
+info:
+  title: Roxy I Ching API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: I-Ching
+  description: I-Ching oracle API with all 64 hexagrams, 384 changing lines, 8 trigrams, and modern interpretations for love, career, and decision-making. Cast readings with the authentic three-coin method, get a daily hexagram, and explore the Book of Changes programmatically. Built for divination apps, AI oracle chatbots, fortune-telling platforms, daily wisdom features, and spiritual guidance products. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.
+paths:
+  /iching/daily:
+    post:
+      operationId: getDailyHexagram
+      tags:
+      - I-Ching
+      summary: Get daily I-Ching hexagram
+      description: Receive a daily I-Ching hexagram for guidance and reflection. This endpoint uses seeded randomness to ensure the same seed gets the same hexagram on the same day - perfect for "Hexagram of the Day" features in oracle apps, meditation platforms, and daily wisdom tools. Returns the hexagram with judgment, image, and interpretations for love, career, decisions, and practical advice based on ancient Chinese wisdom from the Book of Changes.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  example: user123
+                  description: Optional seed for reproducible readings. Same seed + same date = same hexagram every time. Pass any unique identifier (userId, email hash, session token). Omit for anonymous daily readings.
+                date:
+                  type: string
+                  format: date
+                  example: '2026-03-06'
+                  description: Date for the reading in YYYY-MM-DD format. Defaults to today (UTC). Useful for viewing past daily readings or pre-generating future ones.
+      responses:
+        '200':
+          description: Daily hexagram reading with full interpretation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    example: '2026-01-28'
+                    description: Date this daily hexagram is for (YYYY-MM-DD, UTC).
+                  seed:
+                    type: string
+                    example: user123-2026-01-28
+                    description: Computed seed used for this reading. Same seed always produces the same hexagram.
+                  hexagram:
+                    type: object
+                    properties:
+                      number:
+                        type: number
+                        example: 1
+                        description: Hexagram number in King Wen sequence (1-64).
+                      symbol:
+                        type: string
+                        example: ䷀
+                        description: Unicode hexagram symbol for display.
+                      chinese:
+                        type: string
+                        example: 乾
+                        description: Original Chinese name.
+                      english:
+                        type: string
+                        example: The Creative
+                        description: English translation of the hexagram name.
+                      pinyin:
+                        type: string
+                        example: Qián
+                        description: Pinyin romanization with tone marks.
+                      upperTrigram:
+                        type: string
+                        example: Heaven
+                        description: Upper trigram (lines 4-6).
+                      lowerTrigram:
+                        type: string
+                        example: Heaven
+                        description: Lower trigram (lines 1-3).
+                      judgment:
+                        type: string
+                        example: Pure creative force is available and it runs from origin to completion without obstruction, so the situation rewards initiative that stays correct and does not slacken. Success here is built by sustained effort held to a straight line, not by a single burst.
+                        description: The Judgment (Tuan) text, the primary oracle statement of the hexagram offering core guidance.
+                      image:
+                        type: string
+                        example: 'Heaven above heaven: the same motion repeated without pause and without fatigue. Renew your own strength on your own schedule rather than waiting to be driven by circumstances.'
+                        description: The Image (Xiang) text, symbolic guidance derived from the trigram combination describing the ideal action.
+                      interpretation:
+                        type: object
+                        properties:
+                          general:
+                            type: string
+                            example: A time of great creative power and initiative. The universe supports bold action and forward movement. Success comes through strength of character and unwavering perseverance.
+                            description: General life situation interpretation.
+                          love:
+                            type: string
+                            example: A time of strong creative energy and passionate connection. Take the initiative in expressing your feelings, but avoid arrogance.
+                            description: Love and relationship guidance.
+                          career:
+                            type: string
+                            example: Exceptional opportunities for advancement and recognition await. Your creative ideas and leadership abilities are at their peak.
+                            description: Career and professional interpretation.
+                          decision:
+                            type: string
+                            example: The time is right for bold action. Trust your instincts and move forward with confidence.
+                            description: Decision-making guidance for whether to act, wait, or change course.
+                          advice:
+                            type: string
+                            example: 'Be like the heavens: consistent, powerful, and untiring. Make yourself strong through steady effort, not through force.'
+                            description: Practical wisdom and actionable advice.
+                        required:
+                        - general
+                        - love
+                        - career
+                        - decision
+                        - advice
+                        description: Modern interpretations across life areas based on ancient I-Ching wisdom.
+                    required:
+                    - number
+                    - symbol
+                    - chinese
+                    - english
+                    - pinyin
+                    - upperTrigram
+                    - lowerTrigram
+                    - judgment
+                    - image
+                    - interpretation
+                  dailyMessage:
+                    type: string
+                    example: 'Your hexagram for 2026-01-28: The Creative (乾). Be like the heavens: consistent, powerful, and untiring.'
+                    description: Concise daily message summarizing the hexagram guidance
+                required:
+                - date
+                - seed
+                - hexagram
+                - dailyMessage
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Failed to generate daily hexagram
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+  /iching/daily/cast:
+    post:
+      operationId: castDailyReading
+      tags:
+      - I-Ching
+      summary: Cast daily I-Ching reading with changing lines
+      description: Cast a complete daily I-Ching reading using the traditional three-coin method with seeded randomness. Unlike the simple daily hexagram, this provides the full casting experience with line values (6-9), changing line positions, and the resulting hexagram if transformation occurs. Same seed + same date = same casting result. Perfect for I-Ching divination apps requiring authentic oracle experience with daily consistency.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  example: user123
+                  description: Optional seed for reproducible readings. Same seed + same date = same hexagram every time. Pass any unique identifier (userId, email hash, session token). Omit for anonymous daily readings.
+                date:
+                  type: string
+                  format: date
+                  example: '2026-03-06'
+                  description: Date for the reading in YYYY-MM-DD format. Defaults to today (UTC). Useful for viewing past daily readings or pre-generating future ones.
+      responses:
+        '200':
+          description: Complete daily casting with primary and resulting hexagrams
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    example: '2026-01-28'
+                    description: Date this daily casting is for (YYYY-MM-DD, UTC).
+                  seed:
+                    type: string
+                    example: user123-2026-01-28
+                    description: Computed seed for reproducible castings.
+                  hexagram:
+                    type: object
+                    properties:
+                      number:
+                        type: number
+                        example: 1
+                        description: Hexagram number in King Wen sequence (1-64).
+                      symbol:
+                        type: string
+                        example: ䷀
+                        description: Unicode hexagram symbol for display.
+                      chinese:
+                        type: string
+                        example: 乾
+                        description: Original Chinese name.
+                      english:
+                        type: string
+                        example: The Creative
+                        description: English translation of the hexagram name.
+                      pinyin:
+                        type: string
+                        example: Qián
+                        description: Pinyin romanization with tone marks.
+                      upperTrigram:
+                        type: string
+                        example: Heaven
+                        description: Upper trigram (lines 4-6).
+                      lowerTrigram:
+                        type: string
+                        example: Heaven
+                        description: Lower trigram (lines 1-3).
+                      judgment:
+                        type: string
+                        example: Pure creative force is available and it runs from origin to completion without obstruction, so the situation rewards initiative that stays correct and does not slacken. Success here is built by sustained effort held to a straight line, not by a single burst.
+                        description: The Judgment (Tuan) text, the primary oracle statement of the hexagram offering core guidance.
+                      image:
+                        type: string
+                        example: 'Heaven above heaven: the same motion repeated without pause and without fatigue. Renew your own strength on your own schedule rather than waiting to be driven by circumstances.'
+                        description: The Image (Xiang) text, symbolic guidance derived from the trigram combination describing the ideal action.
+                      interpretation:
+                        type: object
+                        properties:
+                          general:
+                            type: string
+                            example: A time of great creative power and initiative. The universe supports bold action and forward movement. Success comes through strength of character and unwavering perseverance.
+                            description: General life situation interpretation.
+                          love:
+                            type: string
+                            example: A time of strong creative energy and passionate connection. Take the initiative in expressing your feelings, but avoid arrogance.
+                            description: Love and relationship guidance.
+                          career:
+                            type: string
+                            example: Exceptional opportunities for advancement and recognition await. Your creative ideas and leadership abilities are at their peak.
+                            description: Career and professional interpretation.
+                          decision:
+                            type: string
+                            example: The time is right for bold action. Trust your instincts and move forward with confidence.
+                            description: Decision-making guidance for whether to act, wait, or change course.
+                          advice:
+                            type: string
+                            example: 'Be like the heavens: consistent, powerful, and untiring. Make yourself strong through steady effort, not through force.'
+                            description: Practical wisdom and actionable advice.
+                        required:
+                        - general
+                        - love
+                        - career
+                        - decision
+                        - advice
+                        description: Modern interpretations across life areas based on ancient I-Ching wisdom.
+                    required:
+                    - number
+                    - symbol
+                    - chinese
+                    - english
+                    - pinyin
+                    - upperTrigram
+                    - lowerTrigram
+                    - judgment
+                    - image
+                    - interpretation
+                  lines:
+                    type: array
+                    items:
+                      type: number
+                    example:
+                    - 7
+                    - 8
+                    - 9
+                    - 7
+                    - 6
+                    - 8
+                    description: Line values (6-9) from bottom to top. 6=old yin (changing), 7=young yang, 8=young yin, 9=old yang (changing).
+                  changingLinePositions:
+                    type: array
+                    items:
+                      type: number
+                    example:
+                    - 3
+                    - 5
+                    description: Positions of changing lines (1-6, bottom to top). These lines transform yin to yang or vice versa.
+                  changingLines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChangingLine'
+                    description: The oracle statement and meaning of each line that came up CHANGING, and only those. The changing lines are what the cast is actually about, so this saves a second call to read them and stops a consuming agent from having to invent them.
+                  resultingHexagram:
+                    type: object
+                    properties:
+                      number:
+                        type: number
+                        example: 1
+                        description: Hexagram number in King Wen sequence (1-64).
+                      symbol:
+                        type: string
+                        example: ䷀
+                        description: Unicode hexagram symbol for display.
+                      chinese:
+                        type: string
+                        example: 乾
+                        description: Original Chinese name.
+                      english:
+                        type: string
+                        example: The Creative
+                        description: English translation of the hexagram name.
+                      pinyin:
+                        type: string
+                        example: Qián
+                        description: Pinyin romanization with tone marks.
+                      upperTrigram:
+                        type: string
+                        example: Heaven
+                        description: Upper trigram (lines 4-6).
+                      lowerTrigram:
+                        type: string
+                        example: Heaven
+                        description: Lower trigram (lines 1-3).
+                      judgment:
+                        type: string
+                        example: Pure creative force is available and it runs from origin to completion without obstruction, so the situation rewards initiative that stays correct and does not slacken. Success here is built by sustained effort held to a straight line, not by a single burst.
+                        description: The Judgment (Tuan) text, the primary oracle statement of the hexagram offering core guidance.
+                      image:
+                        type: string
+                        example: 'Heaven above heaven: the same motion repeated without pause and without fatigue. Renew your own strength on your own schedule rather than waiting to be driven by circumstances.'
+                        description: The Image (Xiang) text, symbolic guidance derived from the trigram combination describing the ideal action.
+                      interpretation:
+                        type: object
+                        properties:
+                          general:
+                            type: string
+                            example: A time of great creative power and initiative. The universe supports bold action and forward movement. Success comes through strength of character and unwavering perseverance.
+                            description: General life situation interpretation.
+                          love:
+                            type: string
+                            example: A time of strong creative energy and passionate connection. Take the initiative in expressing your feelings, but avoid arrogance.
+                            description: Love and relationship guidance.
+                          career:
+                            type: string
+                            example: Exceptional opportunities for advancement and recognition await. Your creative ideas and leadership abilities are at their peak.
+                            description: Career and professional interpretation.
+                          decision:
+                            type: string
+                            example: The time is right for bold action. Trust your instincts and move forward with confidence.
+                            description: Decision-making guidance for whether to act, wait, or change course.
+                          advice:
+                            type: string
+                            example: 'Be like the heavens: consistent, powerful, and untiring. Make yourself strong through steady effort, not through force.'
+                            description: Practical wisdom and actionable advice.
+                        required:
+                        - general
+                        - love
+                        - career
+                        - decision
+                        - advice
+                        description: Modern interpretations across life areas based on ancient I-Ching wisdom.
+                    required:
+                    - number
+                    - symbol
+                    - chinese
+                    - english
+                    - pinyin
+                    - upperTrigram
+                    - lowerTrigram
+                    - judgment
+                    - image
+                    - interpretation
+                    description: Hexagram after transformation (if changing lines present)
+                required:
+                - date
+                - seed
+                - lines
+                - changingLinePositions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/hexagrams:
+    get:
+      operationId: listHexagrams
+      tags:
+      - I-Ching
+      summary: List all 64 hexagrams
+      description: Browse all 64 I-Ching hexagrams from the Book of Changes with their Chinese names, English translations, and trigram compositions. The hexagrams are ordered by the traditional King Wen sequence used in I-Ching divination for 3,000 years. Each hexagram represents a unique life situation combining two trigrams (Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake) into profound wisdom for decision-making and self-understanding.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 64
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-64, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-64, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: List of hexagrams with basic information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 64
+                    description: Total number of I-Ching hexagrams (always 64).
+                  limit:
+                    type: number
+                    example: 20
+                    description: Page size used for this response.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of hexagrams skipped. Use with limit for pagination.
+                  hexagrams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BasicHexagram'
+                    description: Hexagrams for the current page. Use /hexagrams/{number} for full details.
+                required:
+                - total
+                - limit
+                - offset
+                - hexagrams
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/hexagrams/random:
+    get:
+      operationId: getRandomHexagram
+      tags:
+      - I-Ching
+      summary: Get a random hexagram
+      description: Receive a random I-Ching hexagram with full interpretation. Perfect for daily oracle features, meditation prompts, or exploring the Book of Changes. Returns complete hexagram data including judgment, image, interpretations for love/career/decisions, and all six changing line meanings.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: A random hexagram with full details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hexagram'
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: No hexagrams available.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/hexagrams/lookup:
+    get:
+      operationId: lookupHexagram
+      tags:
+      - I-Ching
+      summary: Lookup hexagram by line pattern
+      description: 'Find an I-Ching hexagram by its binary line pattern. Provide 6 digits (0 or 1) representing broken (yin) and solid (yang) lines from bottom to top. Use this for custom divination interfaces where users input their own line configurations, or to find hexagrams matching specific trigram combinations. Example: "111111" returns Hexagram 1 (The Creative), "000000" returns Hexagram 2 (The Receptive).'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: string
+          pattern: ^[01]{6}$
+          example: '111111'
+          description: Six-digit binary pattern (0=yin/broken, 1=yang/solid) from bottom to top.
+        required: true
+        description: Six-digit binary pattern (0=yin/broken, 1=yang/solid) from bottom to top.
+        name: lines
+        in: query
+      responses:
+        '200':
+          description: Matching hexagram.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hexagram'
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: No hexagram found for pattern.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/hexagrams/{number}:
+    get:
+      operationId: getHexagram
+      tags:
+      - I-Ching
+      summary: Get hexagram by number
+      description: Retrieve complete I-Ching hexagram details by King Wen sequence number (1-64). Returns the full hexagram with Chinese name, English translation, judgment text, image text, modern interpretations for general situations, love, career, and decision-making, plus all six changing line meanings. Use this to display detailed hexagram information after casting or for educational reference.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: number
+          minimum: 1
+          maximum: 64
+          example: 1
+          description: Hexagram number in King Wen sequence (1-64).
+        required: true
+        description: Hexagram number in King Wen sequence (1-64).
+        name: number
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Full hexagram details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hexagram'
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Hexagram not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/cast:
+    get:
+      operationId: castReading
+      tags:
+      - I-Ching
+      summary: Cast an I-Ching reading
+      description: Generate an authentic I-Ching reading using the traditional three-coin casting method. Each of the six lines is determined by virtually tossing three coins, producing values 6-9 where 6 (old yin) and 9 (old yang) are changing lines. Returns the primary hexagram with full interpretation, the line values showing which lines are changing, and if any lines change, the resulting hexagram that the primary transforms into. Optionally provide a seed for reproducible castings. Perfect for divination apps, oracle features, and decision-making tools.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: string
+          example: user123-question1
+          description: Optional seed for reproducible castings. Same seed = same casting every time. Pass any unique identifier (userId, session token, question hash). Omit for random casting.
+        required: false
+        description: Optional seed for reproducible castings. Same seed = same casting every time. Pass any unique identifier (userId, session token, question hash). Omit for random casting.
+        name: seed
+        in: query
+      responses:
+        '200':
+          description: Complete I-Ching reading with primary and resulting hexagrams.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seed:
+                    type: string
+                    example: user123-question1
+                    description: The seed used for this casting (if provided)
+                  hexagram:
+                    allOf:
+                    - $ref: '#/components/schemas/Hexagram'
+                    - description: Primary hexagram from the casting
+                  lines:
+                    type: array
+                    items:
+                      type: number
+                    example:
+                    - 7
+                    - 8
+                    - 9
+                    - 7
+                    - 6
+                    - 8
+                    description: Line values (6-9) from bottom to top. 6=old yin (changing), 7=young yang, 8=young yin, 9=old yang (changing)
+                  changingLinePositions:
+                    type: array
+                    items:
+                      type: number
+                    example:
+                    - 3
+                    - 5
+                    description: Positions of changing lines (1-6, bottom to top)
+                  resultingHexagram:
+                    allOf:
+                    - $ref: '#/components/schemas/Hexagram'
+                    - description: Hexagram the primary transforms into after changing lines (present only if there are changing lines)
+                required:
+                - lines
+                - changingLinePositions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/trigrams:
+    get:
+      operationId: listTrigrams
+      tags:
+      - I-Ching
+      summary: List all 8 trigrams
+      description: 'Retrieve all 8 I-Ching trigrams (bagua) - the fundamental building blocks of hexagrams. Each trigram consists of three lines and represents a primal force of nature: Heaven (Qian), Earth (Kun), Thunder (Zhen), Wind (Xun), Water (Kan), Fire (Li), Mountain (Gen), and Lake (Dui). Understanding trigrams is essential for interpreting hexagram meanings, as each hexagram combines an upper and lower trigram.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: List of all 8 trigrams with basic information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 8
+                    description: Total number of I-Ching trigrams (always 8).
+                  trigrams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BasicTrigram'
+                    description: All 8 trigrams (bagua) with basic details.
+                required:
+                - total
+                - trigrams
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /iching/trigrams/{id}:
+    get:
+      operationId: getTrigram
+      tags:
+      - I-Ching
+      summary: Get trigram by number or name
+      description: Retrieve a specific I-Ching trigram by its number (1-8) or English name (Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake). Returns complete trigram information including Chinese name, pinyin, element associations, core attributes, and symbolic meaning. Use this to understand the component trigrams of any hexagram.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          example: Heaven
+          description: Trigram number (1-8) or English name (Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake).
+        required: true
+        description: Trigram number (1-8) or English name (Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake).
+        name: id
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Trigram details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trigram'
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Trigram not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  schemas:
+    BasicTrigram:
+      type: object
+      properties:
+        number:
+          type: number
+          example: 1
+          description: Trigram number (1-8)
+        symbol:
+          type: string
+          example: ☰
+          description: Unicode trigram symbol
+        chinese:
+          type: string
+          example: 乾
+          description: Chinese name
+        english:
+          type: string
+          example: Heaven
+          description: English name
+        pinyin:
+          type: string
+          example: Qián
+          description: Pinyin romanization
+        binary:
+          type: string
+          example: '111'
+          description: Binary representation (1=Yang solid, 0=Yin broken)
+        attribute:
+          type: string
+          example: Creative
+          description: Core attribute/quality
+      required:
+      - number
+      - symbol
+      - chinese
+      - english
+      - pinyin
+      - binary
+      - attribute
+    ChangingLine:
+      type: object
+      properties:
+        position:
+          type: number
+          example: 1
+          description: Line position (1-6, bottom to top). In I-Ching, each hexagram has six lines (yao) read from bottom upward.
+        text:
+          type: string
+          example: The dragon is still hidden below the surface, so it does not act.
+          description: The oracle statement for this line. It applies when this specific line comes up changing (old yin or old yang) in a casting, and it speaks in the concrete imagery of the tradition.
+        meaning:
+          type: string
+          example: The first line is the beginning, still underground and unrecognized. Strength is present but untested, and showing it now invites resistance it cannot yet survive. Stay hidden and build.
+          description: What the line statement asks of the querent, read from its position in the hexagram (1 is the hidden beginning, 3 is the exposed threshold, 5 is the ruling line, 6 is past the peak) and from whether the line is yin or yang. This is the meaning behind the image, so a consuming agent does not have to invent one.
+      required:
+      - position
+      - text
+    Trigram:
+      type: object
+      properties:
+        number:
+          type: number
+          example: 1
+          description: 'Stable identifier for the trigram, 1 to 8. This is our lookup key, not a canonical sequence: the tradition has several orderings (King Wen, Fu Xi, Earlier and Later Heaven) and they disagree, so do not read ranking or precedence into it.'
+        symbol:
+          type: string
+          example: ☰
+          description: Unicode trigram symbol (three lines) for visual display in I-Ching interfaces and Bagua diagrams.
+        chinese:
+          type: string
+          example: 乾
+          description: Original Chinese character name of the trigram in traditional script.
+        english:
+          type: string
+          example: Heaven
+          description: English name representing the natural force or element this trigram embodies.
+        pinyin:
+          type: string
+          example: Qián
+          description: Pinyin romanization of the Chinese name with tone marks for correct pronunciation.
+        binary:
+          type: string
+          example: '111'
+          description: Three-digit binary representation of the trigram lines (bottom to top). 1 = yang (solid), 0 = yin (broken).
+        element:
+          type: string
+          example: Metal
+          description: 'Five element (Wu Xing) correspondence: Metal, Wood, Water, Fire, or Earth. Used in Chinese metaphysics and feng shui analysis.'
+        attribute:
+          type: string
+          example: Creative
+          description: Core attribute or quality this trigram represents in I-Ching philosophy (e.g., Creative, Receptive, Arousing).
+        familyMember:
+          type: string
+          example: Father
+          description: Family archetype in the Bagua system. Each trigram corresponds to a family role (Father, Mother, First Son, First Daughter, etc.).
+        direction:
+          type: string
+          example: Northwest
+          description: Compass direction in the King Wen (Later Heaven) Bagua arrangement. Used in feng shui spatial analysis.
+        bodyPart:
+          type: string
+          example: Head
+          description: Body part associated with this trigram in traditional Chinese medicine and I-Ching body mapping.
+        animal:
+          type: string
+          example: Horse
+          description: Animal symbol associated with this trigram in classical I-Ching imagery and divination.
+        season:
+          type: string
+          example: Late Autumn
+          description: Season or time period associated with this trigram in the annual cycle of Chinese cosmology.
+        quality:
+          type: string
+          example: Strong
+          description: Energetic quality describing the dynamic nature of this trigram (e.g., Strong, Devoted, Joyous, Gentle).
+        meaning:
+          type: string
+          example: The Creative force representing pure yang energy, strength, leadership, and the power of initiative.
+          description: Concise interpretation of the trigram covering its symbolic meaning, key associations, and guidance for understanding hexagrams containing this trigram.
+      required:
+      - number
+      - symbol
+      - chinese
+      - english
+      - pinyin
+      - binary
+      - element
+      - attribute
+      - familyMember
+      - direction
+      - bodyPart
+      - animal
+      - season
+      - quality
+      - meaning
+    Hexagram:
+      type: object
+      properties:
+        number:
+          type: number
+          example: 1
+          description: Hexagram number in the traditional King Wen sequence (1-64), the standard ordering used in I-Ching divination for over 3,000 years.
+        symbol:
+          type: string
+          example: ䷀
+          description: Unicode hexagram symbol (U+4DC0 block) representing all six lines. Use for visual display in I-Ching apps and divination interfaces.
+        chinese:
+          type: string
+          example: 乾
+          description: Original Chinese character name of the hexagram in traditional script.
+        english:
+          type: string
+          example: The Creative
+          description: English translation of the hexagram name, conveying the core concept and life situation it represents.
+        pinyin:
+          type: string
+          example: Qián
+          description: Pinyin romanization of the Chinese name with tone marks for correct pronunciation.
+        binary:
+          type: string
+          example: '111111'
+          description: Binary line pattern (6 digits, bottom to top). 1 = yang (solid line), 0 = yin (broken line). Lines 1-3 form the lower trigram, lines 4-6 form the upper trigram.
+        upperTrigram:
+          type: string
+          example: Heaven
+          description: 'Upper trigram (lines 4-6). One of 8 trigrams: Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake.'
+        lowerTrigram:
+          type: string
+          example: Heaven
+          description: Lower trigram (lines 1-3). Combines with the upper trigram to form the hexagram and its meaning.
+        judgment:
+          type: string
+          example: Pure creative force is available and it runs from origin to completion without obstruction, so the situation rewards initiative that stays correct and does not slacken. Success here is built by sustained effort held to a straight line, not by a single burst.
+          description: The Judgment (Tuan) text, the primary oracle statement of the hexagram offering core guidance and outcome.
+        image:
+          type: string
+          example: 'Heaven above heaven: the same motion repeated without pause and without fatigue. Renew your own strength on your own schedule rather than waiting to be driven by circumstances.'
+          description: The Image (Xiang) text, symbolic guidance derived from the trigram combination describing the ideal attitude and action.
+        interpretation:
+          $ref: '#/components/schemas/Interpretation'
+        changingLines:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangingLine'
+          description: Changing line interpretations for all 6 lines
+      required:
+      - number
+      - symbol
+      - chinese
+      - english
+      - pinyin
+      - binary
+      - upperTrigram
+      - lowerTrigram
+      - judgment
+      - image
+      - interpretation
+      - changingLines
+    Interpretation:
+      type: object
+      properties:
+        general:
+          type: string
+          example: This hexagram represents the primal power of creation and the energy of pure initiative.
+          description: General life situation interpretation of this hexagram.
+        love:
+          type: string
+          example: A time of strong attraction and passionate connection. Take the initiative in expressing your feelings.
+          description: Love and relationship guidance from this hexagram.
+        career:
+          type: string
+          example: Exceptional opportunities for advancement and recognition. Your creative ideas are at their peak.
+          description: Career and professional life interpretation.
+        decision:
+          type: string
+          example: The time is right for bold action. Trust your instincts and move forward with confidence.
+          description: Decision-making guidance for whether to act, wait, retreat, or advance based on this hexagram.
+        advice:
+          type: string
+          example: 'Be like the heavens: consistent, powerful, and untiring. Make yourself strong through steady effort.'
+          description: Practical wisdom and actionable advice from this hexagram for daily life application.
+      required:
+      - general
+      - love
+      - career
+      - decision
+      - advice
+    BasicHexagram:
+      type: object
+      properties:
+        number:
+          type: number
+          example: 1
+          description: Hexagram number in King Wen sequence (1-64).
+        symbol:
+          type: string
+          example: ䷀
+          description: Unicode hexagram symbol for display.
+        chinese:
+          type: string
+          example: 乾
+          description: Original Chinese name of the hexagram.
+        english:
+          type: string
+          example: The Creative
+          description: English translation of the hexagram name.
+        pinyin:
+          type: string
+          example: Qián
+          description: Pinyin romanization of the Chinese name with tone marks.
+        upperTrigram:
+          type: string
+          example: Heaven
+          description: 'Upper trigram (lines 4-6). One of 8 trigrams: Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake.'
+        lowerTrigram:
+          type: string
+          example: Heaven
+          description: Lower trigram (lines 1-3). Combines with upper trigram to form the hexagram.
+      required:
+      - number
+      - symbol
+      - chinese
+      - english
+      - pinyin
+      - upperTrigram
+      - lowerTrigram
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

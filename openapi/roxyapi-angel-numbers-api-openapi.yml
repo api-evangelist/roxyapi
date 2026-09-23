@@ -1,0 +1,1307 @@
+openapi: 3.2.0
+info:
+  title: Roxy Angel Numbers API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Angel Numbers
+  description: Angel numbers API with meanings for 111, 222, 333, 444, 555, 666, 777, 888, 999, 1111, and 75+ sequences covering every common family.
+paths:
+  /angel-numbers/numbers:
+    get:
+      operationId: listAngelNumbers
+      tags:
+      - Angel Numbers
+      summary: List All Angel Numbers
+      description: Retrieve the complete database of angel numbers with summary information. Returns 75+ angel numbers covering root digits (0-9), master numbers (11, 22, 33), double digits (44-99), triple repeating (111-999), quad repeating (1111-9999), the mirror families (X0X like 101-909, X1X, four-digit mirrors like 1212-2121), palindromes (1221, 1331), compound sequences (911, 1122), and sequential numbers (123, 1234). Supports optional type filtering. Perfect for building angel number explorer apps, reference guides, and spiritual databases.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-50, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-50, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      - schema:
+          type: string
+          enum:
+          - repeating
+          - sequential
+          - mirror
+          - master
+          - root
+          - compound
+          example: repeating
+          description: Filter results by angel number pattern type. "repeating" returns numbers like 111, 444, 7777. "sequential" returns patterns like 1234. "mirror" returns palindrome or alternating patterns like 1212, 717. "master" returns 11, 22, 33. "root" returns single digits 0-9. "compound" returns mixed sequences with no pure pattern like 911, 1122.
+        required: false
+        description: Filter results by angel number pattern type. "repeating" returns numbers like 111, 444, 7777. "sequential" returns patterns like 1234. "mirror" returns palindrome or alternating patterns like 1212, 717. "master" returns 11, 22, 33. "root" returns single digits 0-9. "compound" returns mixed sequences with no pure pattern like 911, 1122.
+        name: type
+        in: query
+      responses:
+        '200':
+          description: List of angel numbers with summary information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 78
+                    description: Total number of angel numbers matching the applied filters. The full catalog size when unfiltered, fewer when filtered by type.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum items returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of items skipped from the start of the result set.
+                  numbers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                          example: '111'
+                          description: Angel number sequence as a string. Common patterns include triple repeating (111-999), quad repeating (1111-9999), master numbers (11, 22, 33), mirror patterns (1212), and sequential numbers (1234).
+                        title:
+                          type: string
+                          example: New Beginnings, Manifestation, and Alignment With Your Highest Purpose
+                          description: Short descriptive title capturing the core theme and spiritual significance of this angel number.
+                        coreMessage:
+                          type: string
+                          example: Your focus is shaping what comes next. Give your attention to what you want rather than what you fear, because a new chapter is beginning.
+                          description: One to two sentence summary of the divine message. Ideal for push notifications, daily guidance widgets, and quick reference lookups.
+                        type:
+                          type: string
+                          example: repeating
+                          description: Pattern classification of the angel number. "repeating" means all digits are the same (111, 4444). "sequential" means consecutive digits (1234). "mirror" means palindrome or alternating pattern (1212, 1221). "master" means numerology master number (11, 22, 33). "root" means single digit (0-9). "compound" means a mixed sequence with no pure pattern (911, 1122).
+                        digitRoot:
+                          type: number
+                          example: 3
+                          description: Numerology digit root calculated by summing all digits and reducing to a single digit. Links each angel number to foundational numerology meaning. Master numbers 11, 22, 33 are preserved without further reduction.
+                        keywords:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - new beginnings
+                          - manifestation
+                          - initiative
+                          - alignment
+                          - fresh start
+                          - leadership
+                          description: Five to eight keywords capturing the spiritual themes and energy of this angel number. Useful for search, filtering, and content generation.
+                        energy:
+                          type: string
+                          example: positive
+                          description: Overall energy classification. "positive" indicates encouraging, uplifting energy. "neutral" indicates transitional energy (neither purely positive nor cautionary). "cautionary" indicates a gentle warning to rebalance or pay attention.
+                      required:
+                      - number
+                      - title
+                      - coreMessage
+                      - type
+                      - digitRoot
+                      - keywords
+                      - energy
+                    description: Array of angel number summaries for the current page.
+                required:
+                - total
+                - limit
+                - offset
+                - numbers
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /angel-numbers/numbers/{number}:
+    get:
+      operationId: getAngelNumber
+      tags:
+      - Angel Numbers
+      summary: Get Angel Number Meaning
+      description: Get the complete, authoritative meaning and interpretation for a specific angel number. Returns detailed spiritual, love, career, money, and twin flame interpretations, plus a biblical perspective and a shadow reading, along with keywords, affirmation, and actionable steps. Covers 75+ angel numbers including 111, 222, 333, 444, 555, 666, 777, 888, 999, 1111, 1212, 1234, and more. Authoritative interpretations covering all major angel number patterns.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          example: '444'
+          description: Angel number sequence to look up (e.g., "111", "444", "1212", "1234"). Must match an entry in the database.
+        required: true
+        description: Angel number sequence to look up (e.g., "111", "444", "1212", "1234"). Must match an entry in the database.
+        name: number
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Complete angel number meaning with all interpretations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  number:
+                    type: string
+                    example: '111'
+                    description: Angel number sequence as a string. Common patterns include triple repeating (111-999), quad repeating (1111-9999), master numbers (11, 22, 33), mirror patterns (1212), and sequential numbers (1234).
+                  title:
+                    type: string
+                    example: New Beginnings, Manifestation, and Alignment With Your Highest Purpose
+                    description: Short descriptive title capturing the core theme and spiritual significance of this angel number.
+                  coreMessage:
+                    type: string
+                    example: Your focus is shaping what comes next. Give your attention to what you want rather than what you fear, because a new chapter is beginning.
+                    description: One to two sentence summary of the divine message. Ideal for push notifications, daily guidance widgets, and quick reference lookups.
+                  type:
+                    type: string
+                    example: repeating
+                    description: Pattern classification of the angel number. "repeating" means all digits are the same (111, 4444). "sequential" means consecutive digits (1234). "mirror" means palindrome or alternating pattern (1212, 1221). "master" means numerology master number (11, 22, 33). "root" means single digit (0-9). "compound" means a mixed sequence with no pure pattern (911, 1122).
+                  digitRoot:
+                    type: number
+                    example: 3
+                    description: Numerology digit root calculated by summing all digits and reducing to a single digit. Links each angel number to foundational numerology meaning. Master numbers 11, 22, 33 are preserved without further reduction.
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - new beginnings
+                    - manifestation
+                    - initiative
+                    - alignment
+                    - fresh start
+                    - leadership
+                    description: Five to eight keywords capturing the spiritual themes and energy of this angel number. Useful for search, filtering, and content generation.
+                  energy:
+                    type: string
+                    example: positive
+                    description: Overall energy classification. "positive" indicates encouraging, uplifting energy. "neutral" indicates transitional energy (neither purely positive nor cautionary). "cautionary" indicates a gentle warning to rebalance or pay attention.
+                  meaning:
+                    type: object
+                    properties:
+                      spiritual:
+                        type: string
+                        example: Angel number 111 is one of the strongest manifestation signals in the angelic system. When it appears, the energy around you is ripe for new beginnings, and what you hold in your attention tends to take form more readily than usual.
+                        description: Two to three paragraph spiritual interpretation covering divine guidance, higher purpose, and the metaphysical significance of this angel number sequence.
+                      love:
+                        type: string
+                        example: In love, 111 marks fresh starts and new possibility. For those who are single, it suggests that a meaningful connection may be forming, but it asks you first to align your own thoughts with the kind of love you want to receive.
+                        description: Love and relationship interpretation covering singles, couples, and those healing from past relationships. Includes romantic guidance and partnership advice.
+                      career:
+                        type: string
+                        example: Professionally, 111 points to new opportunities taking shape. This is a favorable moment to start the venture, apply for the role, or launch the project you have been weighing, because your initiative carries extra momentum now.
+                        description: 'Career and vocation guidance: professional opportunities, calling, and practical work advice aligned with this angel number energy. Money and finances are returned separately in the money field.'
+                      money:
+                        type: string
+                        example: In money matters, 111 favors fresh starts. It is a supportive moment to open a new income stream, reset a budget, or change a financial habit, because the patterns you set now tend to take hold.
+                        description: Money, finances, and material abundance guidance, kept distinct from career and vocation. Covers income, spending, debt, and prosperity mindset for this angel number.
+                      twinFlame:
+                        type: string
+                        example: For twin flames, 111 is a significant marker of either an approaching meeting or a clear step forward on the journey. If you have not yet met, 111 suggests that a meeting is drawing nearer.
+                        description: Twin flame connection interpretation covering union, separation, and spiritual growth within the twin flame journey.
+                    required:
+                    - spiritual
+                    - love
+                    - career
+                    - money
+                    - twinFlame
+                  biblical:
+                    type: string
+                    example: In the Bible the number 1 speaks of unity and primacy, the truth that God is one (Deuteronomy 6:4), and of beginnings. Angel numbers as personal codes are not a biblical concept, and Scripture does not single out 111.
+                    description: Biblical and religious perspective on the sequence, framed honestly. States plainly when a number is not a scriptural concept rather than inventing scripture.
+                  shadow:
+                    type: string
+                    example: The shadow side of 111 is mistaking thought for action. The same focus that manifests can curdle into magical thinking, the belief that wanting something hard enough replaces the work of building it.
+                    description: 'Shadow or cautionary reading: the misuse, over-reliance, or imbalance this sequence can signal. Complements the energy classification.'
+                  affirmation:
+                    type: string
+                    example: My focus shapes my reality, so I give my attention to what I want to create.
+                    description: Positive affirmation aligned with this angel number. Can be used for daily affirmation features, meditation guidance, or spiritual journal prompts.
+                  actionSteps:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Notice where your thoughts have been pointing, since they are taking form
+                    - Set one clear, positive intention for what you want to begin
+                    - Take a concrete first step on something new you have been postponing
+                    - Watch for fresh opportunities and act on the ones that align
+                    description: Three to five specific, actionable steps to take when you see this angel number. Practical spiritual guidance for daily life.
+                required:
+                - number
+                - title
+                - coreMessage
+                - type
+                - digitRoot
+                - keywords
+                - energy
+                - meaning
+                - biblical
+                - shadow
+                - affirmation
+                - actionSteps
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Angel number not found in database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /angel-numbers/lookup:
+    get:
+      operationId: analyzeNumberSequence
+      tags:
+      - Angel Numbers
+      summary: Analyze Any Number Sequence
+      description: Smart angel number analysis that works for ANY number sequence, not just known angel numbers. Automatically classifies the pattern type (repeating, sequential, mirror, master, root, compound), calculates the numerology digit root, checks the database for a known meaning, and provides the foundational digit root interpretation (with full spiritual, love, career, money, and twin flame guidance) as a fallback. An optional context parameter adds a note tailored to where the number was seen. Perfect for synchronicity tracking apps where users enter arbitrary number sequences they encounter.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: string
+          pattern: ^\d{1,8}$
+          example: '1234'
+          description: 'Number sequence to analyze (1-8 digits). Can be any number the user has encountered: clock times (1111), addresses (717), receipts (888), license plates (4444), or any repeating pattern.'
+        required: true
+        description: 'Number sequence to analyze (1-8 digits). Can be any number the user has encountered: clock times (1111), addresses (717), receipts (888), license plates (4444), or any repeating pattern.'
+        name: number
+        in: query
+      - schema:
+          type: string
+          enum:
+          - clock
+          - receipt
+          - license-plate
+          - phone
+          - address
+          - price
+          example: clock
+          description: 'Where the number was seen. When supplied, the response adds a contextNote tailoring the reading to the sighting: clock (a glanced time), receipt (a purchase), license-plate (in transit), phone (a call or notification), address (a home or place), price (a total or amount).'
+        required: false
+        description: 'Where the number was seen. When supplied, the response adds a contextNote tailoring the reading to the sighting: clock (a glanced time), receipt (a purchase), license-plate (in transit), phone (a call or notification), address (a home or place), price (a total or amount).'
+        name: context
+        in: query
+      responses:
+        '200':
+          description: Complete analysis of the number sequence with pattern classification and meaning
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  number:
+                    type: string
+                    example: '1234'
+                    description: The number sequence that was analyzed.
+                  type:
+                    type: string
+                    example: sequential
+                    description: Pattern classification detected for this number. "repeating" means all same digits. "sequential" means consecutive ascending or descending. "mirror" means palindrome or alternating pattern. "master" means numerology master number. "root" means single digit. "compound" means a multi-digit sequence with no pure pattern (e.g. 911, 1122).
+                  digitRoot:
+                    type: number
+                    example: 1
+                    description: Numerology digit root from summing and reducing all digits. Links to foundational single-digit meaning. Master numbers 11, 22, 33 are preserved.
+                  digits:
+                    type: number
+                    example: 4
+                    description: Total number of digits in the sequence.
+                  uniqueDigits:
+                    type: number
+                    example: 4
+                    description: Count of unique digits. A repeating number like 111 has 1 unique digit; 1234 has 4.
+                  isPalindrome:
+                    type: boolean
+                    example: false
+                    description: Whether the number reads the same forwards and backwards (e.g., 1221, 1001).
+                  isRepeating:
+                    type: boolean
+                    example: false
+                    description: Whether all digits are identical (e.g., 111, 4444, 777).
+                  knownMeaning:
+                    type:
+                    - object
+                    - 'null'
+                    properties:
+                      title:
+                        type: string
+                        example: Sequential Progress and Life Simplification
+                        description: Title of the matched angel number meaning.
+                      coreMessage:
+                        type: string
+                        example: One step at a time. Simplify your life. Progress is happening in perfect order.
+                        description: Core message summary.
+                      energy:
+                        type: string
+                        example: positive
+                        description: Energy classification (positive, neutral, cautionary).
+                      keywords:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - progress
+                        - simplification
+                        - step by step
+                        - natural order
+                        - patience
+                        description: Keywords for this angel number.
+                      meaning:
+                        type: object
+                        properties:
+                          spiritual:
+                            type: string
+                            example: Angel number 1234 is a sequential number that carries a message of simplification and steady progress. Just as the numbers naturally progress from 1 to 4, your life is unfolding in a logical, step-by-step manner.
+                            description: Spiritual interpretation covering divine guidance, higher purpose, and metaphysical significance.
+                          love:
+                            type: string
+                            example: In love, 1234 encourages you to let relationships develop naturally and organically. Do not rush commitment or force milestones. Each stage of the relationship has its purpose.
+                            description: Love and relationship interpretation for singles, couples, and those healing from past relationships.
+                          career:
+                            type: string
+                            example: Professionally, 1234 encourages a methodical, step-by-step approach to career advancement. Break large goals into smaller, manageable steps and complete them one at a time.
+                            description: Career and vocation guidance. Money and finances are returned separately in the money field.
+                          money:
+                            type: string
+                            example: 'In money matters, 1234 is the most orderly of sequences: build your finances one step at a time. It favors simplifying, putting things in order, and progressing methodically, a budget, then debts, then savings, then growth, rather than reaching for everything at once.'
+                            description: Money, finances, and material abundance guidance, distinct from career.
+                          twinFlame:
+                            type: string
+                            example: For twin flames, 1234 indicates that your journey is progressing in natural, divine order. Each phase of separation, growth, and reunion has its purpose. Do not try to skip ahead or force the timeline.
+                            description: Twin flame connection interpretation covering union, separation, and spiritual growth.
+                        required:
+                        - spiritual
+                        - love
+                        - career
+                        - money
+                        - twinFlame
+                        description: Detailed interpretations across life areas.
+                      biblical:
+                        type: string
+                        example: The ascending run 1234 has no standing as a number in biblical numerology, though its individual digits carry meaning, one as unity and beginnings, two as witness, three as divine completeness, four as creation and earthly order.
+                        description: Biblical and religious perspective, framed honestly.
+                      shadow:
+                        type: string
+                        example: The shadow side of 1234 is the urge to skip steps. The momentum of forward progress can tempt you to rush ahead, leave foundations half-built, or chase the finish before the groundwork is sound.
+                        description: Shadow or cautionary reading for this number.
+                      affirmation:
+                        type: string
+                        example: I simplify my path and trust the natural progression of my journey.
+                        description: Positive affirmation for this number.
+                      actionSteps:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - Break large goals into small, sequential steps
+                        - Simplify areas of your life that have become overly complicated
+                        - Trust the natural order and timing of your progress
+                        description: Actionable steps when you see this number.
+                    required:
+                    - title
+                    - coreMessage
+                    - energy
+                    - keywords
+                    - meaning
+                    - biblical
+                    - shadow
+                    - affirmation
+                    - actionSteps
+                    description: Full angel number meaning if this number exists in the curated database (75+ known sequences). Null if the number is not in the database, in which case use the analysis fields (type, digitRoot) and the digitRootMeaning fallback for interpretation.
+                  digitRootMeaning:
+                    type:
+                    - object
+                    - 'null'
+                    properties:
+                      number:
+                        type: string
+                        example: '1'
+                        description: Root digit number (0-9) or master number (11, 22, 33).
+                      title:
+                        type: string
+                        example: New Beginnings, Leadership, and Independence
+                        description: Title of the root digit meaning in numerology.
+                      coreMessage:
+                        type: string
+                        example: You are a powerful creator. Step into leadership and trust your ability to initiate.
+                        description: Core message of the foundational root digit.
+                      meaning:
+                        type: object
+                        properties:
+                          spiritual:
+                            type: string
+                            example: The number 1 carries the energy of creation, independence, and new beginnings. It represents the primal force that initiates all action.
+                            description: Spiritual interpretation of the root digit, covering divine guidance, higher purpose, and metaphysical significance.
+                          love:
+                            type: string
+                            example: In love, 1 emphasizes independence and new beginnings. For singles, it signals readiness for a new romantic chapter.
+                            description: Love and relationship interpretation of the root digit, for singles, couples, and those healing from past relationships.
+                          career:
+                            type: string
+                            example: Professionally, 1 is the number of pioneers and leaders. It encourages you to take initiative, start new projects, and trust your innovative ideas.
+                            description: Career and vocation guidance for the root digit. Money and finances are returned separately in the money field.
+                          money:
+                            type: string
+                            example: 'In money matters, 1 favors initiative and independence: starting an income stream, backing your own idea, or taking the lead on a financial decision rather than waiting on others.'
+                            description: Money, finances, and material abundance guidance for the root digit, kept distinct from career.
+                          twinFlame:
+                            type: string
+                            example: For twin flames, 1 represents the individual journey each soul must take. Before union can occur, both flames must become whole and independent within themselves.
+                            description: Twin flame interpretation of the root digit, covering union, separation, and spiritual growth.
+                        required:
+                        - spiritual
+                        - love
+                        - career
+                        - money
+                        - twinFlame
+                        description: Full life-area interpretation of the underlying root digit. For an unknown sequence this is the substantive reading to display, so a synchronicity app never dead-ends on an arbitrary number.
+                      keywords:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - new beginnings
+                        - leadership
+                        - independence
+                        - creation
+                        - initiative
+                        description: Keywords for the root digit.
+                      affirmation:
+                        type: string
+                        example: I am a powerful creator, and I trust my ability to begin anew.
+                        description: Affirmation for the root digit.
+                    required:
+                    - number
+                    - title
+                    - coreMessage
+                    - meaning
+                    - keywords
+                    - affirmation
+                    description: The foundational meaning of this number based on its digit root. Every number reduces to a root digit (0-9) or master number (11, 22, 33), which provides the base interpretation even for unknown sequences.
+                  contextNote:
+                    type: string
+                    example: Catching 1234 on a clock is the most common way this sequence reaches you. Treat the moment you glanced up as a timestamp on whatever you were just thinking or feeling, and read the meaning below against that exact thought.
+                    description: Present only when the context query parameter is supplied. A short reading layered on top of the meaning that accounts for WHERE the number was seen (clock, receipt, license plate, phone, address, price), since the place of a sighting shifts its emphasis.
+                required:
+                - number
+                - type
+                - digitRoot
+                - digits
+                - uniqueDigits
+                - isPalindrome
+                - isRepeating
+                - knownMeaning
+                - digitRootMeaning
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /angel-numbers/daily:
+    post:
+      operationId: getDailyAngelNumber
+      tags:
+      - Angel Numbers
+      summary: Daily Angel Number
+      description: Get the angel number of the day with full meaning and interpretation. Returns a deterministic angel number based on the current date (or a provided seed date), ensuring all users see the same number for any given day. Includes complete spiritual, love, career, money, and twin flame interpretations plus a biblical perspective and a shadow reading. Perfect for daily guidance features, push notifications, content generation, and angel number widget integrations.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  example: user123
+                  description: Optional seed for reproducible readings. Same seed + same date = same angel number every time. Pass any unique identifier (userId, email hash, session token). Omit for anonymous daily readings.
+                date:
+                  type: string
+                  format: date
+                  example: '2026-03-06'
+                  description: Date for the reading in YYYY-MM-DD format. Defaults to today (UTC). Useful for viewing past daily readings or pre-generating future ones.
+      responses:
+        '200':
+          description: Daily angel number with complete interpretation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    example: '2026-03-05'
+                    description: The date used for angel number selection (UTC).
+                  seed:
+                    type: string
+                    example: user123-2026-03-05
+                    description: Computed seed used for this reading. Same seed always produces the same angel number.
+                  number:
+                    type: string
+                    example: '444'
+                    description: Angel number sequence selected for today. Three or more digit repeating, sequential, or mirror pattern (e.g., 111, 444, 1212).
+                  title:
+                    type: string
+                    example: Angelic Protection, Solid Foundations, and the Signal to Keep Going
+                    description: Short descriptive title capturing the core theme and spiritual significance of the daily angel number.
+                  coreMessage:
+                    type: string
+                    example: You are protected and supported. Keep building on the foundations you have laid, because steady effort is moving you toward solid ground.
+                    description: One to two sentence summary of the divine message for today. Ideal for push notifications, daily guidance widgets, and quick reference.
+                  type:
+                    type: string
+                    example: repeating
+                    description: Pattern classification of the daily angel number. "repeating" means all digits are the same (111, 4444). "sequential" means consecutive digits (1234). "mirror" means palindrome or alternating pattern (1212, 1221).
+                  digitRoot:
+                    type: number
+                    example: 3
+                    description: Numerology digit root calculated by summing all digits and reducing to a single digit. Links the daily angel number to its foundational numerology meaning.
+                  energy:
+                    type: string
+                    example: positive
+                    description: Overall energy classification. "positive" indicates encouraging, uplifting energy. "neutral" indicates transitional energy. "cautionary" indicates a gentle warning to rebalance or pay attention.
+                  meaning:
+                    type: object
+                    properties:
+                      spiritual:
+                        type: string
+                        example: Among the angel numbers, 444 is the one most closely associated with the presence of angels themselves. It is a sign of being supported and watched over, particularly during a stretch that has tested your sense of security.
+                        description: Two to three paragraph spiritual interpretation covering divine guidance, higher purpose, and the metaphysical significance of the angel number selected for this date.
+                      love:
+                        type: string
+                        example: In love, 444 points to foundations rather than fireworks. It favors trust, honesty, loyalty, and consistency, the quiet structural elements that let a relationship last.
+                        description: Love and relationship interpretation covering singles, couples, and those healing from past relationships. Includes romantic guidance and partnership advice.
+                      career:
+                        type: string
+                        example: Professionally, 444 reads as permission to move forward from a base you have already built. Progress here comes from consistency and attention to detail rather than dramatic leaps.
+                        description: 'Career and vocation guidance: professional opportunities, calling, and practical work advice. Money and finances are returned separately in the money field.'
+                      money:
+                        type: string
+                        example: In money matters, 444 speaks to stability that is built rather than wished for. It signals that financial security is within reach, but reached through patience, discipline, and sound decisions rather than a sudden windfall.
+                        description: Money, finances, and material abundance guidance, kept distinct from career and vocation.
+                      twinFlame:
+                        type: string
+                        example: For twin flames, 444 indicates support around the connection, even through a phase of separation. It suggests that both people are being guided toward the stability a lasting union requires, which makes the real work individual.
+                        description: Twin flame connection interpretation covering union, separation, and spiritual growth within the twin flame journey.
+                    required:
+                    - spiritual
+                    - love
+                    - career
+                    - money
+                    - twinFlame
+                    description: Detailed interpretations across life areas for the daily angel number.
+                  biblical:
+                    type: string
+                    example: 'In the Bible the number 4 is tied to creation and earthly order: the fourth day, when the sun, moon, and stars were set in place, and figures such as the four corners of the earth and the four winds. Angel numbers as personal codes are not a biblical concept, and Scripture does not single out 444.'
+                    description: Biblical and religious perspective on the daily sequence, framed honestly.
+                  shadow:
+                    type: string
+                    example: The shadow side of 444 is structure turned rigid. The same drive that builds stability can harden into stubbornness, resistance to change, or a refusal to let chance and spontaneity in.
+                    description: Shadow or cautionary reading for the daily sequence. Complements the energy classification.
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - protection
+                    - foundation
+                    - stability
+                    - discipline
+                    - reassurance
+                    - angelic support
+                    - perseverance
+                    description: Five to eight keywords capturing the spiritual themes and energy of the daily angel number. Useful for search, filtering, and content generation.
+                  affirmation:
+                    type: string
+                    example: I am supported and protected, and the foundations I am building will hold.
+                    description: Positive affirmation aligned with the daily angel number. Use for daily affirmation features, meditation guidance, or spiritual journal prompts.
+                  actionSteps:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Trust that you are supported, and keep building rather than restarting
+                    - Strengthen one practical foundation this week, whether finances, health, or home
+                    - Address an unstable situation directly instead of working around it
+                    description: Three to five specific, actionable steps to take today based on the angel number guidance. Practical spiritual advice for daily life.
+                required:
+                - date
+                - seed
+                - number
+                - title
+                - coreMessage
+                - type
+                - digitRoot
+                - energy
+                - meaning
+                - biblical
+                - shadow
+                - keywords
+                - affirmation
+                - actionSteps
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

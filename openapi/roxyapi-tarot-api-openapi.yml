@@ -1,0 +1,2645 @@
+openapi: 3.2.0
+info:
+  title: Roxy Tarot API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Tarot
+  description: Tarot reading API with the complete 78-card Rider-Waite-Smith deck and card meanings for love, career, health, and spiritual growth.
+paths:
+  /tarot/cards:
+    get:
+      operationId: listCards
+      tags:
+      - Tarot
+      summary: List all 78 tarot cards
+      description: 'Retrieve the complete Rider-Waite-Smith tarot deck of 78 cards: 22 Major Arcana (numbered 0-21, representing life lessons, spiritual themes, and karmic influences like The Fool, Death, The Tower) plus 56 Minor Arcana (4 suits × 14 cards each for daily situations and practical matters). Filter by arcana type (major for spiritual guidance, minor for everyday concerns), suit (cups for emotions and relationships, wands for creativity and passion, swords for intellect and conflict, pentacles for material wealth and finances), or card number (Ace=1 for new beginnings, 2-10 for progression, Page=11 for messages, Knight=12 for action, Queen=13 for mastery, King=14 for authority). Returns lightweight basic card data - use GET /cards/{id} for full upright and reversed interpretations with keywords. Perfect for building tarot reference libraries, card databases, learning applications, or browsing the complete traditional deck used by professional tarot readers worldwide.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-100, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-100, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      - schema:
+          type: string
+          enum:
+          - major
+          - minor
+          example: major
+          description: Filter by arcana type. Major arcana (0-21) represents life lessons and spiritual themes. Minor arcana (Ace-King in 4 suits) represents daily situations and practical matters.
+        required: false
+        description: Filter by arcana type. Major arcana (0-21) represents life lessons and spiritual themes. Minor arcana (Ace-King in 4 suits) represents daily situations and practical matters.
+        name: arcana
+        in: query
+      - schema:
+          type: string
+          enum:
+          - cups
+          - wands
+          - swords
+          - pentacles
+          example: cups
+          description: Filter minor arcana by suit. Cups=emotions/relationships, Wands=creativity/passion, Swords=intellect/conflict, Pentacles=material/finances. Only applies to minor arcana cards.
+        required: false
+        description: Filter minor arcana by suit. Cups=emotions/relationships, Wands=creativity/passion, Swords=intellect/conflict, Pentacles=material/finances. Only applies to minor arcana cards.
+        name: suit
+        in: query
+      - schema:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+          maximum: 21
+          example: 1
+          description: 'Filter by card number. Major Arcana: 0 (The Fool) through 21 (The World). Minor Arcana: 1 (Ace) through 14 (King). Combine with arcana or suit filters for precise results.'
+        required: false
+        description: 'Filter by card number. Major Arcana: 0 (The Fool) through 21 (The World). Minor Arcana: 1 (Ace) through 14 (King). Combine with arcana or suit filters for precise results.'
+        name: number
+        in: query
+      responses:
+        '200':
+          description: List of tarot cards with basic information. Use GET /cards/{id} for full details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 78
+                    description: Total number of tarot cards matching the applied filters. 78 for the full deck, 22 for Major Arcana, 56 for Minor Arcana, 14 per suit.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum items returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of items skipped from the start of the result set.
+                  cards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BasicCard'
+                    description: Array of tarot cards with basic metadata. Use GET /cards/{id} for full upright and reversed interpretations.
+                required:
+                - total
+                - limit
+                - offset
+                - cards
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/cards/{id}:
+    get:
+      operationId: getCard
+      tags:
+      - Tarot
+      summary: Get detailed tarot card information
+      description: 'Retrieve comprehensive details for a specific tarot card from the traditional Rider-Waite-Smith deck including complete upright meanings (card drawn normally) and reversed meanings (inverted/upside down interpretations for nuanced guidance). Each card provides keywords for quick reference, full interpretations (400+ words each for upright and reversed orientations), and guidance across life domains: love and relationships, career and professional growth, finances and material success, health and wellbeing, spirituality and personal development. Major Arcana cards (0-21) reveal deep spiritual lessons and life-changing themes. Minor Arcana cards (Ace through King in Cups, Wands, Swords, Pentacles) address practical daily situations and specific challenges. Use card ID in kebab-case format: Major Arcana like "fool", "magician", "death", "tower", or Minor Arcana like "ace-of-cups", "seven-of-wands", "queen-of-swords", "king-of-pentacles". Major Arcana IDs carry no leading article, though one is accepted, so "the-star" and "star" both return The Star. Essential for detailed tarot study, reading interpretations, divination apps, fortune-telling platforms, spiritual guidance tools, and professional tarot learning applications.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          example: fool
+          description: 'Card identifier. Major arcana: "fool", "magician", "death". Minor arcana: "ace-of-cups", "seven-of-wands", "queen-of-swords", "king-of-pentacles". Casing and separators are flexible, so "Fool" and "ACE_OF_CUPS" both resolve, and a leading definite article is optional, so "the-star" resolves to "star". The canonical form, and the one every response echoes, is kebab-case with no article.'
+        required: true
+        description: 'Card identifier. Major arcana: "fool", "magician", "death". Minor arcana: "ace-of-cups", "seven-of-wands", "queen-of-swords", "king-of-pentacles". Casing and separators are flexible, so "Fool" and "ACE_OF_CUPS" both resolve, and a leading definite article is optional, so "the-star" resolves to "star". The canonical form, and the one every response echoes, is kebab-case with no article.'
+        name: id
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Card details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/draw:
+    post:
+      operationId: drawCards
+      tags:
+      - Tarot
+      summary: Draw random tarot cards with reproducible results
+      description: Draw 1-78 tarot cards from the complete Rider-Waite-Smith deck with seeded reproducibility for consistent personalized readings. Provide an optional seed string (like "user123-2025-12-27" or "readingId") to ensure the same seed always returns identical cards in the exact same order - essential for daily tarot features, personalized user experiences, shareable readings, or reproducible testing. Omit seed for true random draws each time. Control card reversals (upright vs reversed/inverted orientations - reversed cards provide alternative meanings when drawn upside down) and duplicates (traditional deck draws each of 78 cards once, or oracle-style allows repeating same card). Each drawn card includes position number, reversal state (boolean), keywords for quick interpretation, full meaning text (400+ words), authentic Rider-Waite imagery, and card metadata. Perfect for custom spread builders, random card generators, automated tarot reading platforms, daily card features, meditation apps, journaling prompts, divination tools, and any application requiring reproducible or random tarot draws from the industry-standard 78-card deck (22 Major Arcana spiritual lessons + 56 Minor Arcana practical guidance across 4 suits).
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: number
+                  minimum: 1
+                  maximum: 78
+                  example: 3
+                  description: 'Number of cards to draw (1-78). Common values: 1 for daily card, 3 for past-present-future, 5 for relationship spread, 10 for Celtic Cross. Drawing 78 returns the entire shuffled deck.'
+                seed:
+                  type: string
+                  example: user123-2025-12-27
+                  description: Optional seed for reproducible results. Same seed = same cards in same order. Use format like "userId-date" for daily consistency, or "readingId" for shareable readings. Omit for true randomness.
+                allowReversals:
+                  type: boolean
+                  default: true
+                  example: true
+                  description: 'Whether cards can appear reversed (upside down). Reversed cards have different meanings. Set false for upright-only readings. Default: true (50% chance of reversal per card).'
+                allowDuplicates:
+                  type: boolean
+                  default: false
+                  example: false
+                  description: 'Whether same card can be drawn multiple times. Set false for traditional deck behavior (each card drawn only once). Set true for statistical analysis or oracle-style readings. Default: false.'
+              required:
+              - count
+      responses:
+        '200':
+          description: Drawn cards
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seed:
+                    type: string
+                    example: user123-2025-12-27
+                    description: Seed used for this reading, if one was provided. Same seed reproduces identical draw results for consistent tarot readings.
+                  cards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DrawnCard'
+                    description: Array of drawn tarot cards in draw order, each with orientation, keywords, and full meaning for divination.
+                required:
+                - cards
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/daily:
+    post:
+      operationId: getDailyCard
+      tags:
+      - Tarot
+      summary: Get daily tarot card reading
+      description: Receive a single tarot card for daily guidance and reflection. This endpoint uses seeded randomness to ensure the same seed gets the same card on the same day - perfect for "Card of the Day" features. Provide a seed (userId, email hash, session token) for reproducible consistency, or omit for anonymous daily draws. Returns card with keywords, full meaning, and a daily message summary. Great for tarot apps, wellness platforms, morning ritual apps, and journaling tools.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  example: user123
+                  description: Optional seed for reproducible readings. Same seed + same date = same card every time. Pass any unique identifier (userId, email hash, session token). Omit for anonymous daily readings.
+                date:
+                  type: string
+                  format: date
+                  example: '2026-03-06'
+                  description: Date for the reading in YYYY-MM-DD format. Defaults to today (UTC). Useful for viewing past daily readings or pre-generating future ones.
+      responses:
+        '200':
+          description: Daily card reading
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    example: '2026-03-06'
+                    description: Date of the daily tarot reading in YYYY-MM-DD format (UTC). Determines which card is drawn for seeded readings.
+                  seed:
+                    type: string
+                    example: user123-2026-03-06
+                    description: Seed used for this daily reading. Same seed on the same date always produces the identical card for reproducible daily divination.
+                  card:
+                    $ref: '#/components/schemas/DrawnCard'
+                  dailyMessage:
+                    type: string
+                    example: 'Your card for 2026-03-06: Knight of Pentacles (reversed). stagnation, stubbornness, boredom, overcaution. Reversed, the Knight of Pentacles shows his steady virtues tipping into excess, and the surrounding cards reveal which way. Waite gave the reversal as inertia, idleness, stagnation, and discouragement...'
+                    description: Concise daily tarot message summarizing the card, its orientation, key themes, and brief guidance for the day.
+                required:
+                - date
+                - seed
+                - card
+                - dailyMessage
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Failed to draw card
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+  /tarot/yes-no:
+    post:
+      operationId: castYesNo
+      tags:
+      - Tarot
+      summary: Get yes/no answer to your question
+      description: Ask a specific question and receive a yes, no, or maybe answer based on a single tarot card draw. Upright cards indicate "Yes" with positive energy, reversed cards indicate "No" with caution, and certain inherently ambiguous cards (The Hanged Man, Wheel of Fortune, Temperance, Two of Swords, Four of Swords) return "Maybe" regardless of orientation since their energy signals pause, reflection, or shifting circumstances. Major Arcana cards give strong definitive answers, Minor Arcana cards give qualified nuanced answers. Returns the answer, strength level, drawn card details, and a contextual interpretation explaining why. Perfect for decision-making apps, quick guidance tools, fortune-telling chatbots, and interactive tarot experiences. Optionally provide a seed for reproducible answers.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: Should I accept the job offer?
+                  description: 'Your specific yes/no question. Be clear and focused. Good: "Should I move to a new city?" Bad: "What should I do about my life?" The more specific the question, the more useful the tarot guidance.'
+                seed:
+                  type: string
+                  example: reading-2f9c1a
+                  description: Optional seed for reproducible results. Same seed + same question = same answer. Useful for testing, sharing readings, or ensuring consistency. Omit for random draws each time.
+      responses:
+        '200':
+          description: Yes/No answer with interpretation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  question:
+                    type: string
+                    example: Should I accept the job offer?
+                    description: The querent question that was asked, if one was provided.
+                  seed:
+                    type: string
+                    example: user123-question1
+                    description: The seed used for this draw, echoed back when one was supplied. Present only if the request carried a seed. Makes a cached or forwarded response self describing, so a reading can be reproduced or shared without the original request beside it.
+                  answer:
+                    type: string
+                    enum:
+                    - 'Yes'
+                    - 'No'
+                    - Maybe
+                    description: Tarot-derived answer. Yes = upright card supports a positive outcome. No = reversed card suggests obstacles. Maybe = inherently ambiguous card drawn (The Hanged Man, Wheel of Fortune, Temperance, Two of Swords, Four of Swords) signaling pause, reflection, or shifting circumstances.
+                  strength:
+                    type: string
+                    enum:
+                    - Strong
+                    - Qualified
+                    description: Confidence level of the answer. Strong = Major Arcana card drawn (powerful, definitive cosmic energy). Qualified = Minor Arcana card drawn (nuanced, situational guidance).
+                  card:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: world
+                        description: Unique card identifier in kebab-case (e.g. the-fool, ace-of-cups).
+                      name:
+                        type: string
+                        example: The World
+                        description: Display name of the tarot card.
+                      arcana:
+                        type: string
+                        enum:
+                        - major
+                        - minor
+                        description: Whether this card belongs to the Major Arcana (22 trump cards, major life themes) or Minor Arcana (56 suit cards, daily situations).
+                      reversed:
+                        type: boolean
+                        example: false
+                        description: True if the card was drawn reversed (upside down). Reversed cards carry modified or blocked energy compared to upright position.
+                      keywords:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - completion
+                        - fulfilment
+                        - integration
+                        - accomplishment
+                        - travel
+                        description: Key themes and concepts associated with this card in its current orientation (upright or reversed).
+                      imageUrl:
+                        type: string
+                        example: https://roxyapi.com/img/tarot/major/world.jpg
+                        description: URL to the tarot card artwork image.
+                    required:
+                    - id
+                    - name
+                    - arcana
+                    - reversed
+                    - keywords
+                    - imageUrl
+                  interpretation:
+                    type: string
+                    example: 'Strong Yes: The World suggests forward momentum. The World is the final card of the Major Arcana, the close of the journey that began with The Fool. In the Rider-Waite-Smith image, a dancing figure m...'
+                    description: Contextual narrative explaining why this card answers the question with this result. Connects card meaning, orientation, and arcana strength into actionable guidance.
+                required:
+                - answer
+                - strength
+                - card
+                - interpretation
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Failed to draw card
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+  /tarot/spreads/three-card:
+    post:
+      operationId: castThreeCard
+      tags:
+      - Tarot
+      summary: 'Three-Card Spread: Past, Present, Future'
+      description: Perform the classic three-card tarot spread revealing Past (what led to this situation), Present (current energy and circumstances), and Future (likely outcome if current path continues). The most popular beginner-friendly spread, perfect for quick insights, daily guidance, or exploring specific questions. Each position includes a drawn card with reversal state, keywords, full meaning, and position-specific interpretation. Returns a summary connecting all three cards. Ideal for tarot reading apps, decision-making tools, and personal growth platforms. Optionally provide a seed for reproducible readings.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: What do I need to know about my career?
+                  description: 'Optional specific question to focus the reading. Examples: "What should I know about my relationship?", "How can I improve my finances?", "What is blocking my creative growth?" Leave empty for general guidance.'
+                seed:
+                  type: string
+                  example: reading-2f9c1a
+                  description: Optional seed for reproducible results. Same seed = same 3 cards in same positions. Useful for sharing readings, testing, or ensuring users get consistent results. Omit for random draws.
+      responses:
+        '200':
+          description: Three-card spread reading
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  spread:
+                    type: string
+                    example: Three-Card
+                    description: Name of the tarot spread used (e.g. Three-Card, Celtic Cross, Career, Love).
+                  question:
+                    type: string
+                    example: What do I need to know about my career?
+                    description: The querent question, if one was provided.
+                  seed:
+                    type: string
+                    example: reading-2f9c1a
+                    description: Seed used for this reading, if one was provided. Same seed reproduces identical results.
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: number
+                          example: 1
+                          description: Position number in the spread layout (1-based).
+                        name:
+                          type: string
+                          example: Past
+                          description: Position name describing what this card reveals (e.g. Past, Present, Future, Challenge).
+                        interpretation:
+                          type: string
+                          example: What has led to this situation and the foundational influences at play. Shows the events, decisions, and energies that have brought you to where you are now. Understanding the past provides context for the present.
+                          description: Position-specific interpretation of the drawn card, explaining how this card meaning applies to this particular spread position.
+                        card:
+                          $ref: '#/components/schemas/DrawnCard'
+                      required:
+                      - position
+                      - name
+                      - interpretation
+                      - card
+                    description: Array of spread positions, each containing a drawn card with position-specific tarot interpretation.
+                  summary:
+                    type: string
+                    example: Your past (Eight of Wands) has shaped your present situation (Four of Swords reversed). The future (The Lovers reversed) suggests challenges to overcome if you continue on this path.
+                    description: Narrative summary that connects the cards drawn across the spread positions into one cohesive reading.
+                required:
+                - spread
+                - positions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/spreads/celtic-cross:
+    post:
+      operationId: castCelticCross
+      tags:
+      - Tarot
+      summary: Celtic Cross Spread (10 cards)
+      description: 'Perform the legendary Celtic Cross spread - the most comprehensive and detailed tarot reading available, used by professional tarot readers worldwide for over a century. This 10-card layout reveals the complete picture of any situation through distinct positions: Present Situation (what is happening now), Challenge (obstacles crossing your path), Distant Past (root causes), Recent Past (recent influences), Best Outcome (potential positive result), Near Future (what is approaching in weeks ahead), Your Approach (your attitude and self-perception), External Influences (environment and other people impact), Hopes and Fears (your desires and anxieties), and Final Outcome (where everything is headed). Perfect for life-changing decisions, complex relationship questions, career transitions, spiritual guidance, and deep self-discovery. Ideal for professional tarot apps, life coaching platforms, spiritual wellness websites, and divination tools requiring authoritative comprehensive readings. Each card position provides layered insight combining traditional tarot wisdom with modern psychological interpretation for actionable guidance.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: What should I know about this situation?
+                  description: Optional querent question to focus the Celtic Cross. It is echoed back on the reading and gives the ten positions their context. Omit for a general reading of the situation.
+                seed:
+                  type: string
+                  example: reading-2f9c1a
+                  description: Optional seed for reproducible results. The same seed always draws the same ten cards into the same Celtic Cross positions, which is what lets a reading be shared or re-rendered. Omit for a random draw.
+      responses:
+        '200':
+          description: Celtic Cross spread reading
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  spread:
+                    type: string
+                    example: Celtic Cross
+                    description: Name of the tarot spread used (e.g. Three-Card, Celtic Cross, Career, Love).
+                  question:
+                    type: string
+                    example: What should I know about this situation?
+                    description: The querent question, if one was provided.
+                  seed:
+                    type: string
+                    example: reading-2f9c1a
+                    description: Seed used for this reading, if one was provided. Same seed reproduces identical results.
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: number
+                          example: 1
+                          description: Position number in the spread layout (1-based).
+                        name:
+                          type: string
+                          example: Past
+                          description: Position name describing what this card reveals (e.g. Past, Present, Future, Challenge).
+                        interpretation:
+                          type: string
+                          example: What has led to this situation and the foundational influences at play. Shows the events, decisions, and energies that have brought you to where you are now. Understanding the past provides context for the present.
+                          description: Position-specific interpretation of the drawn card, explaining how this card meaning applies to this particular spread position.
+                        card:
+                          $ref: '#/components/schemas/DrawnCard'
+                      required:
+                      - position
+                      - name
+                      - interpretation
+                      - card
+                    description: Array of 10 spread positions forming the complete Celtic Cross layout, each with a drawn card and position-specific interpretation.
+                  summary:
+                    type: string
+                    example: The Celtic Cross provides deep insight into your situation, revealing past influences, present challenges, and future possibilities.
+                    description: Narrative summary that connects the cards drawn across the spread positions into one cohesive reading.
+                required:
+                - spread
+                - positions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/spreads/love:
+    post:
+      operationId: castLoveSpread
+      tags:
+      - Tarot
+      summary: Love Spread (5 cards)
+      description: 'Perform a specialized 5-card relationship tarot spread analyzing romantic connections, emotional dynamics, and partnership potential. This love-focused reading examines five crucial relationship aspects: You (your current emotional state, needs, and what you bring to the relationship), Partner/Other (their emotional perspective, desires, and energy), Relationship Dynamic (the current energy and connection between you both), Challenge (obstacles needing attention, healing, or communication), and Outcome (where this romantic connection is naturally heading). Perfect for dating apps, relationship counseling platforms, matchmaking services, wellness apps, and romantic guidance tools. Provides deep insight into new relationships, existing partnerships, potential connections, breakup recovery, or self-love journeys. Ideal for understanding compatibility, resolving conflicts, strengthening bonds, or deciding whether to pursue or continue a relationship. Each position reveals emotional truths combining traditional tarot relationship wisdom with modern relationship psychology. Use for individual readings or couples readings to gain perspective on romantic situations from singleness to marriage.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: What do I need to know about my relationship?
+                  description: Optional querent question to focus the love spread. It is echoed back on the reading and gives the five relationship positions their context. Omit for general relationship guidance.
+                seed:
+                  type: string
+                  example: reading-2f9c1a
+                  description: Optional seed for reproducible results. The same seed always draws the same five cards into the same love positions, which is what lets a reading be shared or re-rendered. Omit for a random draw.
+      responses:
+        '200':
+          description: Love spread reading
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  spread:
+                    type: string
+                    example: Love Spread
+                    description: Name of the tarot spread used (e.g. Three-Card, Celtic Cross, Career, Love).
+                  question:
+                    type: string
+                    example: What do I need to know about my relationship?
+                    description: The querent question, if one was provided.
+                  seed:
+                    type: string
+                    example: reading-2f9c1a
+                    description: Seed used for this reading, if one was provided. Same seed reproduces identical results.
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: number
+                          example: 1
+                          description: Position number in the spread layout (1-based).
+                        name:
+                          type: string
+                          example: Past
+                          description: Position name describing what this card reveals (e.g. Past, Present, Future, Challenge).
+                        interpretation:
+                          type: string
+                          example: What has led to this situation and the foundational influences at play. Shows the events, decisions, and energies that have brought you to where you are now. Understanding the past provides context for the present.
+                          description: Position-specific interpretation of the drawn card, explaining how this card meaning applies to this particular spread position.
+                        card:
+                          $ref: '#/components/schemas/DrawnCard'
+                      required:
+                      - position
+                      - name
+                      - interpretation
+                      - card
+                    description: Array of 5 love spread positions exploring relationship dynamics, each with a drawn card and position-specific interpretation.
+                  summary:
+                    type: string
+                    example: This spread reveals the emotional landscape of your relationship and offers guidance for deepening connection.
+                    description: Narrative summary that connects the cards drawn across the spread positions into one cohesive reading.
+                required:
+                - spread
+                - positions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/spreads/career:
+    post:
+      operationId: castCareerSpread
+      tags:
+      - Tarot
+      summary: Career Spread (7 cards)
+      description: 'Perform a comprehensive 7-card career tarot spread using SWOT analysis framework (Strengths, Weaknesses, Opportunities, Threats) for professional guidance, business decisions, and vocational clarity. This career-focused reading examines seven strategic business aspects: Current Situation (your present professional position and workplace energy), Strengths (your professional assets, talents, and competitive advantages), Weaknesses (areas needing development, skill gaps, or limiting beliefs), Opportunities (potential growth paths, new ventures, or doors opening), Threats (obstacles, competition, or external challenges), Advice (actionable guidance for navigating your career path), and Outcome (where your professional journey is heading if you follow the guidance). Perfect for career coaching platforms, professional development apps, business consulting tools, job search websites, entrepreneurship platforms, and executive coaching services. Use for career transitions, job offers evaluation, promotion decisions, starting a business, workplace conflicts, finding your calling, or strategic career planning. Combines traditional tarot wisdom with modern SWOT business analysis for practical professional insight. Ideal for employees, entrepreneurs, freelancers, career changers, and anyone seeking vocational direction.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: What do I need to know about my career path?
+                  description: Optional querent question to focus the career spread. It is echoed back on the reading and gives the seven career positions their context. Omit for general work and vocation guidance.
+                seed:
+                  type: string
+                  example: reading-2f9c1a
+                  description: Optional seed for reproducible results. The same seed always draws the same seven cards into the same career positions, which is what lets a reading be shared or re-rendered. Omit for a random draw.
+      responses:
+        '200':
+          description: Career spread reading
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  spread:
+                    type: string
+                    example: Career Spread
+                    description: Name of the tarot spread used (e.g. Three-Card, Celtic Cross, Career, Love).
+                  question:
+                    type: string
+                    example: What do I need to know about my career path?
+                    description: The querent question, if one was provided.
+                  seed:
+                    type: string
+                    example: reading-2f9c1a
+                    description: Seed used for this reading, if one was provided. Same seed reproduces identical results.
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: number
+                          example: 1
+                          description: Position number in the spread layout (1-based).
+                        name:
+                          type: string
+                          example: Past
+                          description: Position name describing what this card reveals (e.g. Past, Present, Future, Challenge).
+                        interpretation:
+                          type: string
+                          example: What has led to this situation and the foundational influences at play. Shows the events, decisions, and energies that have brought you to where you are now. Understanding the past provides context for the present.
+                          description: Position-specific interpretation of the drawn card, explaining how this card meaning applies to this particular spread position.
+                        card:
+                          $ref: '#/components/schemas/DrawnCard'
+                      required:
+                      - position
+                      - name
+                      - interpretation
+                      - card
+                    description: Array of 7 career spread positions using SWOT framework, each with a drawn card and position-specific interpretation.
+                  summary:
+                    type: string
+                    example: This SWOT-based spread provides comprehensive career guidance and identifies growth opportunities.
+                    description: Narrative summary that connects the cards drawn across the spread positions into one cohesive reading.
+                required:
+                - spread
+                - positions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /tarot/spreads/custom:
+    post:
+      operationId: castCustomSpread
+      tags:
+      - Tarot
+      summary: Custom Spread Builder
+      description: Build and perform your own custom tarot spread with personalized positions and interpretations (1-10 cards). This flexible endpoint lets you create unique spread layouts for any purpose - define your own position names, meanings, and card count to match your specific needs or therapeutic framework. Perfect for therapists using tarot in counseling, coaches creating signature spreads, app developers building custom reading features, spiritual practitioners with proprietary methods, or anyone wanting to design specialized layouts beyond traditional spreads. Create spreads for specific themes like chakra readings (7 cards), lunar phases (8 cards), elements (4 cards), goals setting (any count), shadow work, inner child healing, decision matrices, or creative problem-solving. Each position requires a name and interpretation - you define what each card position represents in your reading. The API draws the exact number of cards you specify and maps them to your custom positions. No pre-generated summary provided - you interpret the reading based on your framework. Ideal for innovative tarot apps, therapeutic tools, personal development platforms, spiritual coaching services, or experimental divination methods. Maximum 10 positions to maintain reading clarity and practical interpretation time.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                spreadName:
+                  type: string
+                  example: My Custom Spread
+                  description: Optional name for your custom tarot spread layout. Used as the spread identifier in the response.
+                positions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: Core Issue
+                        description: Name for this position in the spread (e.g. Core Issue, Hidden Factor, Best Action). Defines what aspect of the reading this card represents.
+                      interpretation:
+                        type: string
+                        example: What is really going on
+                        description: Description of what this position reveals in the reading. Guides the tarot interpretation for the card drawn in this slot.
+                    required:
+                    - name
+                    - interpretation
+                  minItems: 1
+                  maxItems: 10
+                  description: Array of 1-10 custom position definitions for your tarot spread. Each position gets one drawn card with a position-specific interpretation.
+                  example:
+                  - name: Core Issue
+                    interpretation: What is really going on
+                  - name: Hidden Factor
+                    interpretation: What you cannot see
+                  - name: Best Action
+                    interpretation: What to do next
+                question:
+                  type: string
+                  example: How do I move forward with this project?
+                  description: Optional querent question to focus the custom tarot reading. Provides context for position-specific interpretations.
+                seed:
+                  type: string
+                  example: reading-2f9c1a
+                  description: Optional seed for reproducible results. Same seed with the same positions produces identical card draws for consistent divination.
+              required:
+              - positions
+      responses:
+        '200':
+          description: Custom spread reading
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  spread:
+                    type: string
+                    example: My Custom Spread
+                    description: Name of the tarot spread used (e.g. Three-Card, Celtic Cross, Career, Love).
+                  question:
+                    type: string
+                    example: How do I move forward with this project?
+                    description: The querent question, if one was provided.
+                  seed:
+                    type: string
+                    example: reading-2f9c1a
+                    description: Seed used for this reading, if one was provided. Same seed reproduces identical results.
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: number
+                          example: 1
+                          description: Position number in the spread layout (1-based).
+                        name:
+                          type: string
+                          example: Past
+                          description: Position name describing what this card reveals (e.g. Past, Present, Future, Challenge).
+                        interpretation:
+                          type: string
+                          example: What has led to this situation and the foundational influences at play. Shows the events, decisions, and energies that have brought you to where you are now. Understanding the past provides context for the present.
+                          description: Position-specific interpretation of the drawn card, explaining how this card meaning applies to this particular spread position.
+                        card:
+                          $ref: '#/components/schemas/DrawnCard'
+                      required:
+                      - position
+                      - name
+                      - interpretation
+                      - card
+                    description: Array of custom spread positions matching your defined layout, each with a drawn card and position-specific interpretation.
+                required:
+                - spread
+                - positions
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  schemas:
+    DrawnCard:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fool
+          description: Unique card identifier in kebab-case (e.g. the-fool, ace-of-cups).
+        name:
+          type: string
+          example: The Fool
+          description: Display name of the tarot card.
+        arcana:
+          type: string
+          enum:
+          - major
+          - minor
+          description: Whether this card belongs to the Major Arcana (22 trump cards, major life themes) or Minor Arcana (56 suit cards, daily situations).
+        suit:
+          type: string
+          enum:
+          - cups
+          - wands
+          - swords
+          - pentacles
+          description: Suit of the card (Minor Arcana only). Cups=emotions, Wands=creativity, Swords=intellect, Pentacles=material. Null for Major Arcana cards.
+        number:
+          type: number
+          example: 0
+          description: 'Card number within its arcana. Major Arcana: 0 (Fool) through 21 (World). Minor Arcana: 1 (Ace) through 14 (King). Null when not applicable.'
+        position:
+          type: number
+          example: 1
+          description: Position index of this card in the draw sequence (1-based). Useful for mapping cards to spread positions.
+        reversed:
+          type: boolean
+          example: false
+          description: True if the card was drawn reversed (upside down). Reversed cards carry modified or blocked energy compared to upright position.
+        keywords:
+          type: array
+          items:
+            type: string
+          example:
+          - new beginnings
+          - innocence
+          - spontaneity
+          - free spirit
+          - potential
+          description: Key themes and concepts associated with this card in its current orientation (upright or reversed).
+        meaning:
+          type: string
+          example: Numbered zero, The Fool stands at the threshold of the Major Arcana as pure, unwritten potential. In the Rider-Waite-Smith image, a young traveller pauses at the edge of a high cliff, gazing into the open sky rather than the drop below, a white rose of innocence in one hand and a light bag of belongings slung from a wand over the shoulder.
+          description: Full interpretation of this card in its current orientation, providing detailed divination guidance.
+        love:
+          type: string
+          example: A new romance or a fresh chapter in an existing bond is opening. The card favours openness to unexpected connection and a spirit of play over caution.
+          description: Love and relationship interpretation for the drawn orientation. Covers romantic partnerships, dating, emotional connections, and matters of the heart.
+        career:
+          type: string
+          example: 'This is a threshold moment for work: a new role, a new venture, or a bold pivot into unfamiliar territory. The Fool rewards initiative and original thinking, and it can breathe fresh energy into stale projects.'
+          description: Career and professional interpretation for the drawn orientation. Covers workplace dynamics, job transitions, ambition, and vocational purpose.
+        finances:
+          type: string
+          example: Financial openings appear, sometimes from unexpected directions, and the mood is expansive and exploratory. Spending tends toward experience, learning, and adventure.
+          description: Financial interpretation for the drawn orientation. Covers money management, investments, material prosperity, and abundance mindset.
+        health:
+          type: string
+          example: Renewed vitality and a fresh start are indicated, well suited to a new routine, an unfamiliar sport, or simply more time outdoors and in motion.
+          description: Health and wellbeing interpretation for the drawn orientation. Covers physical vitality, mental health, energy levels, and self-care guidance.
+        spirituality:
+          type: string
+          example: A spiritual journey is beginning, marked by openness, wonder, and a beginners willingness to learn.
+          description: Spiritual interpretation for the drawn orientation. Covers personal growth, inner wisdom, soul purpose, and metaphysical development.
+        imageUrl:
+          type: string
+          example: https://roxyapi.com/img/tarot/major/fool.jpg
+          description: URL to the tarot card artwork image.
+      required:
+      - id
+      - name
+      - arcana
+      - position
+      - reversed
+      - keywords
+      - meaning
+      - imageUrl
+    Card:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fool
+          description: Unique card identifier in kebab-case, with no leading article on Major Arcana (e.g. fool, star, ace-of-cups, queen-of-swords). This is the canonical form, whatever spelling was requested.
+        name:
+          type: string
+          example: The Fool
+          description: Display name of the tarot card as it appears in the Rider-Waite-Smith tradition.
+        arcana:
+          type: string
+          enum:
+          - major
+          - minor
+          example: major
+          description: Whether this card belongs to the Major Arcana (22 trump cards representing major life themes) or Minor Arcana (56 suit cards for daily situations).
+        suit:
+          type: string
+          enum:
+          - cups
+          - wands
+          - swords
+          - pentacles
+          example: cups
+          description: Suit of the card (Minor Arcana only). Cups=emotions, Wands=creativity, Swords=intellect, Pentacles=material. Null for Major Arcana cards.
+        number:
+          type: number
+          example: 0
+          description: 'Card number within its arcana. Major Arcana: 0 (Fool) through 21 (World). Minor Arcana: 1 (Ace) through 14 (King).'
+        keywords:
+          type: object
+          properties:
+            upright:
+              type: array
+              items:
+                type: string
+              example:
+              - new beginnings
+              - innocence
+              - spontaneity
+              - free spirit
+              - potential
+              description: Key themes when the card is drawn upright. Used for quick tarot reference and reading summaries.
+            reversed:
+              type: array
+              items:
+                type: string
+              example:
+              - recklessness
+              - hesitation
+              - naivety
+              - fear of the unknown
+              description: Key themes when the card is drawn reversed (inverted). Reversed meanings often indicate blocked or internalized energy.
+          required:
+          - upright
+          - reversed
+          description: Keywords for both upright and reversed orientations of this tarot card, useful for quick divination reference.
+          example:
+            upright:
+            - new beginnings
+            - innocence
+            - spontaneity
+            - free spirit
+            - potential
+            reversed:
+            - recklessness
+            - hesitation
+            - naivety
+            - fear of the unknown
+        upright:
+          type: object
+          properties:
+            keywords:
+              type: array
+              items:
+                type: string
+              example:
+              - new beginnings
+              - innocence
+              - spontaneity
+              - free spirit
+              - potential
+              description: Key themes and concepts for this card in the given orientation (upright or reversed). Used for quick tarot reference and divination summaries.
+            description:
+              type: string
+              example: Numbered zero, The Fool stands at the threshold of the Major Arcana as pure, unwritten potential. In the Rider-Waite-Smith image, a young traveller pauses at the edge of a high cliff, gazing into the open sky rather than the drop below, a white rose of innocence in one hand and a light bag of belongings slung from a wand over the shoulder.
+              description: Full narrative interpretation of the card in this orientation. Covers symbolism, life lessons, and guidance for the querent.
+            love:
+              type: string
+              example: A new romance or a fresh chapter in an existing bond is opening. The card favours openness to unexpected connection and a spirit of play over caution.
+              description: Love and relationship interpretation for this orientation. Covers romantic partnerships, dating, emotional connections, and matters of the heart.
+            career:
+              type: string
+              example: 'This is a threshold moment for work: a new role, a new venture, or a bold pivot into unfamiliar territory. The Fool rewards initiative and original thinking, and it can breathe fresh energy into stale projects.'
+              description: Career and professional interpretation for this orientation. Covers workplace dynamics, job transitions, ambition, and vocational purpose.
+            finances:
+              type: string
+              example: Financial openings appear, sometimes from unexpected directions, and the mood is expansive and exploratory. Spending tends toward experience, learning, and adventure.
+              description: Financial interpretation for this orientation. Covers money management, investments, material prosperity, and abundance mindset.
+            health:
+              type: string
+              example: Renewed vitality and a fresh start are indicated, well suited to a new routine, an unfamiliar sport, or simply more time outdoors and in motion.
+              description: Health and wellbeing interpretation for this orientation. Covers physical vitality, mental health, energy levels, and self-care guidance.
+            spirituality:
+              type: string
+              example: A spiritual journey is beginning, marked by openness, wonder, and a beginners willingness to learn.
+              description: Spiritual interpretation for this orientation. Covers personal growth, inner wisdom, soul purpose, and metaphysical development.
+          required:
+          - keywords
+          - description
+          description: Complete upright interpretation including description, keywords, and guidance across love, career, finances, health, and spirituality domains.
+        reversed:
+          type: object
+          properties:
+            keywords:
+              type: array
+              items:
+                type: string
+              example:
+              - recklessness
+              - hesitation
+              - naivety
+              - fear of the unknown
+              description: Key themes and concepts for this card in the given orientation (upright or reversed). Used for quick tarot reference and divination summaries.
+            description:
+              type: string
+              example: Reversed, The Fool turns its open potential in two opposite directions, and the surrounding cards usually reveal which one applies. In the first, the leap becomes recklessness. The traveller ignores the dog at the heels and the cliff at the toe, acting on impulse without regard for consequence and mistaking carelessness for freedom.
+              description: Full narrative interpretation of the card in this orientation. Covers symbolism, life lessons, and guidance for the querent.
+            love:
+              type: string
+              example: Hesitation or carelessness is unsettling matters of the heart. There may be a reluctance to commit and open up for fear of being hurt, or a tendency to rush in without seeing a partner clearly.
+              description: Love and relationship interpretation for this orientation. Covers romantic partnerships, dating, emotional connections, and matters of the heart.
+            career:
+              type: string
+              example: Fear of the unknown may be keeping you fixed in an unfulfilling role, or impulsive moves may be made at work without thinking them through.
+              description: Career and professional interpretation for this orientation. Covers workplace dynamics, job transitions, ambition, and vocational purpose.
+            finances:
+              type: string
+              example: Impulsive spending, unrealistic optimism, or schemes that sound too good to be true are the hazards here.
+              description: Financial interpretation for this orientation. Covers money management, investments, material prosperity, and abundance mindset.
+            health:
+              type: string
+              example: Carelessness or risky habits may be catching up with the body, or anxiety may be holding back a needed change.
+              description: Health and wellbeing interpretation for this orientation. Covers physical vitality, mental health, energy levels, and self-care guidance.
+            spirituality:
+              type: string
+              example: Spiritual momentum has either scattered into undiscerning enthusiasm or stalled into hesitation.
+              description: Spiritual interpretation for this orientation. Covers personal growth, inner wisdom, soul purpose, and metaphysical development.
+          required:
+          - keywords
+          - description
+          description: Complete reversed (inverted) interpretation including description, keywords, and guidance across love, career, finances, health, and spirituality domains. Reversed cards carry modified or blocked energy.
+        imageUrl:
+          type: string
+          example: https://roxyapi.com/img/tarot/major/fool.jpg
+          description: URL to the tarot card artwork image in the Rider-Waite-Smith style.
+      required:
+      - id
+      - name
+      - arcana
+      - number
+      - keywords
+      - upright
+      - reversed
+      - imageUrl
+    BasicCard:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fool
+          description: Unique card identifier in kebab-case, with no leading article on Major Arcana (e.g. fool, star, ace-of-cups, queen-of-swords). This is the canonical form, whatever spelling was requested.
+        name:
+          type: string
+          example: The Fool
+          description: Display name of the tarot card as it appears in the Rider-Waite-Smith tradition.
+        arcana:
+          type: string
+          enum:
+          - major
+          - minor
+          example: major
+          description: Whether this card belongs to the Major Arcana (22 trump cards representing major life themes) or Minor Arcana (56 suit cards for daily situations).
+        suit:
+          type: string
+          enum:
+          - cups
+          - wands
+          - swords
+          - pentacles
+          example: cups
+          description: Suit of the card (Minor Arcana only). Cups=emotions, Wands=creativity, Swords=intellect, Pentacles=material. Null for Major Arcana cards.
+        number:
+          type: number
+          example: 0
+          description: 'Card number within its arcana. Major Arcana: 0 (Fool) through 21 (World). Minor Arcana: 1 (Ace) through 14 (King).'
+        imageUrl:
+          type: string
+          example: https://roxyapi.com/img/tarot/major/fool.jpg
+          description: URL to the tarot card artwork image in the Rider-Waite-Smith style.
+      required:
+      - id
+      - name
+      - arcana
+      - number
+      - imageUrl
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

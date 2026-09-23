@@ -1,0 +1,36 @@
+# Front Door AI Index — roxyapi — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: roxyapi
+  lexicon_version: '1.0'
+  probed_at: '2026-09-17'
+  host: roxyapi.com
+  final_host: roxyapi.com
+  ownership: own
+  owner: roxyapi
+  shares_host_with: null
+  inherited_from: null
+  verdict: scored
+  score: 135
+  host_score: 135
+  density: 7.4
+  words: 18253
+  tiers:
+    agentic: 72
+    core: 50
+    model: 13
+  ambiguous: 47
+  top_terms:
+    AI: 48
+    agent: 40
+    MCP: 26
+    prompts: 21
+    AI agent: 9
+    chatbot: 8
+    Claude: 6
+    intelligence: 6
+    Gemini: 5
+    agentic: 3
+    llms.txt: 3
+    LLMs: 2

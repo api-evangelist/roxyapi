@@ -1,0 +1,1842 @@
+openapi: 3.2.0
+info:
+  title: Roxy Biorhythm API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Biorhythm
+  description: 'The most complete biorhythm API: 10 cycle types across 3 primary (physical, emotional, intellectual), 4 secondary (intuitive, aesthetic, awareness, spiritual), and 3 composite (passion, mastery, wisdom).'
+paths:
+  /biorhythm/reading:
+    post:
+      operationId: getReading
+      tags:
+      - Biorhythm
+      summary: Get biorhythm reading - Complete cycle analysis for any date
+      description: Calculate a complete biorhythm reading for a given birth date and target date. Returns all 10 cycle values (physical, emotional, intellectual, intuitive, aesthetic, awareness, spiritual, passion, mastery, wisdom), phase detection with 8 distinct states, energy rating (1-10), overall phase assessment, editorial-grade interpretation, actionable advice, and critical day alerts. Perfect for wellness apps, dating platforms, productivity tools, and AI chatbot integrations that need structured biorhythm data.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthDate:
+                  type: string
+                  format: date
+                  example: '1990-07-15'
+                  description: Birth date of the person in YYYY-MM-DD format. This is the anchor for all biorhythm cycle calculations.
+                targetDate:
+                  type: string
+                  format: date
+                  example: '2026-04-10'
+                  description: Date to calculate the reading for in YYYY-MM-DD format. Defaults to today (UTC) if omitted.
+              required:
+              - birthDate
+      responses:
+        '200':
+          description: Complete biorhythm reading with all 10 cycles, energy rating, interpretation, and critical alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthDate:
+                    type: string
+                    example: '1990-07-15'
+                    description: Birth date used for this calculation (YYYY-MM-DD).
+                  targetDate:
+                    type: string
+                    example: '2026-04-10'
+                    description: Date this reading is for (YYYY-MM-DD).
+                  daysSinceBirth:
+                    type: number
+                    example: 13049
+                    description: Total days alive from birth date to target date. This is the basis for all cycle calculations.
+                  cycles:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          example: 74
+                          description: Percentage position in the cycle from -100 (trough) to 100 (peak). 0 represents a critical zero crossing.
+                        rawValue:
+                          type: number
+                          example: 0.74
+                          description: Raw sine wave value before percentage conversion, ranging from -1.0 to 1.0.
+                        phase:
+                          type: string
+                          enum:
+                          - peak
+                          - high
+                          - rising
+                          - critical_ascending
+                          - critical_descending
+                          - falling
+                          - low
+                          - trough
+                          example: high
+                          description: 'Current phase of the cycle. One of: peak, high, rising, critical_ascending, critical_descending, falling, low, trough. Canonical English whatever the lang parameter says, so it stays safe to compare against in code; phaseLabel carries the reader-facing form and IS translated.'
+                        phaseLabel:
+                          type: string
+                          example: High Energy
+                          description: Human-readable phase name for display in UIs, dashboards, and reports.
+                        dayInCycle:
+                          type: number
+                          example: 8
+                          description: Current day position within the cycle (1-based). Ranges from 1 to the cycle period length.
+                        daysUntilPeak:
+                          type: number
+                          example: 3
+                          description: Number of days until the next peak (100%) in this cycle.
+                        daysUntilTrough:
+                          type: number
+                          example: 14
+                          description: Number of days until the next trough (-100%) in this cycle.
+                        daysUntilCritical:
+                          type: number
+                          example: 9
+                          description: Number of days until the next zero crossing in this cycle.
+                        trend:
+                          type: string
+                          enum:
+                          - rising
+                          - falling
+                          - peaking
+                          - bottoming
+                          example: rising
+                          description: 'Short-term direction of the cycle, which is its SLOPE rather than its band, so it moves independently of phase. One of: rising, falling, peaking, bottoming. Canonical English, like phase.'
+                        interpretation:
+                          type: string
+                          example: Your physical energy is strong and building. Endurance and coordination are above average. Good conditions for exercise, physical projects, and activities requiring sustained effort.
+                          description: Editorial 2-3 sentence reading specific to this cycle at its current phase position.
+                      required:
+                      - value
+                      - rawValue
+                      - phase
+                      - phaseLabel
+                      - dayInCycle
+                      - daysUntilPeak
+                      - daysUntilTrough
+                      - daysUntilCritical
+                      - trend
+                      - interpretation
+                    description: 'All 10 biorhythm cycle readings. Keys: physical, emotional, intellectual, intuitive, aesthetic, awareness, spiritual, passion, mastery, wisdom.'
+                  energyRating:
+                    type: number
+                    example: 7
+                    description: Overall energy score from 1 (deep recovery) to 10 (peak performance), derived from the three primary cycle positions.
+                  overallPhase:
+                    type: string
+                    enum:
+                    - high_energy
+                    - mixed
+                    - recovery
+                    - critical
+                    example: high_energy
+                    description: 'Summary phase across every cycle for the day. One of: high_energy, mixed, recovery, critical.'
+                  interpretation:
+                    type: string
+                    example: Your physical energy is strong and building. Endurance and coordination are above average. Good conditions for exercise, physical projects, and activities requiring sustained effort. Your emotional energy is also elevated, supporting your overall capacity.
+                    description: Editorial 3-5 sentence reading combining all cycle states into a coherent daily assessment.
+                  advice:
+                    type: string
+                    example: Tackle physically demanding tasks while your energy remains elevated.
+                    description: Actionable 1-2 sentence guidance for the day based on the combined cycle analysis.
+                  criticalAlerts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        cycle:
+                          type: string
+                          enum:
+                          - physical
+                          - emotional
+                          - intellectual
+                          - intuitive
+                          - aesthetic
+                          - awareness
+                          - spiritual
+                          - passion
+                          - mastery
+                          - wisdom
+                          example: physical
+                          description: Which cycle is at or near zero crossing.
+                        type:
+                          type: string
+                          enum:
+                          - zero_crossing
+                          example: zero_crossing
+                          description: 'Alert type. One of: zero_crossing. Raised once for the whole critical band, when the cycle sits within 9 points of zero in either direction.'
+                        direction:
+                          type: string
+                          enum:
+                          - ascending
+                          - descending
+                          example: ascending
+                          description: Whether the cycle is rising through zero (ascending) or falling through zero (descending).
+                        advisory:
+                          type: string
+                          example: physical cycle crosses zero while ascending. Transition from recovery to active phase.
+                          description: Specific advisory text for this critical alert.
+                      required:
+                      - cycle
+                      - type
+                      - direction
+                      - advisory
+                    description: Critical day alerts. Present only when one or more primary cycles are at or near zero crossing.
+                required:
+                - birthDate
+                - targetDate
+                - daysSinceBirth
+                - cycles
+                - energyRating
+                - overallPhase
+                - interpretation
+                - advice
+                - criticalAlerts
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /biorhythm/forecast:
+    post:
+      operationId: getForecast
+      tags:
+      - Biorhythm
+      summary: Get biorhythm forecast - Multi-day cycle predictions with best and worst days
+      description: Generate a biorhythm forecast for a date range up to 90 days. Returns daily cycle values for physical, emotional, intellectual, and intuitive cycles, daily energy ratings, critical day identification, and a summary with best day, worst day, average energy, and period-level guidance. Ideal for wellness apps, productivity planners, scheduling tools, and calendar integrations that need forward-looking biorhythm data.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthDate:
+                  type: string
+                  format: date
+                  example: '1990-07-15'
+                  description: Birth date of the person in YYYY-MM-DD format.
+                startDate:
+                  type: string
+                  format: date
+                  example: '2026-04-01'
+                  description: Start date of the forecast range in YYYY-MM-DD format. Defaults to today (UTC).
+                endDate:
+                  type: string
+                  format: date
+                  example: '2026-04-30'
+                  description: 'End date of the forecast range in YYYY-MM-DD format. Defaults to startDate + 30 days. Maximum range: 90 days.'
+              required:
+              - birthDate
+      responses:
+        '200':
+          description: Biorhythm forecast with daily readings, summary, and best/worst day identification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthDate:
+                    type: string
+                    example: '1990-07-15'
+                    description: Birth date used for this calculation.
+                  startDate:
+                    type: string
+                    example: '2026-04-01'
+                    description: First day of the forecast range.
+                  endDate:
+                    type: string
+                    example: '2026-04-30'
+                    description: Last day of the forecast range.
+                  totalDays:
+                    type: number
+                    example: 30
+                    description: Number of days in the forecast range.
+                  summary:
+                    type: object
+                    properties:
+                      bestDay:
+                        type: string
+                        example: '2026-04-14'
+                        description: Date with the highest average primary cycle values in the range. Best day for demanding activities.
+                      worstDay:
+                        type: string
+                        example: '2026-04-07'
+                        description: Date with the lowest average primary cycle values in the range. Best scheduled as a rest day.
+                      criticalDayCount:
+                        type: number
+                        example: 4
+                        description: Total number of days where at least one primary cycle crosses zero in the range.
+                      averageEnergy:
+                        type: number
+                        example: 6
+                        description: Average energy rating (1-10) across the entire forecast period.
+                      periodAdvice:
+                        type: string
+                        example: This period has a mix of energy levels. Plan demanding work around the best days and schedule lighter activity during the troughs.
+                        description: Overview guidance for the entire forecast period based on average energy and cycle patterns.
+                    required:
+                    - bestDay
+                    - worstDay
+                    - criticalDayCount
+                    - averageEnergy
+                    - periodAdvice
+                  days:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          example: '2026-04-01'
+                          description: Date of this daily reading (YYYY-MM-DD).
+                        daysSinceBirth:
+                          type: number
+                          example: 13040
+                          description: Days from birth date to this date.
+                        physical:
+                          type: number
+                          example: 45
+                          description: Physical cycle value (-100 to 100).
+                        emotional:
+                          type: number
+                          example: -30
+                          description: Emotional cycle value (-100 to 100).
+                        intellectual:
+                          type: number
+                          example: 72
+                          description: Intellectual cycle value (-100 to 100).
+                        intuitive:
+                          type: number
+                          example: 18
+                          description: Intuitive cycle value (-100 to 100).
+                        energyRating:
+                          type: number
+                          example: 6
+                          description: Energy rating for this day (1-10).
+                        isCritical:
+                          type: boolean
+                          example: false
+                          description: True if any primary cycle crosses zero on this day.
+                        criticalCycles:
+                          type: array
+                          items:
+                            type: string
+                          example: []
+                          description: Which primary cycles are critical on this day. Empty array if none.
+                      required:
+                      - date
+                      - daysSinceBirth
+                      - physical
+                      - emotional
+                      - intellectual
+                      - intuitive
+                      - energyRating
+                      - isCritical
+                      - criticalCycles
+                    description: Array of daily readings, one per day in the forecast range.
+                required:
+                - birthDate
+                - startDate
+                - endDate
+                - totalDays
+                - summary
+                - days
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /biorhythm/critical-days:
+    post:
+      operationId: getCriticalDays
+      tags:
+      - Biorhythm
+      summary: Find critical days - Zero crossing detection for any date range
+      description: Find all critical days (zero crossings) within a date range up to 180 days. Returns each critical day with cycle name, period, direction (ascending or descending), severity (single, double, or triple), and advisory text. Highlights rare double critical days where two primary cycles cross zero simultaneously and extremely rare triple critical days where all three primary cycles cross zero on the same date. Ideal for calendar integrations, push notification systems, alert engines, and wellness scheduling tools.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthDate:
+                  type: string
+                  format: date
+                  example: '1990-07-15'
+                  description: Birth date of the person in YYYY-MM-DD format.
+                startDate:
+                  type: string
+                  format: date
+                  example: '2026-04-01'
+                  description: Start date of the search range in YYYY-MM-DD format. Defaults to today (UTC).
+                endDate:
+                  type: string
+                  format: date
+                  example: '2026-06-30'
+                  description: 'End date of the search range in YYYY-MM-DD format. Defaults to startDate + 90 days. Maximum range: 180 days.'
+              required:
+              - birthDate
+      responses:
+        '200':
+          description: Critical days with zero crossing details, severity levels, and advisory text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthDate:
+                    type: string
+                    example: '1990-07-15'
+                    description: Birth date used for this calculation.
+                  startDate:
+                    type: string
+                    example: '2026-04-01'
+                    description: Start of the search range.
+                  endDate:
+                    type: string
+                    example: '2026-06-30'
+                    description: End of the search range.
+                  totalCriticalDays:
+                    type: number
+                    example: 12
+                    description: Total count of critical day events in the range. A double critical day counts as two events.
+                  criticalDays:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          example: '2026-04-03'
+                          description: Date of the zero crossing (YYYY-MM-DD).
+                        cycle:
+                          type: string
+                          enum:
+                          - physical
+                          - emotional
+                          - intellectual
+                          example: physical
+                          description: 'Which primary cycle crosses zero on this date. One of: physical, emotional, intellectual. Only the three primary cycles are scanned; the secondary and composite cycles are not.'
+                        period:
+                          type: number
+                          example: 23
+                          description: Cycle period in days.
+                        direction:
+                          type: string
+                          enum:
+                          - ascending
+                          - descending
+                          example: ascending
+                          description: Whether the cycle is rising through zero (ascending) or falling through zero (descending).
+                        severity:
+                          type: string
+                          enum:
+                          - single
+                          - double
+                          - triple
+                          example: single
+                          description: 'How many primary cycles are critical on this date. One of: single, double, triple.'
+                        advisory:
+                          type: string
+                          example: Physical cycle crosses zero while descending. Transition from active to recovery phase.
+                          description: Advisory text explaining the significance of this critical day and recommended precautions.
+                      required:
+                      - date
+                      - cycle
+                      - period
+                      - direction
+                      - severity
+                      - advisory
+                    description: All critical day events in the range, sorted by date.
+                  doubleCriticalDays:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - '2026-05-12'
+                    description: Dates where 2 or more primary cycles cross zero simultaneously. These are particularly significant days requiring extra caution.
+                  tripleCriticalDay:
+                    type:
+                    - string
+                    - 'null'
+                    example: null
+                    description: Date where all 3 primary cycles cross zero simultaneously. Extremely rare event. Null if none found in range.
+                required:
+                - birthDate
+                - startDate
+                - endDate
+                - totalCriticalDays
+                - criticalDays
+                - doubleCriticalDays
+                - tripleCriticalDay
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /biorhythm/compatibility:
+    post:
+      operationId: calculateBioCompatibility
+      tags:
+      - Biorhythm
+      summary: Calculate compatibility - Biorhythm alignment between two people
+      description: Calculate biorhythm compatibility between two people by overlaying their cycle profiles on a target date. Returns per-cycle alignment scores (0-100) for physical, emotional, and intellectual cycles, an overall compatibility score, relationship rating, strengths, challenges, practical advice, and a daily sync snapshot showing the absolute difference in each primary cycle. Perfect for dating apps, relationship platforms, team-building tools, and couples coaching applications.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                person1:
+                  type: object
+                  properties:
+                    birthDate:
+                      type: string
+                      format: date
+                      example: '1990-07-15'
+                      description: Birth date of person 1 in YYYY-MM-DD format.
+                  required:
+                  - birthDate
+                person2:
+                  type: object
+                  properties:
+                    birthDate:
+                      type: string
+                      format: date
+                      example: '1992-03-22'
+                      description: Birth date of person 2 in YYYY-MM-DD format.
+                  required:
+                  - birthDate
+                targetDate:
+                  type: string
+                  format: date
+                  example: '2026-04-10'
+                  description: Date to evaluate compatibility on in YYYY-MM-DD format. Defaults to today (UTC). Compatibility varies by day since biorhythm cycles are continuous.
+              required:
+              - person1
+              - person2
+      responses:
+        '200':
+          description: Biorhythm compatibility analysis with per-cycle alignment, overall score, and relationship guidance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  person1:
+                    type: object
+                    properties:
+                      birthDate:
+                        type: string
+                        example: '1990-07-15'
+                        description: Birth date of person 1.
+                    required:
+                    - birthDate
+                  person2:
+                    type: object
+                    properties:
+                      birthDate:
+                        type: string
+                        example: '1992-03-22'
+                        description: Birth date of person 2.
+                    required:
+                    - birthDate
+                  targetDate:
+                    type: string
+                    example: '2026-04-10'
+                    description: Date this compatibility was calculated for.
+                  overallScore:
+                    type: number
+                    example: 72
+                    description: Overall compatibility score from 0 (fully opposed) to 100 (perfectly synchronized).
+                  rating:
+                    type: string
+                    example: Well Aligned
+                    description: 'Compatibility rating label. One of: Highly Aligned, Well Aligned, Moderately Aligned, Misaligned, Opposed.'
+                  cycles:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        person1Value:
+                          type: number
+                          example: 74
+                          description: Person 1 cycle value on the target date (-100 to 100).
+                        person2Value:
+                          type: number
+                          example: 55
+                          description: Person 2 cycle value on the target date (-100 to 100).
+                        difference:
+                          type: number
+                          example: 19
+                          description: Absolute difference between the two values (0-200). Lower values indicate better alignment.
+                        alignment:
+                          type: number
+                          example: 90
+                          description: Alignment score from 0 (perfectly opposed) to 100 (perfectly in sync).
+                        phase:
+                          type: string
+                          enum:
+                          - in_sync
+                          - complementary
+                          - neutral
+                          - opposing
+                          example: in_sync
+                          description: 'How the two people''s cycles sit against each other. One of: in_sync, complementary, neutral, opposing. This is a PAIR alignment and shares no values with the single-person cycle phase.'
+                        description:
+                          type: string
+                          example: Both partners share similar physical energy levels. Shared activities, exercise, and daily rhythms align naturally.
+                          description: Human-readable description of how this cycle alignment affects the relationship.
+                      required:
+                      - person1Value
+                      - person2Value
+                      - difference
+                      - alignment
+                      - phase
+                      - description
+                    description: Per-cycle compatibility analysis for physical, emotional, and intellectual cycles.
+                  strengths:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Good overall energy match with healthy variation
+                    - Complementary differences prevent stagnation
+                    - Strong alignment in at least two primary cycles
+                    description: Relationship strengths based on the compatibility profile.
+                  challenges:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - One cycle may be out of sync, requiring awareness
+                    - Minor timing differences in energy peaks and valleys
+                    description: Potential relationship challenges to be aware of.
+                  advice:
+                    type: string
+                    example: Your cycles are well matched today. Lean into the aligned areas and be patient with the one dimension that may differ. Small adjustments keep your connection smooth.
+                    description: Practical relationship guidance based on the combined cycle analysis.
+                  dailySync:
+                    type: object
+                    properties:
+                      physicalDiff:
+                        type: number
+                        example: 19
+                        description: Absolute difference in physical cycle values (0-200). Lower = more aligned.
+                      emotionalDiff:
+                        type: number
+                        example: 45
+                        description: Absolute difference in emotional cycle values (0-200). Lower = more aligned.
+                      intellectualDiff:
+                        type: number
+                        example: 12
+                        description: Absolute difference in intellectual cycle values (0-200). Lower = more aligned.
+                    required:
+                    - physicalDiff
+                    - emotionalDiff
+                    - intellectualDiff
+                required:
+                - person1
+                - person2
+                - targetDate
+                - overallScore
+                - rating
+                - cycles
+                - strengths
+                - challenges
+                - advice
+                - dailySync
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /biorhythm/phases:
+    post:
+      operationId: getPhases
+      tags:
+      - Biorhythm
+      summary: Get phase info - Lightweight cycle status for dashboards and widgets
+      description: Get current phase information for all 10 biorhythm cycles without the full interpretation payload. Returns value, phase name, phase label, day position within cycle, cycle period, days until next critical crossing, and short-term trend for each cycle. Includes a compact summary string. Designed as a lightweight endpoint for dashboards, widgets, status bars, and quick-check interfaces that need biorhythm phase data without editorial text.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthDate:
+                  type: string
+                  format: date
+                  example: '1990-07-15'
+                  description: Birth date of the person in YYYY-MM-DD format.
+                targetDate:
+                  type: string
+                  format: date
+                  example: '2026-04-10'
+                  description: Date to get phase information for in YYYY-MM-DD format. Defaults to today (UTC).
+              required:
+              - birthDate
+      responses:
+        '200':
+          description: Phase information for all 10 cycles with summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthDate:
+                    type: string
+                    example: '1990-07-15'
+                    description: Birth date used for this calculation.
+                  targetDate:
+                    type: string
+                    example: '2026-04-10'
+                    description: Date this phase info is for.
+                  daysSinceBirth:
+                    type: number
+                    example: 13049
+                    description: Total days alive from birth date to target date.
+                  phases:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          example: 74
+                          description: Cycle value from -100 to 100.
+                        phase:
+                          type: string
+                          enum:
+                          - peak
+                          - high
+                          - rising
+                          - critical_ascending
+                          - critical_descending
+                          - falling
+                          - low
+                          - trough
+                          example: high
+                          description: Current phase identifier.
+                        phaseLabel:
+                          type: string
+                          example: High Energy
+                          description: Human-readable phase label.
+                        dayInCycle:
+                          type: number
+                          example: 8
+                          description: Current day position within the cycle.
+                        totalDays:
+                          type: number
+                          example: 23
+                          description: Cycle period in days. 0 for composite cycles (passion, mastery, wisdom).
+                        daysUntilCritical:
+                          type: number
+                          example: 9
+                          description: Days until next zero crossing.
+                        trend:
+                          type: string
+                          enum:
+                          - rising
+                          - falling
+                          - peaking
+                          - bottoming
+                          example: rising
+                          description: 'Short-term direction: rising, falling, peaking, or bottoming.'
+                      required:
+                      - value
+                      - phase
+                      - phaseLabel
+                      - dayInCycle
+                      - totalDays
+                      - daysUntilCritical
+                      - trend
+                    description: Phase information for all 10 cycles keyed by cycle ID.
+                  summary:
+                    type: string
+                    example: 3 cycles rising, 2 at peak, 1 critical
+                    description: Quick overview string summarizing the current state of all cycles.
+                required:
+                - birthDate
+                - targetDate
+                - daysSinceBirth
+                - phases
+                - summary
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /biorhythm/daily:
+    post:
+      operationId: getDailyBiorhythm
+      tags:
+      - Biorhythm
+      summary: Get daily biorhythm - Seeded reading for daily check-in features
+      description: Get a daily biorhythm reading with seeded randomness for consistent "biorhythm of the day" features. Same seed and same date always produce the same reading, perfect for daily push notifications, morning briefings, and wellness app check-ins. Returns energy rating, overall phase, a spotlight on one featured cycle, quick-read values for all three primary cycles, a daily message, and actionable advice. The spotlight cycle is deterministically selected by the seed, creating variety across users while maintaining consistency for each individual.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  example: user123
+                  description: Optional seed for reproducible readings. Same seed + same date = same reading every time. Pass any unique identifier (userId, email hash, session token). Omit for anonymous daily readings.
+                date:
+                  type: string
+                  format: date
+                  example: '2026-03-06'
+                  description: Date for the reading in YYYY-MM-DD format. Defaults to today (UTC). Useful for viewing past daily readings or pre-generating future ones.
+      responses:
+        '200':
+          description: Daily biorhythm reading with spotlight cycle and actionable guidance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    example: '2026-04-10'
+                    description: Date this daily reading is for (YYYY-MM-DD, UTC).
+                  seed:
+                    type: string
+                    example: user123-2026-04-10
+                    description: Computed seed used for this reading. Same seed always produces the same reading.
+                  energyRating:
+                    type: number
+                    example: 7
+                    description: Overall energy score from 1 to 10.
+                  overallPhase:
+                    type: string
+                    enum:
+                    - high_energy
+                    - mixed
+                    - recovery
+                    - critical
+                    example: high_energy
+                    description: 'Summary phase across every cycle for the day. One of: high_energy, mixed, recovery, critical.'
+                  spotlight:
+                    type: object
+                    properties:
+                      cycle:
+                        type: string
+                        enum:
+                        - physical
+                        - emotional
+                        - intellectual
+                        example: emotional
+                        description: 'Which primary cycle is featured as the daily spotlight. One of: physical, emotional, intellectual.'
+                      value:
+                        type: number
+                        example: 72
+                        description: Current value of the spotlight cycle (-100 to 100).
+                      phase:
+                        type: string
+                        enum:
+                        - peak
+                        - high
+                        - rising
+                        - critical_ascending
+                        - critical_descending
+                        - falling
+                        - low
+                        - trough
+                        example: high
+                        description: Current phase of the spotlight cycle.
+                      message:
+                        type: string
+                        example: Your emotional cycle is elevated and positive. Mood is stable and upbeat, and you feel naturally connected to others. Creative ideas come more easily and social interactions feel rewarding.
+                        description: Personalized message about the spotlight cycle and what it means for today.
+                    required:
+                    - cycle
+                    - value
+                    - phase
+                    - message
+                  quickRead:
+                    type: object
+                    properties:
+                      physical:
+                        type: number
+                        example: 45
+                        description: Physical cycle value (-100 to 100).
+                      emotional:
+                        type: number
+                        example: 72
+                        description: Emotional cycle value (-100 to 100).
+                      intellectual:
+                        type: number
+                        example: -30
+                        description: Intellectual cycle value (-100 to 100).
+                    required:
+                    - physical
+                    - emotional
+                    - intellectual
+                  dailyMessage:
+                    type: string
+                    example: 'Your biorhythm for 2026-01-28: Energy rating 8/10 (High). Emotional cycle is high energy at 72%.'
+                    description: Concise daily biorhythm message combining energy rating and spotlight cycle.
+                  advice:
+                    type: string
+                    example: Lean into collaborative projects and relationship building.
+                    description: Actionable 1-2 sentence guidance for the day.
+                required:
+                - date
+                - seed
+                - energyRating
+                - overallPhase
+                - spotlight
+                - quickRead
+                - dailyMessage
+                - advice
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

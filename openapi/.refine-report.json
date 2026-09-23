@@ -1,0 +1,50 @@
+{
+  "provider": "roxyapi",
+  "sources": [
+    "_original/roxyapi-openapi-original.json"
+  ],
+  "outputs": [
+    "roxyapi-angel-numbers-api-openapi.yml",
+    "roxyapi-biorhythm-api-openapi.yml",
+    "roxyapi-chinese-astrology-api-openapi.yml",
+    "roxyapi-crystals-and-healing-stones-api-openapi.yml",
+    "roxyapi-dreams-api-openapi.yml",
+    "roxyapi-feng-shui-api-openapi.yml",
+    "roxyapi-forecast-api-openapi.yml",
+    "roxyapi-human-design-api-openapi.yml",
+    "roxyapi-i-ching-api-openapi.yml",
+    "roxyapi-languages-api-openapi.yml",
+    "roxyapi-location-and-timezone-api-openapi.yml",
+    "roxyapi-numerology-api-openapi.yml",
+    "roxyapi-tarot-api-openapi.yml",
+    "roxyapi-usage-api-openapi.yml",
+    "roxyapi-vedic-astrology-api-openapi.yml",
+    "roxyapi-western-astrology-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "roxyapi-openapi-original.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "roxyapi-angel-numbers-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-biorhythm-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-chinese-astrology-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-crystals-and-healing-stones-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-dreams-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-feng-shui-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-forecast-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-human-design-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-i-ching-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-languages-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-location-and-timezone-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-numerology-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-tarot-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-usage-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-vedic-astrology-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "roxyapi-western-astrology-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

@@ -1,0 +1,765 @@
+openapi: 3.2.0
+info:
+  title: Roxy Location and Timezone API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Location and Timezone
+  description: Location and timezone API with city search and geocoding across 235,000+ cities in 240+ countries, returning latitude, longitude, IANA timezone, and DST-aware UTC offset.
+paths:
+  /location/search:
+    get:
+      operationId: searchCities
+      tags:
+      - Location and Timezone
+      security:
+      - apiKey: []
+      summary: Search cities worldwide - Geocoding autocomplete with coordinates and timezone
+      description: Turn a place name into coordinates, an IANA timezone and a DST-aware UTC offset, across 235,000+ cities and towns in 240+ countries. Coverage reaches rural towns of a few hundred people and every administrative seat, so a birthplace outside a major metro resolves as reliably as a capital. Matching is case-insensitive, accent-insensitive and partial, so ber matches Berlin, Bern and Bergen, native scripts are transliterated, and historic names resolve to the current place, so bombay returns Mumbai and peking returns Beijing. Results are ordered by match quality first and population second, so an exactly named small town is never buried under a larger city that merely shares its opening letters. Built for birth chart location pickers, horoscope apps, event scheduling, and any feature that needs place-to-coordinates resolution.
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Place to search for, written the way a person would. Accepts a bare city (berlin), a city plus country (berlin germany), a comma-qualified place (richfield, utah), a fully qualified place (richfield, utah, united states), or a historic name (bombay, peking, constantinople). Commas are optional, and a qualifier the dataset spells differently, such as USA for United States, still resolves. Matched against city name, alternate names, state or province, and country. Add the state or country whenever the name is common, since that is what separates the six Springfields, and Richfield, Utah from Richfield, Minnesota.
+          example: berlin
+        required: true
+        description: Place to search for, written the way a person would. Accepts a bare city (berlin), a city plus country (berlin germany), a comma-qualified place (richfield, utah), a fully qualified place (richfield, utah, united states), or a historic name (bombay, peking, constantinople). Commas are optional, and a qualifier the dataset spells differently, such as USA for United States, still resolves. Matched against city name, alternate names, state or province, and country. Add the state or country whenever the name is common, since that is what separates the six Springfields, and Richfield, Utah from Richfield, Minnesota.
+        name: q
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          example: 10
+          description: 'Maximum items to return per page. Range: 1-50, default 10.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-50, default 10.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Matching places, best match first, with coordinates, IANA timezone and UTC offset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 3
+                    description: Number of places matching the query across all pages, not the number returned in this response. Greater than 1 means the name is ambiguous, so show province and country and let the user confirm before using the result for a chart.
+                  limit:
+                    type: number
+                    example: 10
+                    description: Page size used for this response.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of places skipped. Use with limit to page through results.
+                  cities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                          description: City name as commonly used. Matches the local or internationally recognized name for the location.
+                          example: Berlin
+                        province:
+                          type: string
+                          description: 'State, province, canton, or administrative region. Show it whenever more than one result comes back: it is what separates Richfield, Utah from Richfield, Minnesota, and the six US Springfields from each other. Empty for the small number of places with no administrative division recorded.'
+                          example: Berlin
+                        country:
+                          type: string
+                          description: Full country name in English.
+                          example: Germany
+                        iso2:
+                          type: string
+                          description: ISO 3166-1 alpha-2 country code. Use for filtering cities by country or building country-specific location pickers.
+                          example: DE
+                        latitude:
+                          type: number
+                          description: Geographic latitude in decimal degrees (-90 to 90). Pass directly to birth chart, natal chart, horoscope, synastry, transit, kundli, and panchang API endpoints as the latitude parameter.
+                          example: 52.52
+                        longitude:
+                          type: number
+                          description: Geographic longitude in decimal degrees (-180 to 180). Pass directly to astrology, horoscope, and panchang API endpoints alongside latitude.
+                          example: 13.405
+                        timezone:
+                          type: string
+                          description: 'IANA timezone identifier following the tz database standard (e.g. Europe/Berlin, America/New_York, Asia/Tokyo). Always present. Pass THIS, not the numeric offset, into any chart or panchang request for a past date: the calculation endpoints resolve it to the offset that was actually in force on that date, including historical daylight saving. Also works directly with JavaScript Date, Luxon, day.js, or any date library.'
+                          example: Europe/Berlin
+                        utcOffset:
+                          type: number
+                          description: 'UTC offset in decimal hours for TODAY at this place, already adjusted for daylight saving. Convenient for displaying local time now. For a birth date or any past date use the `timezone` field instead, since the offset in force then may differ. Examples: 1 for CET, 2 for CEST, -5 for EST, 5.5 for IST, 5.75 for Nepal.'
+                          example: 1
+                        population:
+                          type: number
+                          description: Population estimate for the place. Breaks ties between results of equal match quality, so among several places matching equally well the largest leads. It never outranks a better match, which is why a small town still wins when its name is typed exactly. May be 0 for a hamlet or administrative seat that carries no published figure.
+                          example: 3644826
+                      required:
+                      - city
+                      - province
+                      - country
+                      - iso2
+                      - latitude
+                      - longitude
+                      - timezone
+                      - utcOffset
+                      - population
+                      description: Geographic location with coordinates, timezone, and UTC offset. Every field is designed for direct use as input parameters in astrology, horoscope, and location-dependent API calculations.
+                    description: 'Matching places for the current page, best match first. Ordered by match quality, then population within equal quality: an exact name beats a qualified name such as richfield, utah, which beats a name merely starting with the query, which beats an incidental match on state or country. Take the first entry when total is 1, otherwise disambiguate on province and country.'
+                required:
+                - total
+                - limit
+                - offset
+                - cities
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /location/countries:
+    get:
+      operationId: listCountries
+      tags:
+      - Location and Timezone
+      security:
+      - apiKey: []
+      summary: List all countries - ISO codes and city coverage
+      description: Returns every country with ISO 3166-1 alpha-2 and alpha-3 codes, plus the number of searchable cities per country. Use this endpoint to build country dropdown menus, regional filters, or to check city coverage before querying. Sorted alphabetically by country name. Covers Europe, Americas, Asia, Middle East, Africa, and Oceania.
+      parameters:
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 250
+          default: 50
+          example: 50
+          description: 'Maximum items to return per page. Range: 1-250, default 50.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-250, default 50.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Alphabetically sorted list of all countries with ISO codes and city counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 246
+                    description: Total number of countries with at least one place in the dataset.
+                  limit:
+                    type: number
+                    example: 50
+                    description: Page size used for this response.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of countries skipped. Use with limit for pagination.
+                  countries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Full country name in English. Use for display in location pickers and dropdown menus.
+                          example: Germany
+                        iso2:
+                          type: string
+                          description: ISO 3166-1 alpha-2 country code. Use as the identifier when fetching cities for a specific country via the /countries/{iso2} endpoint.
+                          example: DE
+                        iso3:
+                          type: string
+                          description: ISO 3166-1 alpha-3 country code. Three-letter standard used in international data exchange.
+                          example: DEU
+                        cityCount:
+                          type: number
+                          description: Number of searchable places in this country, including small towns and administrative seats. Useful for showing coverage in a UI or sizing a dependent city dropdown.
+                          example: 11894
+                      required:
+                      - name
+                      - iso2
+                      - iso3
+                      - cityCount
+                      description: Country with ISO 3166 codes and city coverage count. Use iso2 to query cities within a specific country.
+                    description: Countries for the current page, sorted alphabetically by name.
+                required:
+                - total
+                - limit
+                - offset
+                - countries
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /location/countries/{iso2}:
+    get:
+      operationId: getCitiesByCountry
+      tags:
+      - Location and Timezone
+      security:
+      - apiKey: []
+      summary: Get cities in a country - Geocoding directory sorted by population
+      description: Returns all cities for a specific country, identified by ISO 3166-1 alpha-2 code (e.g. DE for Germany, FR for France, GB for United Kingdom, US for United States). Each city includes geographic coordinates, IANA timezone, and DST-aware UTC offset for direct use in astrology birth chart, horoscope, transit, and panchang calculations. Cities sorted by population with the largest metropolitan areas first.
+      parameters:
+      - schema:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: 'ISO 3166-1 alpha-2 country code, case-insensitive. Common codes: DE (Germany), FR (France), GB (United Kingdom), US (United States), ES (Spain), IT (Italy), NL (Netherlands), IN (India), BR (Brazil), JP (Japan).'
+          example: DE
+        required: true
+        description: 'ISO 3166-1 alpha-2 country code, case-insensitive. Common codes: DE (Germany), FR (France), GB (United Kingdom), US (United States), ES (Spain), IT (Italy), NL (Netherlands), IN (India), BR (Brazil), JP (Japan).'
+        name: iso2
+        in: path
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-100, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-100, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Cities in the specified country, sorted by population (largest first)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 11894
+                    description: Total number of places available for this country across all pages.
+                  limit:
+                    type: number
+                    example: 50
+                    description: Page size used for this response.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of cities skipped. Use with limit for pagination.
+                  cities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                          description: City name as commonly used. Matches the local or internationally recognized name for the location.
+                          example: Berlin
+                        province:
+                          type: string
+                          description: 'State, province, canton, or administrative region. Show it whenever more than one result comes back: it is what separates Richfield, Utah from Richfield, Minnesota, and the six US Springfields from each other. Empty for the small number of places with no administrative division recorded.'
+                          example: Berlin
+                        country:
+                          type: string
+                          description: Full country name in English.
+                          example: Germany
+                        iso2:
+                          type: string
+                          description: ISO 3166-1 alpha-2 country code. Use for filtering cities by country or building country-specific location pickers.
+                          example: DE
+                        latitude:
+                          type: number
+                          description: Geographic latitude in decimal degrees (-90 to 90). Pass directly to birth chart, natal chart, horoscope, synastry, transit, kundli, and panchang API endpoints as the latitude parameter.
+                          example: 52.52
+                        longitude:
+                          type: number
+                          description: Geographic longitude in decimal degrees (-180 to 180). Pass directly to astrology, horoscope, and panchang API endpoints alongside latitude.
+                          example: 13.405
+                        timezone:
+                          type: string
+                          description: 'IANA timezone identifier following the tz database standard (e.g. Europe/Berlin, America/New_York, Asia/Tokyo). Always present. Pass THIS, not the numeric offset, into any chart or panchang request for a past date: the calculation endpoints resolve it to the offset that was actually in force on that date, including historical daylight saving. Also works directly with JavaScript Date, Luxon, day.js, or any date library.'
+                          example: Europe/Berlin
+                        utcOffset:
+                          type: number
+                          description: 'UTC offset in decimal hours for TODAY at this place, already adjusted for daylight saving. Convenient for displaying local time now. For a birth date or any past date use the `timezone` field instead, since the offset in force then may differ. Examples: 1 for CET, 2 for CEST, -5 for EST, 5.5 for IST, 5.75 for Nepal.'
+                          example: 1
+                        population:
+                          type: number
+                          description: Population estimate for the place. Breaks ties between results of equal match quality, so among several places matching equally well the largest leads. It never outranks a better match, which is why a small town still wins when its name is typed exactly. May be 0 for a hamlet or administrative seat that carries no published figure.
+                          example: 3644826
+                      required:
+                      - city
+                      - province
+                      - country
+                      - iso2
+                      - latitude
+                      - longitude
+                      - timezone
+                      - utcOffset
+                      - population
+                      description: Geographic location with coordinates, timezone, and UTC offset. Every field is designed for direct use as input parameters in astrology, horoscope, and location-dependent API calculations.
+                    description: Cities for the current page, sorted by population (largest first).
+                required:
+                - total
+                - limit
+                - offset
+                - cities
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

@@ -1,0 +1,2382 @@
+openapi: 3.2.0
+info:
+  title: Roxy Forecast API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Forecast
+  description: Forecast API that merges upcoming transit aspects, sign ingresses, retrograde stations, new and full moons, biorhythm critical days, and Vimshottari dasha changes into one time-ordered forecast for a single subject. The only cross-domain forecast timeline behind one key, positions verified against NASA JPL Horizons, available over Remote MCP with typed SDKs. Horizon capped at 90 days.
+paths:
+  /forecast/timeline:
+    post:
+      operationId: generateTimeline
+      tags:
+      - Forecast
+      summary: Cross-domain forecast timeline - Transits, ingresses, stations, dasha changes…
+      description: 'Build one time-ordered forecast for a single birth subject by merging upcoming events across three domains: western transit-to-natal aspects, sign ingresses, retrograde stations, eclipses, and new and full moons; biorhythm critical days; and vedic Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. The window is clamped to 90 days and events are capped and scored by significance. Built for what-is-coming dashboards, daily and weekly forecast feeds, and timing tools.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthData:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '1990-07-15'
+                      description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                    time:
+                      type: string
+                      format: time
+                      example: '13:30:00'
+                      description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                    timezone:
+                      anyOf:
+                      - type: number
+                        minimum: -14
+                        maximum: 14
+                      - type: string
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      example: America/New_York
+                    latitude:
+                      type: number
+                      minimum: -90
+                      maximum: 90
+                      default: 0
+                      example: 0
+                      description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    longitude:
+                      type: number
+                      minimum: -180
+                      maximum: 180
+                      default: 0
+                      example: 0
+                      description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                  required:
+                  - date
+                  - time
+                  - timezone
+                  description: The single birth subject this forecast is built for. One object only, never an array.
+                startDate:
+                  type: string
+                  format: date
+                  example: '2026-06-01'
+                  description: First day of the forecast window in YYYY-MM-DD format. Defaults to today in UTC.
+                endDate:
+                  type: string
+                  format: date
+                  example: '2026-08-30'
+                  description: Last day of the forecast window in YYYY-MM-DD format. Defaults to startDate plus 30 days. The window is clamped to a maximum of 90 days from startDate.
+                domains:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - western
+                    - vedic
+                    - biorhythm
+                    example: western
+                    description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days.
+                  example:
+                  - western
+                  - vedic
+                  - biorhythm
+                  description: Which forecast domains to include. Defaults to all three. Pass a subset to scope the timeline to one or two engines.
+                minSignificance:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 0
+                  description: Drop events scoring below this significance threshold from 0 to 100. Defaults to 0, keeping all events.
+                domainWeights:
+                  type: object
+                  properties:
+                    western:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                    vedic:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                    biorhythm:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                  example:
+                    vedic: 1.5
+                    biorhythm: 0.5
+                  description: Per-domain significance multipliers applied before the significance floor and event cap. Bias which domains survive filtering and the cap. Omitted domains default to a weight of 1. Valid keys are western, vedic, and biorhythm.
+              required:
+              - birthData
+      responses:
+        '200':
+          description: Merged forecast timeline with time-ordered events across the requested domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthData:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        example: '1990-07-15'
+                        description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                      time:
+                        type: string
+                        format: time
+                        example: '13:30:00'
+                        description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                      timezone:
+                        type: number
+                        example: -4
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                      latitude:
+                        type: number
+                        minimum: -90
+                        maximum: 90
+                        default: 0
+                        example: 0
+                        description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                      longitude:
+                        type: number
+                        minimum: -180
+                        maximum: 180
+                        default: 0
+                        example: 0
+                        description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    required:
+                    - date
+                    - time
+                    - timezone
+                    description: Echo of the birth subject this forecast was built for.
+                  startDate:
+                    type: string
+                    example: '2026-06-01'
+                    description: First day of the resolved forecast window.
+                  endDate:
+                    type: string
+                    example: '2026-08-30'
+                    description: Last day of the resolved forecast window after the horizon clamp.
+                  count:
+                    type: number
+                    example: 42
+                    description: Number of events in the timeline after deduplication, filtering, and the event cap.
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          example: '2026-07-04'
+                          description: Calendar date of the event in YYYY-MM-DD (UTC).
+                        datetime:
+                          type: string
+                          example: '2026-07-04T08:42:11Z'
+                          description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                        domain:
+                          type: string
+                          enum:
+                          - western
+                          - vedic
+                          - biorhythm
+                          example: western
+                          description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days. A stable machine value, never localized, so consumers can branch on it under any language.
+                        type:
+                          type: string
+                          enum:
+                          - transit-aspect
+                          - sign-ingress
+                          - retrograde-station
+                          - eclipse
+                          - lunar-phase
+                          - dasha-change
+                          - critical-day
+                          example: transit-aspect
+                          description: Event kind. transit-aspect, sign-ingress, retrograde-station, eclipse, and lunar-phase are western, dasha-change is vedic Vimshottari, critical-day is biorhythm. A stable machine value, never localized, so consumers can branch on it under any language.
+                        body:
+                          type: string
+                          example: Saturn
+                          description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                        target:
+                          type: string
+                          example: Moon
+                          description: For a transit-aspect, the natal body the transit aspects. For a sign-ingress, the zodiac sign entered, and for a lunar-phase, the zodiac sign of the New or Full Moon. Absent for other event types.
+                        aspect:
+                          type: string
+                          example: square
+                          description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
+                        orb:
+                          type: number
+                          example: 0.12
+                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                        station:
+                          type: string
+                          enum:
+                          - retrograde
+                          - direct
+                          example: retrograde
+                          description: For a retrograde-station, whether the planet turns retrograde or direct. A stable machine value, never localized. Absent for other event types.
+                        kind:
+                          type: string
+                          enum:
+                          - penumbral
+                          - partial
+                          - annular
+                          - total
+                          example: total
+                          description: For an eclipse, its classification. total and penumbral apply to lunar eclipses, partial applies to both, annular and total apply to solar eclipses. A stable machine value, never localized. Absent for other event types.
+                        obscuration:
+                          type: number
+                          example: 0.966
+                          description: For a lunar eclipse, the peak fraction from 0 to 1 of the Moon disc covered by Earth umbra. 1 for a total lunar eclipse, between 0 and 1 for a partial, 0 for a penumbral. Absent for solar eclipses and other event types.
+                        phase:
+                          type: string
+                          enum:
+                          - new-moon
+                          - full-moon
+                          example: full-moon
+                          description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
+                        description:
+                          type: string
+                          example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                          description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
+                        significance:
+                          type: number
+                          example: 90
+                          description: Importance score from 0 to 100. Outer-planet exact transit aspects and mahadasha changes score highest; fast Moon events and biorhythm critical days score lower. When domainWeights is supplied this is the weighted score, rounded and clamped to 0 to 100, which is the same value the significance floor and the event cap acted on.
+                      required:
+                      - date
+                      - datetime
+                      - domain
+                      - type
+                      - body
+                      - description
+                      - significance
+                    description: The merged, time-ordered forecast events across the requested domains.
+                required:
+                - birthData
+                - startDate
+                - endDate
+                - count
+                - events
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /forecast/transits:
+    post:
+      operationId: forecastTransits
+      tags:
+      - Forecast
+      summary: Western astrology forecast - aspects, ingresses, stations, eclipses, moon phases
+      description: 'Forecast the western astrology events for a single birth chart over a window up to 90 days: every transit-to-natal major aspect refined to its exact instant, every transiting planet sign ingress, every retrograde or direct station, every solar and lunar eclipse, and every New and Full Moon. Returns a time-ordered, significance-scored timeline. Built for astrology forecast feeds, transit alerts, and timing tools.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthData:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '1990-07-15'
+                      description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                    time:
+                      type: string
+                      format: time
+                      example: '13:30:00'
+                      description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                    timezone:
+                      anyOf:
+                      - type: number
+                        minimum: -14
+                        maximum: 14
+                      - type: string
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      example: America/New_York
+                    latitude:
+                      type: number
+                      minimum: -90
+                      maximum: 90
+                      default: 0
+                      example: 0
+                      description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    longitude:
+                      type: number
+                      minimum: -180
+                      maximum: 180
+                      default: 0
+                      example: 0
+                      description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                  required:
+                  - date
+                  - time
+                  - timezone
+                  description: The single birth subject this transit forecast is built for. One object only, never an array.
+                startDate:
+                  type: string
+                  format: date
+                  example: '2026-06-01'
+                  description: First day of the transit window in YYYY-MM-DD format. Defaults to today in UTC.
+                endDate:
+                  type: string
+                  format: date
+                  example: '2026-08-30'
+                  description: Last day of the transit window in YYYY-MM-DD format. Defaults to startDate plus 30 days. Clamped to a maximum of 90 days from startDate.
+                minSignificance:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 0
+                  description: Drop transit events scoring below this significance threshold from 0 to 100. Defaults to 0.
+              required:
+              - birthData
+      responses:
+        '200':
+          description: 'Time-ordered western forecast events: aspects, ingresses, stations, eclipses, and moon phases'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthData:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        example: '1990-07-15'
+                        description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                      time:
+                        type: string
+                        format: time
+                        example: '13:30:00'
+                        description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                      timezone:
+                        type: number
+                        example: -4
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                      latitude:
+                        type: number
+                        minimum: -90
+                        maximum: 90
+                        default: 0
+                        example: 0
+                        description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                      longitude:
+                        type: number
+                        minimum: -180
+                        maximum: 180
+                        default: 0
+                        example: 0
+                        description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    required:
+                    - date
+                    - time
+                    - timezone
+                    description: Echo of the birth subject this forecast was built for.
+                  startDate:
+                    type: string
+                    example: '2026-06-01'
+                    description: First day of the resolved forecast window.
+                  endDate:
+                    type: string
+                    example: '2026-08-30'
+                    description: Last day of the resolved forecast window after the horizon clamp.
+                  count:
+                    type: number
+                    example: 42
+                    description: Number of events in the timeline after deduplication, filtering, and the event cap.
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          example: '2026-07-04'
+                          description: Calendar date of the event in YYYY-MM-DD (UTC).
+                        datetime:
+                          type: string
+                          example: '2026-07-04T08:42:11Z'
+                          description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                        domain:
+                          type: string
+                          enum:
+                          - western
+                          - vedic
+                          - biorhythm
+                          example: western
+                          description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days. A stable machine value, never localized, so consumers can branch on it under any language.
+                        type:
+                          type: string
+                          enum:
+                          - transit-aspect
+                          - sign-ingress
+                          - retrograde-station
+                          - eclipse
+                          - lunar-phase
+                          - dasha-change
+                          - critical-day
+                          example: transit-aspect
+                          description: Event kind. transit-aspect, sign-ingress, retrograde-station, eclipse, and lunar-phase are western, dasha-change is vedic Vimshottari, critical-day is biorhythm. A stable machine value, never localized, so consumers can branch on it under any language.
+                        body:
+                          type: string
+                          example: Saturn
+                          description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                        target:
+                          type: string
+                          example: Moon
+                          description: For a transit-aspect, the natal body the transit aspects. For a sign-ingress, the zodiac sign entered, and for a lunar-phase, the zodiac sign of the New or Full Moon. Absent for other event types.
+                        aspect:
+                          type: string
+                          example: square
+                          description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
+                        orb:
+                          type: number
+                          example: 0.12
+                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                        station:
+                          type: string
+                          enum:
+                          - retrograde
+                          - direct
+                          example: retrograde
+                          description: For a retrograde-station, whether the planet turns retrograde or direct. A stable machine value, never localized. Absent for other event types.
+                        kind:
+                          type: string
+                          enum:
+                          - penumbral
+                          - partial
+                          - annular
+                          - total
+                          example: total
+                          description: For an eclipse, its classification. total and penumbral apply to lunar eclipses, partial applies to both, annular and total apply to solar eclipses. A stable machine value, never localized. Absent for other event types.
+                        obscuration:
+                          type: number
+                          example: 0.966
+                          description: For a lunar eclipse, the peak fraction from 0 to 1 of the Moon disc covered by Earth umbra. 1 for a total lunar eclipse, between 0 and 1 for a partial, 0 for a penumbral. Absent for solar eclipses and other event types.
+                        phase:
+                          type: string
+                          enum:
+                          - new-moon
+                          - full-moon
+                          example: full-moon
+                          description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
+                        description:
+                          type: string
+                          example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                          description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
+                        significance:
+                          type: number
+                          example: 90
+                          description: Importance score from 0 to 100. Outer-planet exact transit aspects and mahadasha changes score highest; fast Moon events and biorhythm critical days score lower. When domainWeights is supplied this is the weighted score, rounded and clamped to 0 to 100, which is the same value the significance floor and the event cap acted on.
+                      required:
+                      - date
+                      - datetime
+                      - domain
+                      - type
+                      - body
+                      - description
+                      - significance
+                    description: The merged, time-ordered forecast events across the requested domains.
+                required:
+                - birthData
+                - startDate
+                - endDate
+                - count
+                - events
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /forecast/significant-dates:
+    post:
+      operationId: findSignificantDates
+      tags:
+      - Forecast
+      summary: Significant dates - High-significance cross-domain forecast highlights
+      description: 'Return only the high-significance dates from the merged cross-domain forecast for a single birth subject: the rare outer-planet exact transit aspects, slow-planet sign ingresses, retrograde stations, and Vimshottari mahadasha and antardasha changes that mark genuine turning points. Defaults to a significance floor of 70 so the response is a short list of the most meaningful upcoming dates. Built for what-is-coming highlights, timing alerts, and at-a-glance forecast strips.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthData:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '1990-07-15'
+                      description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                    time:
+                      type: string
+                      format: time
+                      example: '13:30:00'
+                      description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                    timezone:
+                      anyOf:
+                      - type: number
+                        minimum: -14
+                        maximum: 14
+                      - type: string
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      example: America/New_York
+                    latitude:
+                      type: number
+                      minimum: -90
+                      maximum: 90
+                      default: 0
+                      example: 0
+                      description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    longitude:
+                      type: number
+                      minimum: -180
+                      maximum: 180
+                      default: 0
+                      example: 0
+                      description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                  required:
+                  - date
+                  - time
+                  - timezone
+                  description: The single birth subject this forecast is built for. One object only, never an array.
+                startDate:
+                  type: string
+                  format: date
+                  example: '2026-06-01'
+                  description: First day of the window in YYYY-MM-DD format. Defaults to today in UTC.
+                endDate:
+                  type: string
+                  format: date
+                  example: '2026-08-30'
+                  description: Last day of the window in YYYY-MM-DD format. Defaults to startDate plus 30 days. Clamped to a maximum of 90 days from startDate.
+                domains:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - western
+                    - vedic
+                    - biorhythm
+                    example: western
+                    description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days.
+                  example:
+                  - western
+                  - vedic
+                  - biorhythm
+                  description: Which forecast domains to consider before filtering by significance. Defaults to all three.
+                minSignificance:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 70
+                  description: Significance floor from 0 to 100 for what counts as a significant date. Defaults to 70.
+                domainWeights:
+                  type: object
+                  properties:
+                    western:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                    vedic:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                    biorhythm:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                  example:
+                    vedic: 1.5
+                    biorhythm: 0.5
+                  description: Per-domain significance multipliers applied before the significance floor and event cap. Bias which domains survive filtering and the cap. Omitted domains default to a weight of 1. Valid keys are western, vedic, and biorhythm.
+              required:
+              - birthData
+      responses:
+        '200':
+          description: High-significance forecast events across the requested domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthData:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        example: '1990-07-15'
+                        description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                      time:
+                        type: string
+                        format: time
+                        example: '13:30:00'
+                        description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                      timezone:
+                        type: number
+                        example: -4
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                      latitude:
+                        type: number
+                        minimum: -90
+                        maximum: 90
+                        default: 0
+                        example: 0
+                        description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                      longitude:
+                        type: number
+                        minimum: -180
+                        maximum: 180
+                        default: 0
+                        example: 0
+                        description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    required:
+                    - date
+                    - time
+                    - timezone
+                    description: Echo of the birth subject this forecast was built for.
+                  startDate:
+                    type: string
+                    example: '2026-06-01'
+                    description: First day of the resolved forecast window.
+                  endDate:
+                    type: string
+                    example: '2026-08-30'
+                    description: Last day of the resolved forecast window after the horizon clamp.
+                  count:
+                    type: number
+                    example: 42
+                    description: Number of events in the timeline after deduplication, filtering, and the event cap.
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          example: '2026-07-04'
+                          description: Calendar date of the event in YYYY-MM-DD (UTC).
+                        datetime:
+                          type: string
+                          example: '2026-07-04T08:42:11Z'
+                          description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                        domain:
+                          type: string
+                          enum:
+                          - western
+                          - vedic
+                          - biorhythm
+                          example: western
+                          description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days. A stable machine value, never localized, so consumers can branch on it under any language.
+                        type:
+                          type: string
+                          enum:
+                          - transit-aspect
+                          - sign-ingress
+                          - retrograde-station
+                          - eclipse
+                          - lunar-phase
+                          - dasha-change
+                          - critical-day
+                          example: transit-aspect
+                          description: Event kind. transit-aspect, sign-ingress, retrograde-station, eclipse, and lunar-phase are western, dasha-change is vedic Vimshottari, critical-day is biorhythm. A stable machine value, never localized, so consumers can branch on it under any language.
+                        body:
+                          type: string
+                          example: Saturn
+                          description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                        target:
+                          type: string
+                          example: Moon
+                          description: For a transit-aspect, the natal body the transit aspects. For a sign-ingress, the zodiac sign entered, and for a lunar-phase, the zodiac sign of the New or Full Moon. Absent for other event types.
+                        aspect:
+                          type: string
+                          example: square
+                          description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
+                        orb:
+                          type: number
+                          example: 0.12
+                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                        station:
+                          type: string
+                          enum:
+                          - retrograde
+                          - direct
+                          example: retrograde
+                          description: For a retrograde-station, whether the planet turns retrograde or direct. A stable machine value, never localized. Absent for other event types.
+                        kind:
+                          type: string
+                          enum:
+                          - penumbral
+                          - partial
+                          - annular
+                          - total
+                          example: total
+                          description: For an eclipse, its classification. total and penumbral apply to lunar eclipses, partial applies to both, annular and total apply to solar eclipses. A stable machine value, never localized. Absent for other event types.
+                        obscuration:
+                          type: number
+                          example: 0.966
+                          description: For a lunar eclipse, the peak fraction from 0 to 1 of the Moon disc covered by Earth umbra. 1 for a total lunar eclipse, between 0 and 1 for a partial, 0 for a penumbral. Absent for solar eclipses and other event types.
+                        phase:
+                          type: string
+                          enum:
+                          - new-moon
+                          - full-moon
+                          example: full-moon
+                          description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
+                        description:
+                          type: string
+                          example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                          description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
+                        significance:
+                          type: number
+                          example: 90
+                          description: Importance score from 0 to 100. Outer-planet exact transit aspects and mahadasha changes score highest; fast Moon events and biorhythm critical days score lower. When domainWeights is supplied this is the weighted score, rounded and clamped to 0 to 100, which is the same value the significance floor and the event cap acted on.
+                      required:
+                      - date
+                      - datetime
+                      - domain
+                      - type
+                      - body
+                      - description
+                      - significance
+                    description: The merged, time-ordered forecast events across the requested domains.
+                required:
+                - birthData
+                - startDate
+                - endDate
+                - count
+                - events
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /forecast/digest:
+    post:
+      operationId: generateDigest
+      tags:
+      - Forecast
+      summary: Forecast digest - Pre-summarized next 24h, 7d, 30d, and 90d rollups
+      description: 'Roll the cross-domain forecast for a single birth subject into four pre-summarized windows: the next 24 hours, 7 days, 30 days, and 90 days from the start date. Each window returns its event count, a per-domain count breakdown, a per-type count breakdown, and the top highest-significance events. Built for a glanceable what-is-coming strip so a caller can render the upcoming highlights without scanning the full event list.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthData:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '1990-07-15'
+                      description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                    time:
+                      type: string
+                      format: time
+                      example: '13:30:00'
+                      description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                    timezone:
+                      anyOf:
+                      - type: number
+                        minimum: -14
+                        maximum: 14
+                      - type: string
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      example: America/New_York
+                    latitude:
+                      type: number
+                      minimum: -90
+                      maximum: 90
+                      default: 0
+                      example: 0
+                      description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    longitude:
+                      type: number
+                      minimum: -180
+                      maximum: 180
+                      default: 0
+                      example: 0
+                      description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                  required:
+                  - date
+                  - time
+                  - timezone
+                  description: The single birth subject this digest is built for. One object only, never an array.
+                startDate:
+                  type: string
+                  format: date
+                  example: '2026-06-01'
+                  description: Start anchor for every window in YYYY-MM-DD format. The next 24h, 7d, 30d, and 90d windows are measured forward from this date at 00:00:00 UTC. Defaults to today in UTC.
+                domains:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - western
+                    - vedic
+                    - biorhythm
+                    example: western
+                    description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days.
+                  example:
+                  - western
+                  - vedic
+                  - biorhythm
+                  description: Which forecast domains to include before rolling up the windows. Defaults to all three.
+                minSignificance:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 0
+                  description: Drop events scoring below this significance threshold from 0 to 100 before the rollup. Defaults to 0.
+                domainWeights:
+                  type: object
+                  properties:
+                    western:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                    vedic:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                    biorhythm:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                      example: 1.5
+                      description: Multiplier for this domain significance. 1 leaves it unchanged, above 1 promotes the domain, below 1 demotes it.
+                  example:
+                    vedic: 1.5
+                    biorhythm: 0.5
+                  description: Per-domain significance multipliers applied before the significance floor and event cap. Bias which domains survive filtering and the cap. Omitted domains default to a weight of 1. Valid keys are western, vedic, and biorhythm.
+                top:
+                  type: integer
+                  minimum: 0
+                  maximum: 20
+                  example: 3
+                  description: Number of highest-significance events to surface per window. Defaults to 3, capped at 20.
+              required:
+              - birthData
+      responses:
+        '200':
+          description: 'Pre-summarized forecast windows: next 24h, 7d, 30d, and 90d rollups'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthData:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        example: '1990-07-15'
+                        description: Birth date in YYYY-MM-DD format. Anchors the natal chart and the Vimshottari dasha sequence.
+                      time:
+                        type: string
+                        format: time
+                        example: '13:30:00'
+                        description: Birth time in 24-hour HH:MM:SS format. Precision matters for the natal positions the transit aspects are measured against.
+                      timezone:
+                        type: number
+                        example: -4
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                      latitude:
+                        type: number
+                        minimum: -90
+                        maximum: 90
+                        default: 0
+                        example: 0
+                        description: Birth latitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                      longitude:
+                        type: number
+                        minimum: -180
+                        maximum: 180
+                        default: 0
+                        example: 0
+                        description: Birth longitude in decimal degrees. Optional and does not affect the timeline. Defaults to 0.
+                    required:
+                    - date
+                    - time
+                    - timezone
+                    description: Echo of the birth subject this digest was built for.
+                  startDate:
+                    type: string
+                    example: '2026-06-01'
+                    description: Start anchor every window is measured from.
+                  endDate:
+                    type: string
+                    example: '2026-08-29'
+                    description: Last day of the resolved 90 day horizon the timeline was built over before slicing.
+                  windows:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        days:
+                          type: number
+                          example: 7
+                          description: Length of this window in days forward from the start anchor. One of 1, 7, 30, 90.
+                        from:
+                          type: string
+                          example: '2026-06-01T00:00:00Z'
+                          description: Inclusive lower bound of the window as an ISO-8601 UTC datetime, the start anchor.
+                        to:
+                          type: string
+                          example: '2026-06-08T00:00:00Z'
+                          description: Exclusive upper bound of the window as an ISO-8601 UTC datetime, the start anchor plus the window length.
+                        count:
+                          type: number
+                          example: 5
+                          description: Number of events whose datetime falls inside this window.
+                        byDomain:
+                          type: object
+                          properties:
+                            western:
+                              type: number
+                              example: 3
+                              description: Number of events in this window produced by this forecast domain. Absent when the domain contributed nothing, so a zero is never written.
+                            vedic:
+                              type: number
+                              example: 3
+                              description: Number of events in this window produced by this forecast domain. Absent when the domain contributed nothing, so a zero is never written.
+                            biorhythm:
+                              type: number
+                              example: 3
+                              description: Number of events in this window produced by this forecast domain. Absent when the domain contributed nothing, so a zero is never written.
+                          example:
+                            western: 3
+                            vedic: 1
+                            biorhythm: 1
+                          description: Count of events in this window broken down by domain. Only domains with at least one event in the window are present. The values sum to count.
+                        byType:
+                          type: object
+                          properties:
+                            transit-aspect:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                            sign-ingress:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                            retrograde-station:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                            eclipse:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                            lunar-phase:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                            dasha-change:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                            critical-day:
+                              type: number
+                              example: 3
+                              description: Number of events in this window of this event type. Absent when the type did not occur, so a zero is never written.
+                          example:
+                            transit-aspect: 3
+                            sign-ingress: 1
+                            critical-day: 1
+                          description: Count of events in this window broken down by event type. Only types with at least one event in the window are present. The values sum to count.
+                        top:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                example: '2026-07-04'
+                                description: Calendar date of the event in YYYY-MM-DD (UTC).
+                              datetime:
+                                type: string
+                                example: '2026-07-04T08:42:11Z'
+                                description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                              domain:
+                                type: string
+                                enum:
+                                - western
+                                - vedic
+                                - biorhythm
+                                example: western
+                                description: Forecast domain. western covers transit aspects, sign ingresses, retrograde stations, eclipses, and new and full moons. vedic covers Vimshottari mahadasha, antardasha, and pratyantardasha boundaries. biorhythm covers critical days. A stable machine value, never localized, so consumers can branch on it under any language.
+                              type:
+                                type: string
+                                enum:
+                                - transit-aspect
+                                - sign-ingress
+                                - retrograde-station
+                                - eclipse
+                                - lunar-phase
+                                - dasha-change
+                                - critical-day
+                                example: transit-aspect
+                                description: Event kind. transit-aspect, sign-ingress, retrograde-station, eclipse, and lunar-phase are western, dasha-change is vedic Vimshottari, critical-day is biorhythm. A stable machine value, never localized, so consumers can branch on it under any language.
+                              body:
+                                type: string
+                                example: Saturn
+                                description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                              target:
+                                type: string
+                                example: Moon
+                                description: For a transit-aspect, the natal body the transit aspects. For a sign-ingress, the zodiac sign entered, and for a lunar-phase, the zodiac sign of the New or Full Moon. Absent for other event types.
+                              aspect:
+                                type: string
+                                example: square
+                                description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
+                              orb:
+                                type: number
+                                example: 0.12
+                                description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                              station:
+                                type: string
+                                enum:
+                                - retrograde
+                                - direct
+                                example: retrograde
+                                description: For a retrograde-station, whether the planet turns retrograde or direct. A stable machine value, never localized. Absent for other event types.
+                              kind:
+                                type: string
+                                enum:
+                                - penumbral
+                                - partial
+                                - annular
+                                - total
+                                example: total
+                                description: For an eclipse, its classification. total and penumbral apply to lunar eclipses, partial applies to both, annular and total apply to solar eclipses. A stable machine value, never localized. Absent for other event types.
+                              obscuration:
+                                type: number
+                                example: 0.966
+                                description: For a lunar eclipse, the peak fraction from 0 to 1 of the Moon disc covered by Earth umbra. 1 for a total lunar eclipse, between 0 and 1 for a partial, 0 for a penumbral. Absent for solar eclipses and other event types.
+                              phase:
+                                type: string
+                                enum:
+                                - new-moon
+                                - full-moon
+                                example: full-moon
+                                description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
+                              description:
+                                type: string
+                                example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                                description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
+                              significance:
+                                type: number
+                                example: 90
+                                description: Importance score from 0 to 100. Outer-planet exact transit aspects and mahadasha changes score highest; fast Moon events and biorhythm critical days score lower. When domainWeights is supplied this is the weighted score, rounded and clamped to 0 to 100, which is the same value the significance floor and the event cap acted on.
+                            required:
+                            - date
+                            - datetime
+                            - domain
+                            - type
+                            - body
+                            - description
+                            - significance
+                          description: The highest-significance events in this window, most significant first, up to the requested top count. The same TimelineEvent shape as the timeline endpoints.
+                      required:
+                      - days
+                      - from
+                      - to
+                      - count
+                      - byDomain
+                      - byType
+                      - top
+                    description: 'The four rollups in ascending window length: next 24h, 7d, 30d, and 90d from the start anchor.'
+                required:
+                - birthData
+                - startDate
+                - endDate
+                - windows
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /forecast/solar-return:
+    post:
+      operationId: forecastSolarReturn
+      tags:
+      - Forecast
+      summary: Solar return chart - Annual birthday forecast chart for a single subject
+      description: 'Cast the solar return chart for one subject and year: the chart erected for the exact moment the transiting Sun returns to its natal ecliptic longitude, the foundational technique for annual astrological forecasting. Returns the full tropical chart with planetary positions, house cusps, aspects, Ascendant, and Midheaven. Location-sensitive: pass the birthplace to anchor the chart to natal geography, or the current city for a relocated solar return where the houses and Ascendant shift to where you are on your birthday. Built for year-ahead forecast tools, birthday charts, and annual horoscope features.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: '1990-07-15'
+                  description: Birth date in YYYY-MM-DD format. Anchors the natal Sun longitude the transiting Sun returns to each year.
+                time:
+                  type: string
+                  format: time
+                  example: '14:30:00'
+                  description: Birth time in 24-hour HH:MM:SS format. Pins the exact natal Sun position that defines the solar return moment.
+                year:
+                  type: integer
+                  minimum: 1900
+                  maximum: 2200
+                  example: 2026
+                  description: Year to cast the solar return for. The chart is erected for the moment in this year when the transiting Sun returns to the natal Sun longitude, on or within a day of the birthday.
+                latitude:
+                  type: number
+                  minimum: -90
+                  maximum: 90
+                  example: 40.7128
+                  description: 'Latitude of the solar return location in decimal degrees. The solar return is location-sensitive: use the birthplace to anchor the chart to natal geography, or the current city for a relocated solar return.'
+                longitude:
+                  type: number
+                  minimum: -180
+                  maximum: 180
+                  example: -74.006
+                  description: Longitude of the solar return location in decimal degrees. Sets the local sidereal time, so it drives the Ascendant, Midheaven, and house cusps of the return chart.
+                timezone:
+                  anyOf:
+                  - type: number
+                    minimum: -14
+                    maximum: 14
+                  - type: string
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  example: America/New_York
+                houseSystem:
+                  type: string
+                  enum:
+                  - placidus
+                  - whole-sign
+                  - equal
+                  - koch
+                  default: placidus
+                  example: placidus
+                  description: House system for the return chart. placidus is the Western default. whole-sign, equal, and koch are also supported.
+              required:
+              - date
+              - time
+              - year
+              - latitude
+              - longitude
+              - timezone
+      responses:
+        '200':
+          description: Solar return chart cast for the requested year and location
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  birthDate:
+                    type: string
+                    example: '1990-07-15'
+                    description: Echo of the birth date used to find the natal Sun longitude.
+                  solarReturnDate:
+                    type: string
+                    example: '2026-07-15T08:42:11'
+                    description: Exact solar return moment, when the transiting Sun returns to the natal Sun longitude, formatted in the requested timezone. The astrological birthday for the year.
+                  solarReturnYear:
+                    type: number
+                    example: 2026
+                    description: Year of this solar return. The chart covers the period to the next birthday.
+                  location:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: 40.7128
+                        description: Latitude used for the return chart house cusps and Ascendant.
+                      longitude:
+                        type: number
+                        example: -74.006
+                        description: Longitude used for local sidereal time and the Midheaven.
+                      timezone:
+                        type: number
+                        example: -5
+                        description: Decimal timezone offset applied to the output datetime.
+                    required:
+                    - latitude
+                    - longitude
+                    - timezone
+                    description: Location the return chart was cast for. The Ascendant and house cusps change with this location, the basis of the relocated solar return technique.
+                  natalSunPosition:
+                    type: object
+                    properties:
+                      longitude:
+                        type: number
+                        example: 112.45
+                        description: Natal Sun ecliptic longitude in degrees from 0 to 360 that the Sun returns to.
+                      sign:
+                        type: string
+                        example: Cancer
+                        description: Tropical zodiac sign of the natal Sun.
+                      degree:
+                        type: number
+                        example: 22.45
+                        description: Degree within the sign from 0 to 29.999 that the Sun returns to.
+                    required:
+                    - longitude
+                    - sign
+                    - degree
+                    description: The natal Sun position whose annual return defines this chart.
+                  chart:
+                    type: object
+                    properties:
+                      birthDetails:
+                        type: object
+                        properties:
+                          date:
+                            type: string
+                            format: date
+                            example: '1990-07-15'
+                            description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+                          time:
+                            type: string
+                            format: time
+                            example: '14:30:00'
+                            description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+                          latitude:
+                            type: number
+                            minimum: -90
+                            maximum: 90
+                            example: 40.7128
+                            description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+                          longitude:
+                            type: number
+                            minimum: -180
+                            maximum: 180
+                            example: -74.006
+                            description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+                          timezone:
+                            type: number
+                            minimum: -12
+                            maximum: 14
+                            example: -5
+                            description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+                        required:
+                        - date
+                        - time
+                        - latitude
+                        - longitude
+                        - timezone
+                        description: Birth details used to generate this chart.
+                      planets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              enum:
+                              - Sun
+                              - Moon
+                              - Mercury
+                              - Venus
+                              - Mars
+                              - Jupiter
+                              - Saturn
+                              - Uranus
+                              - Neptune
+                              - Pluto
+                              - North Node
+                              - South Node
+                              - Chiron
+                              - Black Moon Lilith
+                              example: Sun
+                              description: Body name. One of the 10 classical planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto), the lunar nodes (North Node, South Node), Chiron, or Black Moon Lilith (the mean lunar apogee). The nodes follow the request `nodeType`, which defaults to the true (osculating) node; pass "mean" for the smoothed node. The two differ by up to about 1.8 degrees and no other body is affected.
+                            longitude:
+                              type: number
+                              minimum: 0
+                              maximum: 360
+                              example: 112.45
+                              description: Tropical ecliptic longitude in degrees (0-360). Primary coordinate for zodiac sign and aspect calculations.
+                            latitude:
+                              type: number
+                              example: 0.01
+                              description: Ecliptic latitude in degrees. Near zero for most planets, varies for the Moon and Pluto, and reaches up to about 5 degrees for Black Moon Lilith (projected from the inclined mean lunar orbit).
+                            sign:
+                              type: string
+                              example: Cancer
+                              description: Tropical zodiac sign this planet occupies. Determined by 30-degree divisions of ecliptic longitude.
+                            degree:
+                              type: number
+                              minimum: 0
+                              maximum: 30
+                              example: 22.45
+                              description: Degree within the zodiac sign (0-29.999). Indicates how far the planet has progressed through the sign.
+                            house:
+                              type: integer
+                              minimum: 1
+                              maximum: 12
+                              example: 7
+                              description: House placement (1-12). Determined by the selected house system and birth location.
+                            speed:
+                              type: number
+                              example: 0.9571
+                              description: Daily motion in degrees per day. Negative values indicate retrograde motion.
+                            isRetrograde:
+                              type: boolean
+                              example: false
+                              description: Whether the planet appears to move backward from Earth perspective. Retrograde periods signal review and introspection.
+                          required:
+                          - name
+                          - longitude
+                          - latitude
+                          - sign
+                          - degree
+                          - house
+                          - speed
+                          - isRetrograde
+                        description: 'All 14 celestial bodies in the tropical zodiac with house placements: the 10 classical planets (Sun through Pluto), the lunar nodes (North Node, South Node, in the requested `nodeType` convention), Chiron, and Black Moon Lilith.'
+                      houses:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            number:
+                              type: integer
+                              minimum: 1
+                              maximum: 12
+                              example: 1
+                              description: House number (1-12). Each house governs specific life themes in Western astrology.
+                            longitude:
+                              type: number
+                              minimum: 0
+                              maximum: 360
+                              example: 45.32
+                              description: Ecliptic longitude of this house cusp in degrees (0-360).
+                            sign:
+                              type: string
+                              example: Taurus
+                              description: Zodiac sign on this house cusp. Colors the themes of this life area.
+                            degree:
+                              type: number
+                              minimum: 0
+                              maximum: 30
+                              example: 15.32
+                              description: Degree within the zodiac sign on this cusp (0-29.999).
+                          required:
+                          - number
+                          - longitude
+                          - sign
+                          - degree
+                        description: All 12 house cusps calculated using the selected house system.
+                      houseSystem:
+                        type: string
+                        enum:
+                        - placidus
+                        - whole-sign
+                        - equal
+                        - koch
+                        example: placidus
+                        description: House system used for this chart (placidus, whole-sign, equal, or koch).
+                      aspects:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            planet1:
+                              type: string
+                              enum:
+                              - Sun
+                              - Moon
+                              - Mercury
+                              - Venus
+                              - Mars
+                              - Jupiter
+                              - Saturn
+                              - Uranus
+                              - Neptune
+                              - Pluto
+                              - North Node
+                              - South Node
+                              - Chiron
+                              - Black Moon Lilith
+                              example: Sun
+                              description: First planet in the aspect pair.
+                            planet2:
+                              type: string
+                              enum:
+                              - Sun
+                              - Moon
+                              - Mercury
+                              - Venus
+                              - Mars
+                              - Jupiter
+                              - Saturn
+                              - Uranus
+                              - Neptune
+                              - Pluto
+                              - North Node
+                              - South Node
+                              - Chiron
+                              - Black Moon Lilith
+                              example: Moon
+                              description: Second planet in the aspect pair.
+                            type:
+                              type: string
+                              enum:
+                              - CONJUNCTION
+                              - OPPOSITION
+                              - TRINE
+                              - SQUARE
+                              - SEXTILE
+                              - SEMI_SEXTILE
+                              - QUINCUNX
+                              - SEMI_SQUARE
+                              - SESQUIQUADRATE
+                              example: TRINE
+                              description: 'Aspect type. Major: conjunction (0), opposition (180), trine (120), square (90), sextile (60). Minor: semi-sextile, quincunx, semi-square, sesquiquadrate.'
+                            angle:
+                              type: number
+                              example: 120
+                              description: Exact angular separation that defines this aspect type in degrees.
+                            orb:
+                              type: number
+                              example: 2.5
+                              description: Deviation from exact aspect in degrees. Tighter orb means stronger influence.
+                            isApplying:
+                              type: boolean
+                              example: true
+                              description: Whether the aspect is applying (planets moving toward exact) or separating (moving apart). Applying aspects grow stronger.
+                            strength:
+                              type: number
+                              minimum: 0
+                              maximum: 100
+                              example: 75
+                              description: Aspect strength percentage (0-100). Based on orb tightness relative to the allowed maximum.
+                            interpretation:
+                              type: string
+                              enum:
+                              - harmonious
+                              - challenging
+                              - neutral
+                              example: harmonious
+                              description: 'Aspect nature. Harmonious (trine, sextile) flows easily. Challenging (square, opposition) creates tension and growth. Neutral (conjunction) blends energies. Always English, whatever the lang parameter says: it is an identifier consumers switch and style on. Use interpretationLocalized for anything a reader sees.'
+                          required:
+                          - planet1
+                          - planet2
+                          - type
+                          - angle
+                          - orb
+                          - isApplying
+                          - strength
+                          - interpretation
+                        description: All planetary aspects found in this chart with orbs, strength, and applying/separating status.
+                      partOfFortune:
+                        type: object
+                        properties:
+                          sign:
+                            type: string
+                            example: Aries
+                            description: Zodiac sign holding the Part of Fortune.
+                          degree:
+                            type: number
+                            minimum: 0
+                            maximum: 30
+                            example: 27.24
+                            description: Degree within the Part of Fortune sign (0-29.999).
+                          longitude:
+                            type: number
+                            minimum: 0
+                            maximum: 360
+                            example: 27.24
+                            description: Absolute ecliptic longitude of the Part of Fortune (0-360).
+                          house:
+                            type: integer
+                            minimum: 1
+                            maximum: 12
+                            example: 8
+                            description: 'House containing this point, resolved against the same cusps as `planets[].house` and using the requested house system. Read this field rather than inferring a house from the sign: the two disagree whenever a house spans more than one sign, which is most of the time outside Whole Sign.'
+                          sect:
+                            type: string
+                            enum:
+                            - day
+                            - night
+                            example: night
+                            description: Chart sect used for the calculation. Day (diurnal) when the Sun is above the horizon, night (nocturnal) when below. Day charts use Ascendant plus Moon minus Sun, night charts use Ascendant plus Sun minus Moon.
+                        required:
+                        - sign
+                        - degree
+                        - longitude
+                        - house
+                        - sect
+                        description: Part of Fortune (Lot of Fortune). A point derived from the Ascendant and the two luminaries that marks an area of ease, vitality, and material wellbeing in the chart.
+                      vertex:
+                        type: object
+                        properties:
+                          sign:
+                            type: string
+                            example: Virgo
+                            description: Zodiac sign holding the Vertex.
+                          degree:
+                            type: number
+                            minimum: 0
+                            maximum: 30
+                            example: 12.9
+                            description: Degree within the Vertex sign (0-29.999).
+                          longitude:
+                            type: number
+                            minimum: 0
+                            maximum: 360
+                            example: 162.9
+                            description: Absolute ecliptic longitude of the Vertex (0-360).
+                          house:
+                            type: integer
+                            minimum: 1
+                            maximum: 12
+                            example: 6
+                            description: 'House containing this point, resolved against the same cusps as `planets[].house` and using the requested house system. Read this field rather than inferring a house from the sign: the two disagree whenever a house spans more than one sign, which is most of the time outside Whole Sign.'
+                        required:
+                        - sign
+                        - degree
+                        - longitude
+                        - house
+                        description: Vertex. The western intersection of the prime vertical with the ecliptic, often read as a point of fated encounters and turning-point relationships. The opposite point is the Anti-Vertex.
+                    required:
+                    - birthDetails
+                    - planets
+                    - houses
+                    - houseSystem
+                    - aspects
+                    - partOfFortune
+                    - vertex
+                    description: 'Full chart erected for the solar return moment: all bodies with house placements, the 12 house cusps, aspects, Part of Fortune, and Vertex in the tropical zodiac.'
+                required:
+                - birthDate
+                - solarReturnDate
+                - solarReturnYear
+                - location
+                - natalSunPosition
+                - chart
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

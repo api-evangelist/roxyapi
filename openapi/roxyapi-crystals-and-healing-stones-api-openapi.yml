@@ -1,0 +1,3081 @@
+openapi: 3.2.0
+info:
+  title: Roxy Crystals and Healing Stones API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Crystals and Healing Stones
+  description: Crystal healing API covering the most popular and widely-searched healing crystals and gemstones, from Amethyst and Rose Quartz to Moldavite and Selenite, each with its spiritual, emotional, and physical properties.
+paths:
+  /crystals/zodiac/{sign}:
+    get:
+      operationId: getCrystalsByZodiac
+      tags:
+      - Crystals and Healing Stones
+      summary: Crystals by Zodiac Sign
+      description: Get healing crystals and gemstones associated with a specific zodiac sign. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Supports all 12 zodiac signs from Aries through Pisces. Perfect for personalized crystal recommendations based on astrological birth chart data.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - aries
+          - taurus
+          - gemini
+          - cancer
+          - leo
+          - virgo
+          - libra
+          - scorpio
+          - sagittarius
+          - capricorn
+          - aquarius
+          - pisces
+          example: pisces
+          description: 'Zodiac sign name, case-insensitive (e.g., pisces, Pisces, PISCES all work). Valid: aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces.'
+        required: true
+        description: 'Zodiac sign name, case-insensitive (e.g., pisces, Pisces, PISCES all work). Valid: aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces.'
+        name: sign
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 30
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-30, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-30, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Paginated list of crystals associated with the zodiac sign
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sign:
+                    type: string
+                    example: Pisces
+                    description: The zodiac sign that was queried.
+                  total:
+                    type: number
+                    example: 9
+                    description: Total number of crystals associated with this zodiac sign.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum crystals returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of crystals skipped.
+                  crystals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Amethyst
+                          description: Crystal display name.
+                        id:
+                          type: string
+                          example: amethyst
+                          description: URL-safe crystal identifier for detail lookup.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/amethyst.jpg
+                          description: URL to crystal photograph for visual identification.
+                        colors:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - violet
+                          - purple
+                          description: Primary colors of this crystal variety. Null when color data is unavailable.
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - colors
+                    description: Crystal summaries for this zodiac sign. Call /crystals/{id} for full healing properties.
+                required:
+                - sign
+                - total
+                - limit
+                - offset
+                - crystals
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/chakra/{chakra}:
+    get:
+      operationId: getCrystalsByChakra
+      tags:
+      - Crystals and Healing Stones
+      summary: Crystals by Chakra
+      description: 'Get healing crystals and gemstones that resonate with a specific chakra energy center. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Supports all 7 primary chakras: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, and Crown. Essential for crystal grid building, chakra balancing, and energy healing applications.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - Root
+          - Sacral
+          - Solar Plexus
+          - Heart
+          - Throat
+          - Third Eye
+          - Crown
+          example: Heart
+          description: 'Chakra name, case-insensitive (e.g., heart, Heart, HEART all work). Valid: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown.'
+        required: true
+        description: 'Chakra name, case-insensitive (e.g., heart, Heart, HEART all work). Valid: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown.'
+        name: chakra
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 30
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-30, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-30, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Paginated list of crystals for the specified chakra
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chakra:
+                    type: string
+                    example: Heart
+                    description: The chakra energy center that was queried.
+                  total:
+                    type: number
+                    example: 33
+                    description: Total number of crystals associated with this chakra.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum crystals returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of crystals skipped.
+                  crystals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Amethyst
+                          description: Crystal display name.
+                        id:
+                          type: string
+                          example: amethyst
+                          description: URL-safe crystal identifier for detail lookup.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/amethyst.jpg
+                          description: URL to crystal photograph for visual identification.
+                        colors:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - violet
+                          - purple
+                          description: Primary colors of this crystal variety. Null when color data is unavailable.
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - colors
+                    description: Crystal summaries for this chakra. Call /crystals/{id} for full healing properties.
+                required:
+                - chakra
+                - total
+                - limit
+                - offset
+                - crystals
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/element/{element}:
+    get:
+      operationId: getCrystalsByElement
+      tags:
+      - Crystals and Healing Stones
+      summary: Crystals by Element
+      description: 'Get healing crystals and gemstones associated with a specific natural element. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Supports five elements: Earth, Water, Fire, Air, and Storm. Essential for elemental crystal selection, nature-based healing, and element-themed crystal grid applications.'
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - Earth
+          - Water
+          - Fire
+          - Air
+          - Storm
+          example: Water
+          description: 'Element name, case-insensitive (e.g., water, Water, WATER all work). Valid: Earth, Water, Fire, Air, Storm.'
+        required: true
+        description: 'Element name, case-insensitive (e.g., water, Water, WATER all work). Valid: Earth, Water, Fire, Air, Storm.'
+        name: element
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 30
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-30, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-30, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Paginated list of crystals for the specified element
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  element:
+                    type: string
+                    example: Water
+                    description: The element that was queried.
+                  total:
+                    type: number
+                    example: 29
+                    description: Total number of crystals associated with this element.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum crystals returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of crystals skipped.
+                  crystals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Amethyst
+                          description: Crystal display name.
+                        id:
+                          type: string
+                          example: amethyst
+                          description: URL-safe crystal identifier for detail lookup.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/amethyst.jpg
+                          description: URL to crystal photograph for visual identification.
+                        colors:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - violet
+                          - purple
+                          description: Primary colors of this crystal variety. Null when color data is unavailable.
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - colors
+                    description: Crystal summaries for this element. Call /crystals/{id} for full healing properties.
+                required:
+                - element
+                - total
+                - limit
+                - offset
+                - crystals
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/birthstone/{month}:
+    get:
+      operationId: getBirthstones
+      tags:
+      - Crystals and Healing Stones
+      summary: Birthstone Crystals by Month
+      description: Get the traditional birthstone crystals for a given birth month. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Based on GIA-authoritative birthstone assignments. Perfect for birthday gift recommendations, personalized crystal suggestions, and birthstone jewelry applications.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 2
+          description: Birth month as a number from 1 (January) to 12 (December).
+        required: true
+        description: Birth month as a number from 1 (January) to 12 (December).
+        name: month
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Birthstone crystals for the specified month
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  month:
+                    type: number
+                    example: 2
+                    description: The month number that was queried (1-12).
+                  monthName:
+                    type: string
+                    example: February
+                    description: Full name of the queried month.
+                  total:
+                    type: number
+                    example: 1
+                    description: Number of birthstone crystals for this month.
+                  crystals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Amethyst
+                          description: Crystal display name.
+                        id:
+                          type: string
+                          example: amethyst
+                          description: URL-safe crystal identifier for detail lookup.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/amethyst.jpg
+                          description: URL to crystal photograph for visual identification.
+                        colors:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - violet
+                          - purple
+                          description: Primary colors of this crystal variety. Null when color data is unavailable.
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - colors
+                    description: Birthstone crystals for this month. Call /crystals/{id} for full healing properties.
+                required:
+                - month
+                - monthName
+                - total
+                - crystals
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/search:
+    get:
+      operationId: searchCrystals
+      tags:
+      - Crystals and Healing Stones
+      summary: Search Crystals
+      description: Search for healing crystals by keyword or name. Matches against crystal names, healing keywords, descriptions, and spiritual/emotional/physical meaning fields. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Useful for building crystal search bars, keyword-based recommendation features, and healing property lookups.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: love
+          description: Search query (2-50 characters). Matches against crystal names, keywords, descriptions, and meaning fields. Case-insensitive partial matching.
+        required: true
+        description: Search query (2-50 characters). Matches against crystal names, keywords, descriptions, and meaning fields. Case-insensitive partial matching.
+        name: q
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-50, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-50, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Crystals matching the search query
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query:
+                    type: string
+                    example: love
+                    description: The search query that was used.
+                  total:
+                    type: number
+                    example: 32
+                    description: Total number of crystals matching the query.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum crystals returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of crystals skipped.
+                  crystals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Amethyst
+                          description: Crystal display name.
+                        id:
+                          type: string
+                          example: amethyst
+                          description: URL-safe crystal identifier for detail lookup.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/amethyst.jpg
+                          description: URL to crystal photograph for visual identification.
+                        colors:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - violet
+                          - purple
+                          description: Primary colors of this crystal variety. Null when color data is unavailable.
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - colors
+                    description: Matching crystal summaries. Call /crystals/{id} for full healing properties.
+                required:
+                - query
+                - total
+                - limit
+                - offset
+                - crystals
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/pairings/{id}:
+    get:
+      operationId: getCrystalPairings
+      tags:
+      - Crystals and Healing Stones
+      summary: Crystal Pairings
+      description: Get crystals that pair well with a given crystal for enhanced healing combinations. Returns the source crystal along with its recommended companion stones and their properties. Essential for crystal grid building, healing combination recommendations, and crystal shop cross-sell features.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          example: amethyst
+          description: URL-safe crystal identifier to find pairings for, case-insensitive (e.g., "amethyst", "Amethyst", "rose-quartz" all resolve).
+        required: true
+        description: URL-safe crystal identifier to find pairings for, case-insensitive (e.g., "amethyst", "Amethyst", "rose-quartz" all resolve).
+        name: id
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Crystal pairing recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  crystal:
+                    type: string
+                    example: amethyst
+                    description: The crystal identifier that pairings were requested for.
+                  name:
+                    type: string
+                    example: Amethyst
+                    description: Display name of the source crystal.
+                  count:
+                    type: number
+                    example: 5
+                    description: Number of recommended crystal pairings.
+                  pairings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Citrine
+                          description: Paired crystal display name.
+                        id:
+                          type: string
+                          example: citrine
+                          description: URL-safe identifier for the paired crystal.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/citrine.jpg
+                          description: URL to paired crystal photograph.
+                        description:
+                          type: string
+                          example: To manifest your dreams, you first need to know what they are. By activating both your imagination and your will, citrine helps you clearly envision what you want, and then gives you the persistence to see it through.
+                          description: Brief overview of the paired crystal.
+                        chakras:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - Sacral
+                          - Solar Plexus
+                          - Crown
+                          description: Chakra associations for the paired crystal.
+                        keywords:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - Happiness
+                          - Prosperity
+                          - Generosity
+                          - Creativity
+                          - Pleasure
+                          description: Healing property keywords for the paired crystal. Null when keyword data is unavailable.
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - description
+                      - chakras
+                      - keywords
+                    description: Crystals recommended for use alongside the source crystal for synergistic healing.
+                required:
+                - crystal
+                - name
+                - count
+                - pairings
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Crystal not found in database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/daily:
+    post:
+      operationId: getDailyCrystal
+      tags:
+      - Crystals and Healing Stones
+      summary: Daily Crystal
+      description: Get the crystal of the day as a discovery teaser. Returns a deterministic crystal based on the current date (or a provided seed date), ensuring all users see the same crystal for any given day. Use the /crystals/{id} detail endpoint for complete spiritual, emotional, and physical healing properties. Perfect for daily guidance features, push notifications, wellness app widgets, and crystal journal integrations.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  example: user123
+                  description: Optional seed for reproducible readings. Same seed + same date = same crystal every time. Pass any unique identifier (userId, email hash, session token). Omit for anonymous daily readings.
+                date:
+                  type: string
+                  format: date
+                  example: '2026-03-06'
+                  description: Date for the reading in YYYY-MM-DD format. Defaults to today (UTC). Useful for viewing past daily readings or pre-generating future ones.
+      responses:
+        '200':
+          description: Daily crystal teaser with summary information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    example: '2026-03-05'
+                    description: The date used for crystal selection (UTC).
+                  seed:
+                    type: string
+                    example: user123-2026-03-05
+                    description: Computed seed used for this reading. Same seed always produces the same crystal.
+                  name:
+                    type: string
+                    example: Rose Quartz
+                    description: Display name of the crystal selected for this date.
+                  id:
+                    type: string
+                    example: rose-quartz
+                    description: URL-safe identifier. Call /crystals/{id} for full healing properties.
+                  imageUrl:
+                    type:
+                    - string
+                    - 'null'
+                    example: https://roxyapi.com/img/crystals/rose-quartz.jpg
+                    description: URL to crystal photograph. Use for daily crystal card display and visual features.
+                  description:
+                    type: string
+                    example: Rose quartz is the classic stone of love. It helps dissolve old hurts and open the heart to trust in love and have faith in the benevolence of the Universe.
+                    description: Overview of the crystal covering primary healing purpose and benefits.
+                  chakras:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Heart
+                    description: Chakra energy centers this crystal resonates with for energy healing practice.
+                  zodiacSigns:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                    example:
+                    - Taurus
+                    - Libra
+                    description: Zodiac signs this crystal is traditionally associated with. Null when zodiac data is unavailable.
+                  affirmation:
+                    type: string
+                    example: I am aligned with the energy of unconditional love.
+                    description: Positive affirmation aligned with the selected crystal. Use for daily affirmation features and meditation guidance.
+                required:
+                - date
+                - seed
+                - name
+                - id
+                - imageUrl
+                - description
+                - chakras
+                - zodiacSigns
+                - affirmation
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/random:
+    get:
+      operationId: getRandomCrystal
+      tags:
+      - Crystals and Healing Stones
+      summary: Random Crystal
+      description: Get a randomly selected healing crystal as a discovery teaser. Returns a different crystal on each request (non-deterministic). Use the /crystals/{id} detail endpoint for complete spiritual, emotional, and physical healing properties. Perfect for crystal discovery features, surprise crystal picks, crystal roulette games, and exploration widgets. For a deterministic daily crystal that is the same for all users on a given date, use the /daily endpoint instead.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: A randomly selected crystal with summary information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Citrine
+                    description: Display name of the randomly selected crystal.
+                  id:
+                    type: string
+                    example: citrine
+                    description: URL-safe identifier. Call /crystals/{id} for full healing properties.
+                  imageUrl:
+                    type:
+                    - string
+                    - 'null'
+                    example: https://roxyapi.com/img/crystals/citrine.jpg
+                    description: URL to crystal photograph for visual display.
+                  description:
+                    type: string
+                    example: To manifest your dreams, you first need to know what they are. By activating both your imagination and your will, citrine helps you clearly envision what you want, and then gives you the persistence to see it through.
+                    description: Overview of the crystal covering primary healing purpose and benefits.
+                  chakras:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Sacral
+                    - Solar Plexus
+                    - Crown
+                    description: Chakra energy centers this crystal resonates with.
+                  zodiacSigns:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                    example:
+                    - Aries
+                    - Gemini
+                    - Leo
+                    - Libra
+                    description: Zodiac signs this crystal is traditionally associated with. Null when zodiac data is unavailable.
+                  affirmation:
+                    type: string
+                    example: I am aligned with the energy of happiness.
+                    description: Positive affirmation aligned with the selected crystal energy.
+                required:
+                - name
+                - id
+                - imageUrl
+                - description
+                - chakras
+                - zodiacSigns
+                - affirmation
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/colors:
+    get:
+      operationId: listCrystalColors
+      tags:
+      - Crystals and Healing Stones
+      summary: List Crystal Colors
+      description: List all unique crystal colors available in the database. Use these values with the color filter on GET /crystals to find crystals by color. Essential reference endpoint for building color-based crystal browsing, visual crystal pickers, and filtering UI.
+      security:
+      - apiKey: []
+      responses:
+        '200':
+          description: All unique crystal colors sorted alphabetically
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                    example: 92
+                    description: Total number of unique color values in the database.
+                  colors:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - apple green
+                    - azure blue
+                    - beige
+                    - black
+                    - blue-green
+                    description: Alphabetically sorted list of all unique crystal colors. Pass any value to the color filter on GET /crystals.
+                required:
+                - count
+                - colors
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/planets:
+    get:
+      operationId: listCrystalPlanets
+      tags:
+      - Crystals and Healing Stones
+      summary: List Crystal Planets
+      description: List all unique planetary associations available in the database. Use these values with the planet filter on GET /crystals to find crystals by ruling planet. Essential reference endpoint for astrology app builders who want to recommend crystals based on planetary placements in a birth chart.
+      security:
+      - apiKey: []
+      responses:
+        '200':
+          description: All unique planetary associations sorted alphabetically
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                    example: 13
+                    description: Total number of unique planetary values in the database.
+                  planets:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Earth
+                    - Jupiter
+                    - Mars
+                    - Mercury
+                    - Moon
+                    description: Alphabetically sorted list of all unique planetary associations. Pass any value to the planet filter on GET /crystals.
+                required:
+                - count
+                - planets
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals:
+    get:
+      operationId: listCrystals
+      tags:
+      - Crystals and Healing Stones
+      summary: List All Crystals
+      description: Retrieve healing crystals and gemstones with pagination. Supports optional filtering by chakra, zodiac sign, element, color, or planet. Returns minimal summary fields per crystal. Use the detail endpoint for full healing properties. Perfect for building crystal explorer apps, healing stone guides, and personalized crystal recommendation engines.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      - schema:
+          type: string
+          enum:
+          - Root
+          - Sacral
+          - Solar Plexus
+          - Heart
+          - Throat
+          - Third Eye
+          - Crown
+          example: Heart
+          description: 'Filter by chakra association, case-insensitive. Valid values: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown.'
+        required: false
+        description: 'Filter by chakra association, case-insensitive. Valid values: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown.'
+        name: chakra
+        in: query
+      - schema:
+          type: string
+          enum:
+          - aries
+          - taurus
+          - gemini
+          - cancer
+          - leo
+          - virgo
+          - libra
+          - scorpio
+          - sagittarius
+          - capricorn
+          - aquarius
+          - pisces
+          example: pisces
+          description: 'Filter by zodiac sign, case-insensitive. Valid values: aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces.'
+        required: false
+        description: 'Filter by zodiac sign, case-insensitive. Valid values: aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces.'
+        name: zodiac
+        in: query
+      - schema:
+          type: string
+          enum:
+          - Earth
+          - Water
+          - Fire
+          - Air
+          - Storm
+          example: Water
+          description: 'Filter by elemental association, case-insensitive. Valid values: Earth, Water, Fire, Air, Storm.'
+        required: false
+        description: 'Filter by elemental association, case-insensitive. Valid values: Earth, Water, Fire, Air, Storm.'
+        name: element
+        in: query
+      - schema:
+          type: string
+          example: pink
+          description: Filter by crystal color (partial match, case-insensitive). E.g., "pink", "green", "blue", "purple". Use GET /colors for valid values.
+        required: false
+        description: Filter by crystal color (partial match, case-insensitive). E.g., "pink", "green", "blue", "purple". Use GET /colors for valid values.
+        name: color
+        in: query
+      - schema:
+          type: string
+          example: Venus
+          description: Filter by planetary association (partial match, case-insensitive). E.g., "Venus", "Moon", "Jupiter". Use GET /planets for valid values.
+        required: false
+        description: Filter by planetary association (partial match, case-insensitive). E.g., "Venus", "Moon", "Jupiter". Use GET /planets for valid values.
+        name: planet
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          example: 20
+          description: 'Maximum items to return per page. Range: 1-100, default 20.'
+        required: false
+        description: 'Maximum items to return per page. Range: 1-100, default 20.'
+        name: limit
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          default: 0
+          example: 0
+          description: Number of items to skip for pagination. Default 0.
+        required: false
+        description: Number of items to skip for pagination. Default 0.
+        name: offset
+        in: query
+      responses:
+        '200':
+          description: Paginated list of crystals with summary information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    example: 91
+                    description: Total number of crystals matching the filter criteria.
+                  limit:
+                    type: number
+                    example: 20
+                    description: Maximum crystals returned per page.
+                  offset:
+                    type: number
+                    example: 0
+                    description: Number of crystals skipped.
+                  crystals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Amethyst
+                          description: Crystal display name.
+                        id:
+                          type: string
+                          example: amethyst
+                          description: URL-safe crystal identifier for detail lookup.
+                        imageUrl:
+                          type:
+                          - string
+                          - 'null'
+                          example: https://roxyapi.com/img/crystals/amethyst.jpg
+                          description: URL to crystal photograph for visual identification.
+                        colors:
+                          type:
+                          - array
+                          - 'null'
+                          items:
+                            type: string
+                          example:
+                          - violet
+                          - purple
+                          description: Primary colors of this crystal variety. Null when color data is unavailable.
+                        chakras:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - Third Eye
+                          - Crown
+                          description: 'Chakra energy centers this crystal resonates with. One of: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown.'
+                      required:
+                      - name
+                      - id
+                      - imageUrl
+                      - colors
+                      - chakras
+                    description: Crystal summaries for the current page.
+                required:
+                - total
+                - limit
+                - offset
+                - crystals
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+  /crystals/{id}:
+    get:
+      operationId: getCrystal
+      tags:
+      - Crystals and Healing Stones
+      summary: Get Crystal Healing Properties
+      description: Get complete healing properties and metaphysical data for a specific crystal or gemstone. Returns spiritual, emotional, and physical healing interpretations along with chakra associations, zodiac connections, elemental properties, and crystal pairing recommendations. Authoritative interpretations covering all major healing crystals.
+      security:
+      - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          example: amethyst
+          description: URL-safe crystal identifier, case-insensitive (e.g., "amethyst", "Amethyst", "rose-quartz" all resolve). Must match an entry in the database.
+        required: true
+        description: URL-safe crystal identifier, case-insensitive (e.g., "amethyst", "Amethyst", "rose-quartz" all resolve). Must match an entry in the database.
+        name: id
+        in: path
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
+      responses:
+        '200':
+          description: Complete crystal healing properties with all associations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Amethyst
+                    description: Display name of the crystal or healing stone.
+                  id:
+                    type: string
+                    example: amethyst
+                    description: URL-safe identifier for the crystal.
+                  imageUrl:
+                    type:
+                    - string
+                    - 'null'
+                    example: https://roxyapi.com/img/crystals/amethyst.jpg
+                    description: URL to a high-quality crystal photograph. Use for visual crystal guides, product listings, and crystal identification features.
+                  description:
+                    type: string
+                    example: Amethyst is a powerful purple quartz prized for protection, intuition, and spiritual growth. It is used for breaking bad habits, deepening meditation, and connecting with higher consciousness.
+                    description: Overview of the crystal covering its primary healing purpose, spiritual significance, and key benefits.
+                  meaning:
+                    type: object
+                    properties:
+                      spiritual:
+                        type:
+                        - string
+                        - 'null'
+                        example: Amethyst is thought to provide a protective shield against negative energies, transmuting them into loving, positive vibrations. It is also traditionally associated with clarity of thought, intuition, and inspiration.
+                        description: Spiritual and metaphysical healing properties including energy work, meditation benefits, and higher consciousness connections. Null when spiritual interpretation is unavailable.
+                      emotional:
+                        type: string
+                        example: Its calming energy supports emotional balance, encourages spiritual awareness, and promotes mindfulness. It encourages mental focus, memory, motivation, and dream recall, while assisting in maintaining inner calm and spiritual wisdom.
+                        description: Emotional healing properties including stress relief, relationship support, and emotional balance benefits.
+                      physical:
+                        type:
+                        - string
+                        - 'null'
+                        example: Amethyst is traditionally believed to support overall vitality and holistic well-being. Crystal enthusiasts associate its energy with enhancing hormone balance, tuning the endocrine system, and strengthening the immune system.
+                        description: Physical healing associations traditionally attributed to this crystal in crystal healing practice. Null when physical healing data is unavailable.
+                    required:
+                    - spiritual
+                    - emotional
+                    - physical
+                    description: 'Detailed healing interpretations across three areas: spiritual and metaphysical, emotional and psychological, and physical body associations.'
+                  chakras:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - Third Eye
+                    - Crown
+                    description: 'Chakra energy centers this crystal resonates with. One of: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown.'
+                  zodiacSigns:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                    example:
+                    - Virgo
+                    - Sagittarius
+                    - Capricorn
+                    - Aquarius
+                    - Pisces
+                    description: Zodiac signs this crystal is traditionally associated with. Null when zodiac data is unavailable. Useful for personalized crystal recommendations based on birth chart.
+                  planet:
+                    type:
+                    - string
+                    - 'null'
+                    example: Jupiter
+                    description: Ruling planet or celestial body associated with this crystal in astrological tradition. Null when planetary association is unavailable.
+                  elements:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                    example:
+                    - Air
+                    - Water
+                    description: Elemental associations (Earth, Water, Fire, Air, Storm) connecting the crystal to natural forces and energy types. Null when elemental data is unavailable.
+                  colors:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                    example:
+                    - violet
+                    - purple
+                    description: Primary colors of this crystal variety. Null when color data is unavailable. Useful for color-based crystal selection and filtering.
+                  hardness:
+                    type: number
+                    example: 7
+                    description: Mohs hardness scale rating (1-10). Indicates durability for jewelry use. Quartz family is 7, Diamond is 10, Selenite is 2.
+                  numericalVibration:
+                    type: number
+                    example: 3
+                    description: Numerological vibration number linking this crystal to numerology meanings. Connects crystal healing with numerology practice.
+                  keywords:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                    example:
+                    - Nobility
+                    - Spiritual Awareness
+                    - Psychic Abilities
+                    - Inner Peace
+                    - Meditation
+                    description: Keywords capturing the core healing properties and spiritual themes of this crystal. The count varies by stone, from a single keyword up to twenty. Null when keyword data is unavailable.
+                  birthMonth:
+                    type:
+                    - number
+                    - 'null'
+                    example: 2
+                    description: Birth month (1-12) if this crystal is a traditional birthstone. Null if not a birthstone. January is 1, December is 12.
+                  affirmation:
+                    type: string
+                    example: I am filled with nobility.
+                    description: Positive affirmation aligned with this crystal energy. Use for meditation, journaling, or daily affirmation features.
+                  pairsWith:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - citrine
+                    - rose-quartz
+                    - clear-quartz
+                    - smoky-quartz
+                    - black-tourmaline
+                    description: Crystal identifiers that pair well with this stone for enhanced healing combinations. Use for crystal grid and pairing recommendations.
+                required:
+                - name
+                - id
+                - imageUrl
+                - description
+                - meaning
+                - chakras
+                - zodiacSigns
+                - planet
+                - elements
+                - colors
+                - hardness
+                - numericalVibration
+                - keywords
+                - birthMonth
+                - affirmation
+                - pairsWith
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Crystal not found in database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Resource not found
+                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                  code:
+                    type: string
+                    example: not_found
+                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                required:
+                - error
+                - code
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs

@@ -1,0 +1,235 @@
+openapi: 3.2.0
+info:
+  title: Roxy Usage API
+  version: 2.0.0
+  description: '# RoxyAPI: AI-Native Insight Infrastructure
+
+
+    > **Base URL:** `https://roxyapi.com/api/v2`
+
+    > All endpoint paths below are relative to this base URL.'
+  contact:
+    name: RoxyAPI Support
+    url: https://roxyapi.com/contact
+  license:
+    name: Proprietary
+    url: https://roxyapi.com/policy/terms
+servers:
+- url: /api/v2
+  description: Production API v2
+security:
+- apiKey: []
+tags:
+- name: Usage
+  description: Monitor your API usage, check rate limits, and track request consumption. Get detailed usage breakdowns by endpoint, current month statistics, and recommendations for plan upgrades when approaching limits. Essential for managing API quotas and optimizing subscription plans.
+paths:
+  /usage:
+    get:
+      operationId: getUsageStats
+      tags:
+      - Usage
+      summary: Get API usage statistics
+      description: Returns current usage and plan limits for your subscription.
+      security:
+      - apiKey: []
+      responses:
+        '200':
+          description: Usage statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan:
+                    type: string
+                    description: Name of the subscription plan the API key belongs to. One flat plan covers every domain and the Remote MCP servers, so this is a quota tier, never a per product entitlement.
+                    example: Pro
+                  usedThisMonth:
+                    type: number
+                    description: Billable requests counted against the current calendar month. The quota window is the UTC calendar month and resets on the 1st at 12:00 AM UTC, never on your renewal date, so an annual plan refills every month and a plan bought mid month still refills on the 1st. Read from the same counter the rate limiter enforces on, so it never reports a rosier number than the limit that will 429 you. Cached responses still count.
+                    example: 1523
+                  requestsPerMonth:
+                    type: number
+                    description: 'Monthly request allowance for the plan. One request, API or MCP, equals one unit: there is no credit weighting and no per domain fee.'
+                    example: 10000
+                  remainingThisMonth:
+                    type: number
+                    description: Requests left before the monthly allowance is exhausted, floored at zero. Equal to requestsPerMonth minus usedThisMonth. Refills at the calendar month rollover, whose exact instant every API response carries as a Unix timestamp in the X-RateLimit-Reset header.
+                    example: 8477
+                  email:
+                    type: string
+                    format: email
+                    description: Billing email the subscription is registered under.
+                    example: dev@example.com
+                  status:
+                    type: string
+                    description: 'Subscription lifecycle state. Values: active, cancelled (no longer renewing but usable until endDate), suspended (payment failed, usable until endDate), expired (past endDate), pending (checkout started, payment not captured).'
+                    example: active
+                  endDate:
+                    type: string
+                    format: date-time
+                    description: 'ISO 8601 timestamp when the current billing period ends. A renewal extends this date in place. API access survives a cancelled or suspended status until this moment passes. This is a BILLING date, not a quota date: the monthly allowance resets on the 1st of each month independently of it.'
+                    example: '2026-09-01T00:00:00.000Z'
+                required:
+                - plan
+                - usedThisMonth
+                - requestsPerMonth
+                - remainingThisMonth
+                - email
+                - status
+                - endDate
+        '400':
+          description: Validation error. `issues[]` lists every failed field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: First issue summary.
+                  code:
+                    type: string
+                    enum:
+                    - validation_error
+                  issues:
+                    type: array
+                    description: Every validation failure. Use this to rebuild a valid request.
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          description: Dot-separated field path, or "(root)" for top-level.
+                        message:
+                          type: string
+                        code:
+                          type: string
+                          description: Zod issue code (invalid_type, too_small, too_big, invalid_string, ...).
+                        expected:
+                          type: string
+                          description: Expected type for invalid_type.
+                        minimum:
+                          description: Minimum bound for too_small issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        maximum:
+                          description: Maximum bound for too_big issues.
+                          oneOf:
+                          - type: number
+                          - type: string
+                        inclusive:
+                          type: boolean
+                        format:
+                          type: string
+                          description: Format name for string issues (regex, email, url, uuid).
+                        pattern:
+                          type: string
+                          description: Regex pattern when format is regex.
+                      required:
+                      - path
+                      - message
+                required:
+                - error
+                - code
+                - issues
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '404':
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '405':
+          description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
+          headers:
+            Allow:
+              description: Comma-separated list of allowed methods (RFC 9110).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - method_not_allowed
+                  allow:
+                    type: array
+                    items:
+                      type: string
+                    description: Allowed HTTP methods for this path. Mirrors the Allow response header.
+                  docs:
+                    type: string
+                    description: Link to the product page for this domain.
+                required:
+                - error
+                - code
+                - allow
+        '429':
+          description: Monthly rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Human-readable error message. May change wording.
+                  code:
+                    type: string
+                    description: Machine-readable error code. Stable identifier.
+                required:
+                - error
+                - code
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key for accessing RoxyAPI. Alternatively, you can pass the API key as a query parameter "api_key".
+externalDocs:
+  description: Complete API Documentation with Examples
+  url: https://roxyapi.com/docs
