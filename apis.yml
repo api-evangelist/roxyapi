@@ -39,7 +39,8 @@ tags:
 - MCP Server
 - OpenAPI
 - llms-txt
-- agent-native
+- Agent-Native
+- A2A
 tags_raw:
 - astrology
 - vedic-astrology
@@ -59,6 +60,7 @@ tags_raw:
 - openapi
 - llms-txt
 - agent-native
+- A2A
 apis:
 - aid: roxyapi:roxyapi-angel-numbers-api
   name: RoxyAPI Angel Numbers API
@@ -612,3 +614,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 27
   pass: local-v2
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://roxyapi.com/.well-known/agent-card.json"
+  grade: "flavored"
+  protocol_version: "1.0"
+  control: 404

@@ -2341,6 +2341,47 @@ paths:
                 - code
 components:
   schemas:
+    BasicCard:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fool
+          description: Unique card identifier in kebab-case, with no leading article on Major Arcana (e.g. fool, star, ace-of-cups, queen-of-swords). This is the canonical form, whatever spelling was requested.
+        name:
+          type: string
+          example: The Fool
+          description: Display name of the tarot card as it appears in the Rider-Waite-Smith tradition.
+        arcana:
+          type: string
+          enum:
+          - major
+          - minor
+          example: major
+          description: Whether this card belongs to the Major Arcana (22 trump cards representing major life themes) or Minor Arcana (56 suit cards for daily situations).
+        suit:
+          type: string
+          enum:
+          - cups
+          - wands
+          - swords
+          - pentacles
+          example: cups
+          description: Suit of the card (Minor Arcana only). Cups=emotions, Wands=creativity, Swords=intellect, Pentacles=material. Null for Major Arcana cards.
+        number:
+          type: number
+          example: 0
+          description: 'Card number within its arcana. Major Arcana: 0 (Fool) through 21 (World). Minor Arcana: 1 (Ace) through 14 (King).'
+        imageUrl:
+          type: string
+          example: https://roxyapi.com/img/tarot/major/fool.jpg
+          description: URL to the tarot card artwork image in the Rider-Waite-Smith style.
+      required:
+      - id
+      - name
+      - arcana
+      - number
+      - imageUrl
     DrawnCard:
       type: object
       properties:
@@ -2592,47 +2633,6 @@ components:
       - keywords
       - upright
       - reversed
-      - imageUrl
-    BasicCard:
-      type: object
-      properties:
-        id:
-          type: string
-          example: fool
-          description: Unique card identifier in kebab-case, with no leading article on Major Arcana (e.g. fool, star, ace-of-cups, queen-of-swords). This is the canonical form, whatever spelling was requested.
-        name:
-          type: string
-          example: The Fool
-          description: Display name of the tarot card as it appears in the Rider-Waite-Smith tradition.
-        arcana:
-          type: string
-          enum:
-          - major
-          - minor
-          example: major
-          description: Whether this card belongs to the Major Arcana (22 trump cards representing major life themes) or Minor Arcana (56 suit cards for daily situations).
-        suit:
-          type: string
-          enum:
-          - cups
-          - wands
-          - swords
-          - pentacles
-          example: cups
-          description: Suit of the card (Minor Arcana only). Cups=emotions, Wands=creativity, Swords=intellect, Pentacles=material. Null for Major Arcana cards.
-        number:
-          type: number
-          example: 0
-          description: 'Card number within its arcana. Major Arcana: 0 (Fool) through 21 (World). Minor Arcana: 1 (Ace) through 14 (King).'
-        imageUrl:
-          type: string
-          example: https://roxyapi.com/img/tarot/major/fool.jpg
-          description: URL to the tarot card artwork image in the Rider-Waite-Smith style.
-      required:
-      - id
-      - name
-      - arcana
-      - number
       - imageUrl
   securitySchemes:
     apiKey:
