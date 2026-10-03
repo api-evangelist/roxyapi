@@ -966,6 +966,25 @@ paths:
                 - code
 components:
   schemas:
+    BasicDreamSymbol:
+      type: object
+      properties:
+        id:
+          type: string
+          example: snake
+          description: Unique symbol identifier in kebab-case.
+        name:
+          type: string
+          example: Snake
+          description: Display name of the dream symbol.
+        letter:
+          type: string
+          example: s
+          description: Starting letter for alphabetical filtering.
+      required:
+      - id
+      - name
+      - letter
     DreamSymbol:
       type: object
       properties:
@@ -990,25 +1009,6 @@ components:
       - name
       - letter
       - meaning
-    BasicDreamSymbol:
-      type: object
-      properties:
-        id:
-          type: string
-          example: snake
-          description: Unique symbol identifier in kebab-case.
-        name:
-          type: string
-          example: Snake
-          description: Display name of the dream symbol.
-        letter:
-          type: string
-          example: s
-          description: Starting letter for alphabetical filtering.
-      required:
-      - id
-      - name
-      - letter
   securitySchemes:
     apiKey:
       type: apiKey
