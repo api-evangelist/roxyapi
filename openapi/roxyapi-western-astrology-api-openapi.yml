@@ -13125,158 +13125,70 @@ paths:
                 - code
 components:
   schemas:
-    SolarArcRequest:
+    RelocationChartRequest:
       type: object
       properties:
         date:
           type: string
           format: date
-          example: '1990-07-15'
-          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+          example: '1961-08-04'
+          description: Birth date in YYYY-MM-DD format. The birth moment is unchanged by relocation, so this still defines the planetary positions of the chart.
         time:
           type: string
           format: time
-          example: '14:30:00'
-          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-        latitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7128
-          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-        longitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+          example: '19:24:00'
+          description: Birth time in 24-hour HH:MM:SS format. Combined with the timezone it fixes the exact birth instant, which the relocated angles and houses are recomputed for.
         timezone:
           anyOf:
           - type: number
             minimum: -14
             maximum: 14
           - type: string
-          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
-          example: -5
-        nodeType:
+          description: 'Birth timezone: decimal hours from UTC (e.g. -5 for EST, 5.5 for IST) OR IANA name (e.g. "America/New_York"). Resolved to the DST-correct offset for the birth date. This is the birthplace timezone, not the new location timezone.'
+          example: -10
+        birthLatitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 21.3069
+          description: Birthplace latitude in decimal degrees (-90 to 90). Used for the original natal angles and houses that the relocated chart is compared against.
+        birthLongitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -157.8583
+          description: Birthplace longitude in decimal degrees (-180 to 180). Positive East, negative West.
+        relocationLatitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7167
+          description: New location latitude in decimal degrees (-90 to 90). The relocated Ascendant and house cusps are most sensitive to north-south movement.
+        relocationLongitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: New location longitude in decimal degrees (-180 to 180). The relocated Midheaven shifts roughly one degree per degree of longitude moved.
+        houseSystem:
           type: string
           enum:
-          - mean
-          - 'true'
-          default: 'true'
-          example: 'true'
-          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
-        targetDate:
-          type: string
-          format: date
-          example: '2025-07-15'
-          description: Date to direct the chart to, in YYYY-MM-DD format. Every natal point is advanced by the solar arc accumulated from birth to this date, about one degree for each year of life.
+          - placidus
+          - whole-sign
+          - equal
+          - koch
+          default: placidus
+          example: placidus
+          description: House system for dividing the relocated chart into 12 houses. Placidus (default) is time-sensitive and most popular in Western astrology. Whole Sign assigns one sign per house. Equal divides into 30 degree segments from the Ascendant. Koch emphasizes higher latitudes. Quadrant systems fall back to Whole Sign above the polar circle.
       required:
       - date
       - time
-      - latitude
-      - longitude
       - timezone
-      - targetDate
-    RelocationPlanet:
-      type: object
-      properties:
-        name:
-          type: string
-          enum:
-          - Sun
-          - Moon
-          - Mercury
-          - Venus
-          - Mars
-          - Jupiter
-          - Saturn
-          - Uranus
-          - Neptune
-          - Pluto
-          - North Node
-          - South Node
-          - Chiron
-          - Black Moon Lilith
-          example: Sun
-          description: Body name. One of the 10 classical planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto), the lunar nodes (North Node, South Node), Chiron, or Black Moon Lilith (the mean lunar apogee). The nodes follow the request `nodeType`, which defaults to the true (osculating) node; pass "mean" for the smoothed node. The two differ by up to about 1.8 degrees and no other body is affected.
-        longitude:
-          type: number
-          minimum: 0
-          maximum: 360
-          example: 112.45
-          description: Tropical ecliptic longitude in degrees (0-360). Primary coordinate for zodiac sign and aspect calculations.
-        latitude:
-          type: number
-          example: 0.01
-          description: Ecliptic latitude in degrees. Near zero for most planets, varies for the Moon and Pluto, and reaches up to about 5 degrees for Black Moon Lilith (projected from the inclined mean lunar orbit).
-        sign:
-          type: string
-          example: Cancer
-          description: Tropical zodiac sign this planet occupies. Determined by 30-degree divisions of ecliptic longitude.
-        degree:
-          type: number
-          minimum: 0
-          maximum: 30
-          example: 22.45
-          description: Degree within the zodiac sign (0-29.999). Indicates how far the planet has progressed through the sign.
-        house:
-          type: integer
-          minimum: 1
-          maximum: 12
-          example: 7
-          description: House placement (1-12). Determined by the selected house system and birth location.
-        speed:
-          type: number
-          example: 0.9571
-          description: Daily motion in degrees per day. Negative values indicate retrograde motion.
-        isRetrograde:
-          type: boolean
-          example: false
-          description: Whether the planet appears to move backward from Earth perspective. Retrograde periods signal review and introspection.
-        nameLocalized:
-          type: string
-          example: Sol
-          description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-        signLocalized:
-          type: string
-          example: Cáncer
-          description: Zodiac sign name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-        interpretation:
-          type: object
-          properties:
-            summary:
-              type: string
-              example: Your Sun in Leo in The Third House reveals how you express self-awareness and ego in the realm of communication.
-              description: One-sentence interpretation of this planet in its sign and relocated house.
-            detailed:
-              type: string
-              example: Sun represents self-awareness and ego. In Leo, this energy becomes confident and expressive...
-              description: Multi-sentence interpretation of this relocated placement.
-            keywords:
-              type: array
-              items:
-                type: string
-              example:
-              - Confident
-              - Expressive
-              - Communicative
-              description: Key themes for this relocated placement.
-          required:
-          - summary
-          - detailed
-          - keywords
-          description: Relocated placement interpretation. The planet keeps its natal sign, so this reads its meaning through the new house it occupies at this location.
-      required:
-      - name
-      - longitude
-      - latitude
-      - sign
-      - degree
-      - house
-      - speed
-      - isRetrograde
-    LilithResponse:
+      - birthLatitude
+      - birthLongitude
+      - relocationLatitude
+      - relocationLongitude
+    ProgressionsResponse:
       type: object
       properties:
         birthDetails:
@@ -13316,141 +13228,427 @@ components:
           - latitude
           - longitude
           - timezone
-          description: Echo of the birth moment and place used to compute both Lilith variants.
-        houseSystem:
+          description: Echo of the birth moment and place the progressed chart is built from.
+        targetDate:
           type: string
-          enum:
-          - placidus
-          - whole-sign
-          - equal
-          - koch
-          example: placidus
-          description: House system applied when placing each variant in a house.
-        lilith:
+          example: '2025-07-15'
+          description: The requested date the chart was progressed to.
+        progressedDate:
+          type: string
+          example: '1990-08-17'
+          description: UTC calendar date of the progressed moment, the ephemeris day whose real positions stand in for the target date. One day after birth per year of elapsed life.
+        elapsedYears:
+          type: number
+          example: 35
+          description: Years elapsed between birth and the target date, measured in mean tropical years. Drives both the progressed planets and the Naibod progression of the angles. Negative values progress the chart converse (before birth).
+        planets:
           type: array
           items:
             type: object
             properties:
-              variant:
+              name:
                 type: string
-                enum:
-                - mean
-                - 'true'
-                example: mean
-                description: Which lunar apogee this entry describes. The mean variant is the smoothed average apogee; the true variant is the instantaneous osculating apogee. Always one of these two English literals, whatever the lang parameter says, so it stays safe to compare against in code. Use variantLocalized for anything a reader sees.
-              variantLocalized:
+                example: Sun
+                description: Body name in canonical English. One of the 10 classical planets, the lunar nodes, Chiron, or Black Moon Lilith. Unchanged by the lang parameter, so it stays safe to compare against in code. Use nameLocalized for anything a reader sees.
+              nameLocalized:
                 type: string
-                example: media
-                description: Apogee variant label in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+                example: Sol
+                description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
               longitude:
                 type: number
                 minimum: 0
                 maximum: 360
-                example: 140.58
-                description: Absolute tropical ecliptic longitude of the apogee in degrees (0 to 360).
-              latitude:
-                type: number
-                example: -0.66
-                description: Ecliptic latitude in degrees, the projection of the apogee off the ecliptic plane. Reaches up to about 5 degrees because the lunar orbit is inclined.
+                example: 165.18
+                description: Progressed tropical ecliptic longitude in degrees (0 to 360).
               sign:
                 type: string
-                example: Leo
-                description: Tropical zodiac sign the apogee falls in, naming where the suppressed instinct lives.
+                example: Virgo
+                description: Tropical zodiac sign the progressed body falls in. Always English, whatever the lang parameter says. Use signLocalized for anything a reader sees.
+              signLocalized:
+                type: string
+                example: Virgo
+                description: Zodiac sign name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
               degree:
                 type: number
                 minimum: 0
                 maximum: 30
-                example: 20.58
-                description: Degree of the apogee within its zodiac sign (0 to 29.999).
+                example: 15.18
+                description: Degree of the progressed body within its zodiac sign (0 to 29.999).
               house:
                 type: integer
                 minimum: 1
                 maximum: 12
-                example: 7
-                description: House placement (1 to 12) in the selected house system, the area of life where the Lilith theme plays out.
+                example: 2
+                description: Whole-sign house (1 to 12) counted from the progressed Ascendant sign. The 1st house is the entire sign the progressed Ascendant falls in.
               speed:
                 type: number
-                example: 0.1108
-                description: Daily motion in degrees per day. The mean apogee is always positive (direct); the true apogee can be negative (retrograde).
+                example: 0.985
+                description: Daily motion of the body at the progressed instant in degrees per day. Negative values indicate retrograde motion.
               isRetrograde:
                 type: boolean
                 example: false
-                description: Whether the apogee is moving backward. Always false for the mean apogee; the true apogee turns retrograde when the osculating ellipse swings the apogee direction backward.
+                description: Whether the body is retrograde at the progressed instant, true when the daily speed is negative.
               interpretation:
                 type: string
-                example: Your mean Black Moon Lilith in Leo marks where you meet the wild, untamed, and unapologetic in yourself, the instincts you were taught to suppress and the line past which you refuse to be tamed or shamed.
-                description: Plain language meaning of this Lilith variant in its sign, suitable for chart reports and AI agents. Localized to the requested language.
-              note:
-                type: string
-                example: The mean apogee is the smoothed average position, steadier and the most widely used for psychological reading.
-                description: Short explanation of how this variant is defined and how it differs from the other, localized to the requested language.
+                example: Your progressed Sun in Virgo reflects how self-awareness and ego has matured and shifted since birth.
+                description: Plain language meaning of this progressed body in its sign, suitable for chart reports and AI agents. Localized to the requested language.
             required:
-            - variant
+            - name
             - longitude
-            - latitude
             - sign
             - degree
             - house
             - speed
             - isRetrograde
             - interpretation
-            - note
-          description: Both Black Moon Lilith variants, the mean lunar apogee first and the true (osculating) apogee second.
+          description: 'Every progressed body in canonical order: the 10 classical planets, the lunar nodes, Chiron, and Black Moon Lilith. The progressed Sun moves about one degree per year and the progressed Moon about one sign per two and a half years, so these two are the headline movers in any progressed reading.'
+        ascendant:
+          type: object
+          properties:
+            longitude:
+              type: number
+              minimum: 0
+              maximum: 360
+              example: 134.27
+              description: Absolute tropical ecliptic longitude of the progressed angle in degrees (0 to 360).
+            sign:
+              type: string
+              example: Leo
+              description: Tropical zodiac sign the progressed angle falls in. Always English, whatever the lang parameter says. Use signLocalized for anything a reader sees.
+            signLocalized:
+              type: string
+              example: Leo
+              description: Zodiac sign name on this angle in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+            degree:
+              type: number
+              minimum: 0
+              maximum: 30
+              example: 14.27
+              description: Degree of the progressed angle within its zodiac sign (0 to 29.999).
+          required:
+          - longitude
+          - sign
+          - degree
+          description: Progressed Ascendant, the rising degree advanced by the Naibod arc per year. Marks the evolving outward style and immediate environment.
+        midheaven:
+          type: object
+          properties:
+            longitude:
+              type: number
+              minimum: 0
+              maximum: 360
+              example: 134.27
+              description: Absolute tropical ecliptic longitude of the progressed angle in degrees (0 to 360).
+            sign:
+              type: string
+              example: Leo
+              description: Tropical zodiac sign the progressed angle falls in. Always English, whatever the lang parameter says. Use signLocalized for anything a reader sees.
+            signLocalized:
+              type: string
+              example: Leo
+              description: Zodiac sign name on this angle in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+            degree:
+              type: number
+              minimum: 0
+              maximum: 30
+              example: 14.27
+              description: Degree of the progressed angle within its zodiac sign (0 to 29.999).
+          required:
+          - longitude
+          - sign
+          - degree
+          description: Progressed Midheaven, the culminating degree advanced by the Naibod arc per year. Marks the evolving vocation and public direction.
         summary:
           type: string
-          example: 'Black Moon Lilith for 1961-08-04: mean apogee in Leo and true osculating apogee in Leo, each with sign, degree, house, and interpretation.'
-          description: Short overview of both variants for previews and report intros.
+          example: Your secondary progressed chart advances the birth chart by one day for each year of life.
+          description: Short overview of the progressed chart led by the progressed Sun and Moon. Localized to the requested language.
       required:
       - birthDetails
-      - houseSystem
-      - lilith
+      - targetDate
+      - progressedDate
+      - elapsedYears
+      - planets
+      - ascendant
+      - midheaven
       - summary
-    AspectsRequest:
+    ArabicLotsResponse:
       type: object
       properties:
-        date:
+        birthDetails:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+              example: '1990-07-15'
+              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+            time:
+              type: string
+              format: time
+              example: '14:30:00'
+              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+              example: 40.7128
+              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+              example: -74.006
+              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+            timezone:
+              type: number
+              minimum: -12
+              maximum: 14
+              example: -5
+              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+          required:
+          - date
+          - time
+          - latitude
+          - longitude
+          - timezone
+          description: Echo of the birth moment and place used to compute every lot.
+        sect:
           type: string
-          format: date
-          example: '1990-07-15'
-          description: Date in YYYY-MM-DD format
-        time:
-          type: string
-          format: time
-          example: '14:30:00'
-          description: Time in HH:MM:SS format (24-hour)
-        timezone:
-          anyOf:
-          - type: number
-            minimum: -14
-            maximum: 14
-          - type: string
-          description: 'Timezone offset from UTC in decimal hours (NOT minutes format). Examples: New York EST = -5, India IST = 5.5 (NOT 5:30), Tokyo JST = 9. IMPORTANT: Use decimal format (5.5, not 5:30).'
-          example: -5
-        planets:
+          enum:
+          - day
+          - night
+          example: night
+          description: Chart sect that selected each formula. Day (diurnal) when the Sun is above the horizon, night (nocturnal) when below. Every lot swaps its two non-Ascendant terms between day and night.
+        lots:
           type: array
           items:
-            type: string
-          example:
-          - Sun
-          - Moon
-          - Mercury
-          - Venus
-          - Mars
-          description: 'Optional: specific bodies to calculate aspects for (defaults to all 14: the 10 classical planets, the lunar nodes, Chiron, and Black Moon Lilith)'
-        aspectTypes:
-          type: array
-          items:
-            type: string
-          example:
-          - CONJUNCTION
-          - OPPOSITION
-          - TRINE
-          - SQUARE
-          description: 'Optional: specific aspect types to find (defaults to all 9)'
+            type: object
+            properties:
+              id:
+                type: string
+                example: fortune
+                description: Stable machine identifier for the lot (fortune, spirit, eros, necessity, courage, victory, nemesis). Use this for lookups.
+              name:
+                type: string
+                example: Part of Fortune
+                description: Name of the lot. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use nameLocalized for anything a reader sees.
+              nameLocalized:
+                type: string
+                example: Parte de la Fortuna
+                description: Lot name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              longitude:
+                type: number
+                minimum: 0
+                maximum: 360
+                example: 27.24
+                description: Absolute tropical ecliptic longitude of the lot in degrees (0 to 360).
+              sign:
+                type: string
+                example: Aries
+                description: Tropical zodiac sign the lot falls in.
+              degree:
+                type: number
+                minimum: 0
+                maximum: 30
+                example: 27.24
+                description: Degree of the lot within its zodiac sign (0 to 29.999).
+              formula:
+                type: string
+                example: Ascendant + Sun - Moon
+                description: Human readable arc used for this chart, with the day or night term order already applied by sect.
+              interpretation:
+                type: string
+                example: Your Part of Fortune falls in Aries, marking the body, health, material wellbeing, and the flow of fortune through your life. Lots are sensitive points derived by arc from the Ascendant, Sun, Moon, and planets, with the formula reversed between day and night charts.
+                description: Plain language meaning of this lot in its sign, suitable for chart reports and AI agents. Localized to the requested language.
+            required:
+            - id
+            - name
+            - longitude
+            - sign
+            - degree
+            - formula
+            - interpretation
+          description: 'The seven Hermetic lots in canonical order: Part of Fortune and Part of Spirit from the luminaries, then Eros, Necessity, Courage, Victory, and Nemesis from a planet paired with Fortune or Spirit.'
+        summary:
+          type: string
+          example: 'Seven Hermetic lots for 1990-07-15 cast from a night chart: Fortune, Spirit, Eros, Necessity, Courage, Victory, and Nemesis, each projected by arc from the Ascendant.'
+          description: Short overview of the lot set for previews and report intros.
       required:
-      - date
-      - time
-      - timezone
+      - birthDetails
+      - sect
+      - lots
+      - summary
+    FixedStarsResponse:
+      type: object
+      properties:
+        birthDetails:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+              example: '1990-07-15'
+              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+            time:
+              type: string
+              format: time
+              example: '14:30:00'
+              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+              example: 40.7128
+              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+              example: -74.006
+              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+            timezone:
+              type: number
+              minimum: -12
+              maximum: 14
+              example: -5
+              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+          required:
+          - date
+          - time
+          - latitude
+          - longitude
+          - timezone
+          description: Echo of the birth moment and place used to precess every star.
+        orb:
+          type: number
+          example: 1
+          description: Conjunction orb in degrees applied to detect contacts between stars and natal points.
+        stars:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: regulus
+                description: Lowercase identifier for the fixed star.
+              name:
+                type: string
+                example: Regulus
+                description: Proper name of the fixed star.
+              longitude:
+                type: number
+                minimum: 0
+                maximum: 360
+                example: 150.06
+                description: Tropical ecliptic longitude of the star in degrees (0-360), precessed from its J2000 position to the chart date.
+              sign:
+                type: string
+                example: Virgo
+                description: Tropical zodiac sign the star currently occupies.
+              degree:
+                type: number
+                minimum: 0
+                maximum: 30
+                example: 0.06
+                description: Degree within the zodiac sign (0-29.999).
+              magnitude:
+                type: number
+                example: 1.4
+                description: Apparent visual magnitude. Lower is brighter, and the brightest stars are negative.
+              nature:
+                type: string
+                example: Mars and Jupiter
+                description: Traditional planetary nature of the star in classical astrology.
+              keywords:
+                type: array
+                items:
+                  type: string
+                example:
+                - royalty
+                - honor
+                - power
+                - ambition
+                - downfall
+                description: Traditional astrological keywords associated with the star.
+              conjunctions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    point:
+                      type: string
+                      example: Sun
+                      description: 'Natal point conjunct this star: a planet name, or the chart angles MC and ASC. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use pointLocalized for anything a reader sees.'
+                    pointLocalized:
+                      type: string
+                      example: Sol
+                      description: Natal point name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+                    pointLongitude:
+                      type: number
+                      example: 149.21
+                      description: Tropical ecliptic longitude of the natal point in degrees (0-360).
+                    orb:
+                      type: number
+                      example: 0.62
+                      description: Angular separation in degrees between the star and the natal point. Smaller means a tighter, stronger contact.
+                  required:
+                  - point
+                  - pointLongitude
+                  - orb
+                description: Natal points within the chosen orb of this star. Empty when no planet or angle contacts the star.
+            required:
+            - id
+            - name
+            - longitude
+            - sign
+            - degree
+            - magnitude
+            - nature
+            - keywords
+            - conjunctions
+          description: Every catalog star with its precessed tropical position, magnitude, traditional nature, and any conjunctions to the natal chart.
+        conjunctions:
+          type: array
+          items:
+            type: object
+            properties:
+              star:
+                type: string
+                example: Regulus
+                description: Proper name of the conjunct fixed star.
+              point:
+                type: string
+                example: Sun
+                description: 'Natal point conjunct the star: a planet name, or the chart angles MC and ASC. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use pointLocalized for anything a reader sees.'
+              pointLocalized:
+                type: string
+                example: Sol
+                description: Natal point name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              orb:
+                type: number
+                example: 0.62
+                description: Angular separation in degrees between the star and the natal point.
+              interpretation:
+                type: string
+                example: The fixed star Regulus sits within 0.6 degrees of your Sun, a star of Mars and Jupiter nature in classical astrology. A star this close to a chart point colors how that point expresses itself with its traditional meaning.
+                description: Plain language meaning of this star contact, blending the star traditional nature with the chart point. Localized to the requested language.
+            required:
+            - star
+            - point
+            - orb
+            - interpretation
+          description: Flat list of every star to natal point conjunction, sorted tightest first, each with an interpretation. The high-value summary of where fixed stars touch the chart.
+        summary:
+          type: string
+          example: Fixed star positions for 1990-07-15 with 3 conjunctions within 1 degrees across the major named stars including Regulus, Spica, and Algol.
+          description: Short overview of the fixed-star report for previews and report intros.
+      required:
+      - birthDetails
+      - orb
+      - stars
+      - conjunctions
+      - summary
     AsteroidsRequest:
       type: object
       properties:
@@ -13508,328 +13706,6 @@ components:
       - latitude
       - longitude
       - timezone
-    AstrocartographyResponse:
-      type: object
-      properties:
-        birthDetails:
-          type: object
-          properties:
-            date:
-              type: string
-              format: date
-              example: '1990-07-15'
-              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-            time:
-              type: string
-              format: time
-              example: '14:30:00'
-              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-            latitude:
-              type: number
-              minimum: -90
-              maximum: 90
-              example: 40.7128
-              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-            longitude:
-              type: number
-              minimum: -180
-              maximum: 180
-              example: -74.006
-              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-            timezone:
-              type: number
-              minimum: -12
-              maximum: 14
-              example: -5
-              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
-          required:
-          - date
-          - time
-          - latitude
-          - longitude
-          - timezone
-          description: Echo of the birth moment and place used to compute every planetary line.
-        lines:
-          type: array
-          items:
-            type: object
-            properties:
-              planet:
-                type: string
-                example: Sun
-                description: Celestial body this set of planetary lines belongs to. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use planetLocalized for anything a reader sees.
-              planetLocalized:
-                type: string
-                example: Sol
-                description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              symbol:
-                type: string
-                example: ☉
-                description: Unicode astronomical symbol for this body.
-              rightAscension:
-                type: number
-                example: 90.66
-                description: Equatorial right ascension of the body in degrees (0 to 360), the basis for every line.
-              declination:
-                type: number
-                example: 23.44
-                description: Equatorial declination of the body in degrees (-90 to 90), which sets how far the rising and setting lines curve.
-              mc:
-                type: object
-                properties:
-                  longitude:
-                    type: number
-                    example: -111.0142
-                    description: Constant geographic longitude of this vertical meridian line in decimal degrees. The body culminates (MC) along it, so plot it as a straight north to south line.
-                  interpretation:
-                    type: string
-                    example: Your Sun Midheaven line runs through places where Self-awareness and ego comes forward in your public life, career, and reputation. Living or working along this line tends to push this part of you into the spotlight.
-                    description: Plain language meaning of this Midheaven planetary line for relocation, suitable for chart reports and AI agents.
-                required:
-                - longitude
-                - interpretation
-                description: Midheaven (MC) line. Places along this meridian where the body was culminating overhead, tied to public life, career, and reputation.
-              ic:
-                type: object
-                properties:
-                  longitude:
-                    type: number
-                    example: 68.9858
-                    description: Constant geographic longitude of this vertical meridian line in decimal degrees. The body anti-culminates (IC) along it, so plot it as a straight north to south line.
-                  interpretation:
-                    type: string
-                    example: Your Sun Imum Coeli line runs through places where Self-awareness and ego settles into your home, family, and inner foundations. This line deepens your sense of roots and private life.
-                    description: Plain language meaning of this Imum Coeli planetary line for relocation, suitable for chart reports and AI agents.
-                required:
-                - longitude
-                - interpretation
-                description: Imum Coeli (IC) line, opposite the MC. Places where the body was anti-culminating, tied to home, family, and inner foundations.
-              ascendant:
-                type: object
-                properties:
-                  points:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        latitude:
-                          type: number
-                          example: 40
-                          description: Geographic latitude of this sampled point in decimal degrees.
-                        longitude:
-                          type: number
-                          example: 139.7118
-                          description: Geographic longitude in decimal degrees where the body sits exactly on the eastern (rising) horizon at this latitude.
-                      required:
-                      - latitude
-                      - longitude
-                    description: Sampled geographic points tracing this rising line from 70 South to 70 North. Join them in latitude order to draw the curved planetary line on a world map.
-                  circumpolarBeyond:
-                    type:
-                    - number
-                    - 'null'
-                    example: 68.5262
-                    description: Absolute latitude in degrees beyond which the body never crosses the horizon, so the line has no points past it. Null when the line spans the full sampled range.
-                  interpretation:
-                    type: string
-                    example: Your Sun Ascendant line runs through places where Self-awareness and ego colors your identity, vitality, and how you first come across to others. This part of you feels switched on here.
-                    description: Plain language meaning of this rising (Ascendant) planetary line for relocation, suitable for chart reports and AI agents.
-                required:
-                - points
-                - circumpolarBeyond
-                - interpretation
-                description: Ascendant (rising) line. Places where the body was on the eastern horizon, tied to identity, vitality, and self-expression.
-              descendant:
-                type: object
-                properties:
-                  points:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        latitude:
-                          type: number
-                          example: 40
-                          description: Geographic latitude of this sampled point in decimal degrees.
-                        longitude:
-                          type: number
-                          example: -1.7402
-                          description: Geographic longitude in decimal degrees where the body sits exactly on the western (setting) horizon at this latitude.
-                      required:
-                      - latitude
-                      - longitude
-                    description: Sampled geographic points tracing this setting line from 70 South to 70 North. Join them in latitude order to draw the curved planetary line on a world map.
-                  circumpolarBeyond:
-                    type:
-                    - number
-                    - 'null'
-                    example: 68.5262
-                    description: Absolute latitude in degrees beyond which the body never crosses the horizon, so the line has no points past it. Null when the line spans the full sampled range.
-                  interpretation:
-                    type: string
-                    example: Your Sun Descendant line runs through places where Self-awareness and ego shapes your close relationships, partnerships, and the people you attract. Connection themes stand out along this line.
-                    description: Plain language meaning of this setting (Descendant) planetary line for relocation, suitable for chart reports and AI agents.
-                required:
-                - points
-                - circumpolarBeyond
-                - interpretation
-                description: Descendant (setting) line. Places where the body was on the western horizon, tied to relationships and partnerships.
-            required:
-            - planet
-            - rightAscension
-            - declination
-            - mc
-            - ic
-            - ascendant
-            - descendant
-          description: One entry per body, each carrying its Midheaven, Imum Coeli, Ascendant, and Descendant planetary lines for relocation mapping.
-        summary:
-          type: string
-          example: Astrocartography lines for 1990-07-15. 10 bodies, each with Midheaven, Imum Coeli, Ascendant, and Descendant lines mapping where their themes turn angular worldwide for relocation planning.
-          description: Short overview of the astrocartography map for previews and report intros.
-      required:
-      - birthDetails
-      - lines
-      - summary
-    HousesResponse:
-      type: object
-      properties:
-        date:
-          type: string
-          example: '1990-07-15'
-          description: Input date used for this house cusp calculation.
-        time:
-          type: string
-          example: '14:30:00'
-          description: Input time used for this house cusp calculation.
-        latitude:
-          type: number
-          example: 40.7128
-          description: Observer latitude used for horizon-based house calculations.
-        longitude:
-          type: number
-          example: -74.006
-          description: Observer longitude used for local sidereal time.
-        timezone:
-          type: number
-          example: -5
-          description: Timezone offset from UTC applied to this calculation.
-        houseSystem:
-          type: string
-          example: placidus
-          description: House system used for this calculation (placidus, whole-sign, equal, koch, or all).
-        ascendant:
-          type: object
-          properties:
-            sign:
-              type: string
-              example: Taurus
-              description: Zodiac sign on the Ascendant (rising sign). Determines the first house cusp.
-            degree:
-              type: number
-              example: 15.32
-              description: Degree within the Ascendant sign (0-29.999).
-            longitude:
-              type: number
-              example: 45.32
-              description: Absolute ecliptic longitude of the Ascendant in degrees (0-360).
-          required:
-          - sign
-          - degree
-          - longitude
-          description: Ascendant (rising sign) position. The eastern horizon point at the moment of birth, defining personality expression and physical appearance in Western astrology.
-        midheaven:
-          type: object
-          properties:
-            sign:
-              type: string
-              example: Aquarius
-              description: Zodiac sign on the Midheaven (MC). Indicates career direction and public reputation.
-            degree:
-              type: number
-              example: 8.76
-              description: Degree within the Midheaven sign (0-29.999).
-            longitude:
-              type: number
-              example: 308.76
-              description: Absolute ecliptic longitude of the Midheaven in degrees (0-360).
-          required:
-          - sign
-          - degree
-          - longitude
-          description: Midheaven (MC) position. The highest point of the ecliptic at birth, representing career aspirations and public image in natal astrology.
-        houses:
-          type: array
-          items:
-            type: object
-            properties:
-              number:
-                type: number
-                example: 1
-                description: House number (1-12). Each house governs specific life areas.
-              longitude:
-                type: number
-                example: 45.32
-                description: Ecliptic longitude of this house cusp in degrees (0-360).
-              sign:
-                type: string
-                example: Taurus
-                description: Zodiac sign on this house cusp.
-              degree:
-                type: number
-                example: 15.32
-                description: Degree within the zodiac sign on this cusp (0-29.999).
-            required:
-            - number
-            - longitude
-            - sign
-            - degree
-          description: 'All 12 house cusps with their zodiac positions. House cusps divide the chart into life areas: identity (1st), resources (2nd), communication (3rd), home (4th), creativity (5th), health (6th), partnerships (7th), transformation (8th), philosophy (9th), career (10th), community (11th), spirituality (12th).'
-        comparison:
-          type: object
-          additionalProperties:
-            type: object
-            properties:
-              houses:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    number:
-                      type: number
-                      example: 1
-                      description: House number (1-12). Each house governs specific life areas.
-                    longitude:
-                      type: number
-                      example: 45.32
-                      description: Ecliptic longitude of this house cusp in degrees (0-360), as this house system places it.
-                    sign:
-                      type: string
-                      example: Taurus
-                      description: Zodiac sign on this house cusp in this house system.
-                    degree:
-                      type: number
-                      example: 15.32
-                      description: Degree within the zodiac sign on this cusp (0-29.999).
-                  required:
-                  - number
-                  - longitude
-                  - sign
-                  - degree
-                description: All 12 house cusps as this system computes them. Compare the same house number across the four keys to see how far the systems disagree, which is largest at high latitudes and for the intermediate cusps.
-            required:
-            - houses
-          description: Side-by-side house cusp comparison across all four systems (Placidus, Whole Sign, Equal, Koch). Only included when houseSystem is set to "all". Useful for educational tools and system comparison.
-      required:
-      - date
-      - time
-      - latitude
-      - longitude
-      - timezone
-      - houseSystem
-      - ascendant
-      - midheaven
-      - houses
     AspectPatternsResponse:
       type: object
       properties:
@@ -13951,282 +13827,264 @@ components:
       - patterns
       - total
       - options
-    SolarArcResponse:
-      type: object
-      properties:
-        birthDetails:
-          type: object
-          properties:
-            date:
-              type: string
-              format: date
-              example: '1990-07-15'
-              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-            time:
-              type: string
-              format: time
-              example: '14:30:00'
-              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-            latitude:
-              type: number
-              minimum: -90
-              maximum: 90
-              example: 40.7128
-              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-            longitude:
-              type: number
-              minimum: -180
-              maximum: 180
-              example: -74.006
-              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-            timezone:
-              type: number
-              minimum: -12
-              maximum: 14
-              example: -5
-              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
-          required:
-          - date
-          - time
-          - latitude
-          - longitude
-          - timezone
-          description: Echo of the birth moment and place used to compute the natal chart and the solar arc.
-        targetDate:
-          type: string
-          format: date
-          example: '2025-07-15'
-          description: Echo of the date the chart was directed to.
-        solarArc:
-          type: number
-          minimum: 0
-          maximum: 360
-          example: 34.52
-          description: 'The solar arc in degrees: the secondary-progressed Sun longitude minus the natal Sun longitude. Approximately one degree per year of life. Every natal point is advanced by exactly this arc.'
-        summary:
-          type: string
-          example: Solar arc directions move every point in your chart forward by the same arc the Sun has travelled by progression, about one degree per year.
-          description: Short overview of the directed chart for previews and report intros. Localized to the requested language.
-        directed:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-                example: Sun
-                description: Name of the directed point, covering the planets and the two angles, the Ascendant and the Midheaven, alike. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use nameLocalized for anything a reader sees.
-              nameLocalized:
-                type: string
-                example: Sol
-                description: Directed point name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              natalLongitude:
-                type: number
-                minimum: 0
-                maximum: 360
-                example: 112.45
-                description: Absolute tropical ecliptic longitude of the point in the natal chart, in degrees (0 to 360).
-              directedLongitude:
-                type: number
-                minimum: 0
-                maximum: 360
-                example: 143.78
-                description: Absolute tropical ecliptic longitude after directing, in degrees (0 to 360). Equals the natal longitude plus the solar arc, normalized to a full circle.
-              sign:
-                type: string
-                example: Leo
-                description: Tropical zodiac sign the directed point falls in. A directed point crossing into a new sign marks a developmental turning point.
-              degree:
-                type: number
-                minimum: 0
-                maximum: 30
-                example: 23.78
-                description: Degree of the directed point within its zodiac sign (0 to 29.999).
-              interpretation:
-                type: string
-                example: Your solar arc directed Sun has moved to Leo, carrying self-awareness and ego forward by the 31 degree arc.
-                description: Plain language meaning of this directed point, suitable for chart reports and AI agents. Localized to the requested language.
-            required:
-            - name
-            - natalLongitude
-            - directedLongitude
-            - sign
-            - degree
-            - interpretation
-          description: 'Every natal point advanced by the solar arc: the planets and bodies in canonical order first, then the Ascendant and the Midheaven.'
-      required:
-      - birthDetails
-      - targetDate
-      - solarArc
-      - summary
-      - directed
-    LocalSpaceResponse:
-      type: object
-      properties:
-        birthDetails:
-          type: object
-          properties:
-            date:
-              type: string
-              example: '1990-07-15'
-              description: Birth date echoed from the request.
-            time:
-              type: string
-              example: '14:30:00'
-              description: Birth time echoed from the request.
-            latitude:
-              type: number
-              example: 40.7128
-              description: Birthplace latitude, the origin of every local space line.
-            longitude:
-              type: number
-              example: -74.006
-              description: Birthplace longitude, the origin of every local space line.
-            timezone:
-              type: number
-              example: -5
-              description: Timezone offset from UTC applied to the birth instant.
-          required:
-          - date
-          - time
-          - latitude
-          - longitude
-          - timezone
-          description: The birthplace and birth instant the map was computed for.
-        bodies:
-          type: array
-          items:
-            type: object
-            properties:
-              planet:
-                type: string
-                example: Sun
-                description: Body name (Sun, Moon, Mercury through Pluto, plus North Node, Chiron, or Black Moon Lilith when requested). Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use planetLocalized for anything a reader sees.
-              planetLocalized:
-                type: string
-                example: Sol
-                description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              symbol:
-                type: string
-                example: ☉
-                description: Unicode astronomical symbol for this body.
-              azimuth:
-                type: number
-                example: 113.63
-                description: Compass bearing of the body as seen from the birthplace, in degrees clockwise from true north (0 = north, 90 = east, 180 = south, 270 = west). This is the direction the local space line points.
-              altitude:
-                type: number
-                example: 59.48
-                description: Angular height of the body above (positive) or below (negative) the local horizon at birth, in degrees (-90 to 90).
-              compassDirection:
-                type: string
-                example: ESE
-                description: Nearest 16-point compass abbreviation for the azimuth (N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW).
-              aboveHorizon:
-                type: boolean
-                example: true
-                description: True when the body is above the local horizon (altitude greater than 0) at the birth moment.
-              line:
-                type: object
-                properties:
-                  points:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        latitude:
-                          type: number
-                          example: 39.42
-                          description: Waypoint latitude in decimal degrees.
-                        longitude:
-                          type: number
-                          example: -72.71
-                          description: Waypoint longitude in decimal degrees.
-                      required:
-                      - latitude
-                      - longitude
-                    description: Ordered latitude and longitude waypoints tracing the great-circle local space line from the birthplace along the body azimuth. The first point is the birthplace itself.
-                required:
-                - points
-                description: The great-circle directional line for this body, ready to plot on a map.
-              interpretation:
-                type: string
-                example: Your Sun line points southeast from your birthplace. Travelling or facing this direction tends to emphasize Self-awareness and ego in your daily experience.
-                description: Plain-language reading of what travelling or facing along this body line tends to emphasize. Localized when a translation exists.
-            required:
-            - planet
-            - azimuth
-            - altitude
-            - compassDirection
-            - aboveHorizon
-            - line
-            - interpretation
-          description: Every requested body with its horizon direction, altitude, compass direction, great-circle line, and interpretation.
-        summary:
-          type: string
-          example: Local space directional map of 10 celestial bodies seen from latitude 40.7128, longitude -74.006. 6 of them sit above the horizon at the birth moment.
-          description: One-line overview of the local space map.
-      required:
-      - birthDetails
-      - bodies
-      - summary
-    NatalChartRequest:
+    AspectsResponse:
       type: object
       properties:
         date:
           type: string
-          format: date
           example: '1990-07-15'
-          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+          description: Date used for this aspect calculation (YYYY-MM-DD).
         time:
           type: string
-          format: time
           example: '14:30:00'
-          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-        latitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7128
-          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-        longitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+          description: Time used for this calculation (HH:MM:SS).
         timezone:
-          anyOf:
-          - type: number
-            minimum: -14
-            maximum: 14
-          - type: string
-          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          type: number
           example: -5
-        nodeType:
-          type: string
-          enum:
-          - mean
-          - 'true'
-          default: 'true'
-          example: 'true'
-          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
-        houseSystem:
-          type: string
-          enum:
-          - placidus
-          - whole-sign
-          - equal
-          - koch
-          default: placidus
-          example: placidus
-          description: House system for dividing the chart into 12 houses. Placidus (default) is most popular in Western astrology and time-sensitive. Whole Sign assigns one sign per house (simpler, ancient). Equal houses divide chart into 30° segments from Ascendant. Koch emphasizes houses in high latitudes.
+          description: Timezone offset from UTC in decimal hours.
+        aspectsFound:
+          type: number
+          example: 12
+          description: Total number of aspects found after any filters applied.
+        aspects:
+          type: array
+          items:
+            type: object
+            properties:
+              planet1:
+                type: string
+                example: Sun
+                description: First planet in the aspect pair. Always English, whatever the lang parameter says. Use planet1Localized for anything a reader sees.
+              planet1Localized:
+                type: string
+                example: Sol
+                description: First planet name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              planet2:
+                type: string
+                example: Moon
+                description: Second planet in the aspect pair. Always English, whatever the lang parameter says. Use planet2Localized for anything a reader sees.
+              planet2Localized:
+                type: string
+                example: Luna
+                description: Second planet name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              type:
+                type: string
+                example: TRINE
+                description: Aspect type (CONJUNCTION, OPPOSITION, TRINE, SQUARE, SEXTILE, etc.). Always English, whatever the lang parameter says. Use typeLocalized for anything a reader sees.
+              typeLocalized:
+                type: string
+                example: Trígono
+                description: Aspect type name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              angle:
+                type: number
+                example: 120
+                description: Exact angle defining this aspect type in degrees.
+              orb:
+                type: number
+                example: 2.5
+                description: Distance from exact aspect in degrees. Tighter orb means stronger influence.
+              isApplying:
+                type: boolean
+                example: true
+                description: Whether the aspect is applying (growing stronger) or separating (fading).
+              strength:
+                type: number
+                example: 75
+                description: Aspect strength (0-100) based on orb tightness.
+              interpretation:
+                type: string
+                example: harmonious
+                description: 'Aspect nature for this pair: harmonious, challenging, or neutral. Always English, whatever the lang parameter says, because it is an identifier to compare and style on. This is the field to branch on; meaning.nature is the reference card characterisation of the aspect type and is translated for display.'
+              meaning:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Trine
+                    description: Aspect display name.
+                  description:
+                    type: object
+                    properties:
+                      short:
+                        type: string
+                        example: Planets in trine support each other. Trines, by nature, are accepting. They allow us to accept others, ourselves, and situations. The talents that trines offer a native are so natural that they are almost unconscious.
+                        description: Brief aspect description.
+                      long:
+                        type: string
+                        example: These talents are second nature and completely natural. So, for example, if a chart has Venus trine Neptune, the native may be poetic, romantic, or artistic, and may easily accept a romantic partner for who they are. With Venus square Neptune the same qualities exist, but expressing them takes conscious work rather than coming naturally.
+                        description: Detailed aspect description with astrological context.
+                    required:
+                    - short
+                    - long
+                    description: Aspect meaning in short and long form.
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - accept
+                    - accepting
+                    - difficult
+                    - natural
+                    - support
+                    - talent
+                    description: Keywords associated with this aspect type.
+                  nature:
+                    type: string
+                    example: harmonious
+                    description: How this aspect type is characterised in its reference card, in the requested language, exactly like the name, description and keywords beside it. This is a property of the aspect TYPE, so branch on the aspect-level interpretation field instead, which is always English and is the classification applied to this particular pair.
+                required:
+                - name
+                - description
+                - keywords
+                - nature
+                description: Aspect meaning with keywords, description, and nature classification.
+            required:
+            - planet1
+            - planet2
+            - type
+            - angle
+            - orb
+            - isApplying
+            - strength
+            - interpretation
+          description: All aspects found between the specified planets, with strength, orb, and interpretation.
+        patterns:
+          type: array
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+                enum:
+                - GRAND_TRINE
+                - KITE
+                - T_SQUARE
+                - GRAND_CROSS
+                - YOD
+                - MYSTIC_RECTANGLE
+                - STELLIUM
+                example: GRAND_TRINE
+                description: Pattern kind identifier. GRAND_TRINE (3 trines, harmonious flow), KITE (Grand Trine with a focal outlet planet), T_SQUARE (opposition with squared apex, growth engine), GRAND_CROSS (4 planets in 2 oppositions and 4 squares, peak tension), YOD (Finger of Fate, fated adjustment), MYSTIC_RECTANGLE (oppositions softened by trines and sextiles), STELLIUM (3+ planets clustered in a sign or 10-degree arc).
+              name:
+                type: string
+                example: Grand Trine
+                description: Human-readable name of the configuration as used in astrological literature.
+              planets:
+                type: array
+                items:
+                  type: string
+                example:
+                - Sun
+                - Moon
+                - Mars
+                description: Participating bodies in canonical order. For Kite, T-Square, and Yod the apex planet appears first.
+              apex:
+                type: string
+                example: Mars
+                description: Focal planet for Kite, T-Square, and Yod patterns. Receives the released energy of the configuration and is the recommended integration point.
+              element:
+                type: string
+                enum:
+                - fire
+                - earth
+                - air
+                - water
+                example: water
+                description: Dominant element when the pattern is element-coherent (Grand Trine, Kite). Reported lowercase. Absent for patterns whose meaning does not pivot on element.
+              modality:
+                type: string
+                enum:
+                - cardinal
+                - fixed
+                - mutable
+                example: cardinal
+                description: Dominant modality for tension-based patterns (T-Square, Grand Cross). Cardinal initiates, Fixed sustains, Mutable adapts.
+              dissociate:
+                type: boolean
+                example: false
+                description: True if the pattern is out-of-sign (one or more planets in a neighboring element or modality). Dissociate patterns are still valid but operate with weakened thematic coherence.
+              tightness:
+                type: number
+                minimum: 0
+                maximum: 100
+                example: 78
+                description: Tightness score (0-100) derived from the average orb tightness across all defining aspects. Higher means closer to exact and stronger thematic expression.
+              interpretation:
+                type: string
+                example: Grand Trine in Water signs binds Sun, Moon, and Mars in flowing harmony, gifts that come easily but ask to be activated.
+                description: Concise one-line interpretation naming the participating planets and theme. Localized to the requested language via the lang query parameter (defaults to English).
+              interpretationKey:
+                type: string
+                example: aspectPattern.grandTrine
+                description: Stable template identifier used to render the interpretation. Useful for clients that wish to swap in a custom narrative template while preserving the structured variables.
+              interpretationVars:
+                type: object
+                additionalProperties:
+                  type: string
+                  example: Water
+                  description: 'One value interpolated into the interpretation template, keyed by the placeholder name it fills. Which keys are present depends on the pattern: a Grand Trine carries an element plus three planets, a T-Square carries an apex.'
+                example:
+                  element: Water
+                  planet1: Sun
+                  planet2: Moon
+                  planet3: Mars
+                description: Variables that were interpolated into the interpretation template. Names already resolved to the requested language where appropriate.
+            required:
+            - kind
+            - name
+            - planets
+            - tightness
+            - interpretation
+            - interpretationKey
+            - interpretationVars
+          description: Detected multi-planet aspect configurations (Grand Trine, Kite, T-Square, Grand Cross, Yod, Mystic Rectangle, Stellium).
+        summary:
+          type: object
+          properties:
+            totalAspects:
+              type: number
+              example: 12
+              description: Total aspects found.
+            harmonious:
+              type: number
+              example: 7
+              description: Count of harmonious aspects (trine, sextile).
+            challenging:
+              type: number
+              example: 4
+              description: Count of challenging aspects (square, opposition).
+            neutral:
+              type: number
+              example: 1
+              description: Count of neutral aspects (conjunction).
+            byType:
+              type: object
+              additionalProperties:
+                type: number
+                example: 3
+                description: Number of aspects of this type found in the chart. An aspect type with no hits is absent from the map rather than reported as zero.
+              example:
+                CONJUNCTION: 2
+                TRINE: 3
+                SQUARE: 2
+                SEXTILE: 2
+                OPPOSITION: 1
+              description: Aspect count grouped by type.
+          required:
+          - totalAspects
+          - harmonious
+          - challenging
+          - neutral
+          - byType
+          description: Aspect summary with counts by nature and type.
       required:
       - date
       - time
-      - latitude
-      - longitude
       - timezone
+      - aspectsFound
+      - aspects
+      - summary
     TransitsResponse:
       type: object
       properties:
@@ -14418,51 +14276,176 @@ components:
       - transitTime
       - timezone
       - transitPlanets
-    RelocationChartRequest:
+    LilithResponse:
+      type: object
+      properties:
+        birthDetails:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+              example: '1990-07-15'
+              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+            time:
+              type: string
+              format: time
+              example: '14:30:00'
+              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+              example: 40.7128
+              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+              example: -74.006
+              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+            timezone:
+              type: number
+              minimum: -12
+              maximum: 14
+              example: -5
+              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+          required:
+          - date
+          - time
+          - latitude
+          - longitude
+          - timezone
+          description: Echo of the birth moment and place used to compute both Lilith variants.
+        houseSystem:
+          type: string
+          enum:
+          - placidus
+          - whole-sign
+          - equal
+          - koch
+          example: placidus
+          description: House system applied when placing each variant in a house.
+        lilith:
+          type: array
+          items:
+            type: object
+            properties:
+              variant:
+                type: string
+                enum:
+                - mean
+                - 'true'
+                example: mean
+                description: Which lunar apogee this entry describes. The mean variant is the smoothed average apogee; the true variant is the instantaneous osculating apogee. Always one of these two English literals, whatever the lang parameter says, so it stays safe to compare against in code. Use variantLocalized for anything a reader sees.
+              variantLocalized:
+                type: string
+                example: media
+                description: Apogee variant label in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              longitude:
+                type: number
+                minimum: 0
+                maximum: 360
+                example: 140.58
+                description: Absolute tropical ecliptic longitude of the apogee in degrees (0 to 360).
+              latitude:
+                type: number
+                example: -0.66
+                description: Ecliptic latitude in degrees, the projection of the apogee off the ecliptic plane. Reaches up to about 5 degrees because the lunar orbit is inclined.
+              sign:
+                type: string
+                example: Leo
+                description: Tropical zodiac sign the apogee falls in, naming where the suppressed instinct lives.
+              degree:
+                type: number
+                minimum: 0
+                maximum: 30
+                example: 20.58
+                description: Degree of the apogee within its zodiac sign (0 to 29.999).
+              house:
+                type: integer
+                minimum: 1
+                maximum: 12
+                example: 7
+                description: House placement (1 to 12) in the selected house system, the area of life where the Lilith theme plays out.
+              speed:
+                type: number
+                example: 0.1108
+                description: Daily motion in degrees per day. The mean apogee is always positive (direct); the true apogee can be negative (retrograde).
+              isRetrograde:
+                type: boolean
+                example: false
+                description: Whether the apogee is moving backward. Always false for the mean apogee; the true apogee turns retrograde when the osculating ellipse swings the apogee direction backward.
+              interpretation:
+                type: string
+                example: Your mean Black Moon Lilith in Leo marks where you meet the wild, untamed, and unapologetic in yourself, the instincts you were taught to suppress and the line past which you refuse to be tamed or shamed.
+                description: Plain language meaning of this Lilith variant in its sign, suitable for chart reports and AI agents. Localized to the requested language.
+              note:
+                type: string
+                example: The mean apogee is the smoothed average position, steadier and the most widely used for psychological reading.
+                description: Short explanation of how this variant is defined and how it differs from the other, localized to the requested language.
+            required:
+            - variant
+            - longitude
+            - latitude
+            - sign
+            - degree
+            - house
+            - speed
+            - isRetrograde
+            - interpretation
+            - note
+          description: Both Black Moon Lilith variants, the mean lunar apogee first and the true (osculating) apogee second.
+        summary:
+          type: string
+          example: 'Black Moon Lilith for 1961-08-04: mean apogee in Leo and true osculating apogee in Leo, each with sign, degree, house, and interpretation.'
+          description: Short overview of both variants for previews and report intros.
+      required:
+      - birthDetails
+      - houseSystem
+      - lilith
+      - summary
+    ArabicLotsRequest:
       type: object
       properties:
         date:
           type: string
           format: date
-          example: '1961-08-04'
-          description: Birth date in YYYY-MM-DD format. The birth moment is unchanged by relocation, so this still defines the planetary positions of the chart.
+          example: '1990-07-15'
+          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
         time:
           type: string
           format: time
-          example: '19:24:00'
-          description: Birth time in 24-hour HH:MM:SS format. Combined with the timezone it fixes the exact birth instant, which the relocated angles and houses are recomputed for.
+          example: '14:30:00'
+          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
         timezone:
           anyOf:
           - type: number
             minimum: -14
             maximum: 14
           - type: string
-          description: 'Birth timezone: decimal hours from UTC (e.g. -5 for EST, 5.5 for IST) OR IANA name (e.g. "America/New_York"). Resolved to the DST-correct offset for the birth date. This is the birthplace timezone, not the new location timezone.'
-          example: -10
-        birthLatitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 21.3069
-          description: Birthplace latitude in decimal degrees (-90 to 90). Used for the original natal angles and houses that the relocated chart is compared against.
-        birthLongitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -157.8583
-          description: Birthplace longitude in decimal degrees (-180 to 180). Positive East, negative West.
-        relocationLatitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7167
-          description: New location latitude in decimal degrees (-90 to 90). The relocated Ascendant and house cusps are most sensitive to north-south movement.
-        relocationLongitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: New location longitude in decimal degrees (-180 to 180). The relocated Midheaven shifts roughly one degree per degree of longitude moved.
+          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          example: -5
+        nodeType:
+          type: string
+          enum:
+          - mean
+          - 'true'
+          default: 'true'
+          example: 'true'
+          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
         houseSystem:
           type: string
           enum:
@@ -14472,15 +14455,164 @@ components:
           - koch
           default: placidus
           example: placidus
-          description: House system for dividing the relocated chart into 12 houses. Placidus (default) is time-sensitive and most popular in Western astrology. Whole Sign assigns one sign per house. Equal divides into 30 degree segments from the Ascendant. Koch emphasizes higher latitudes. Quadrant systems fall back to Whole Sign above the polar circle.
+          description: House system used to place the Sun, which determines the chart sect (day when the Sun is above the horizon, night when below) and therefore which lot formula applies. Placidus (default), Whole Sign, Equal, or Koch.
       required:
       - date
       - time
+      - latitude
+      - longitude
       - timezone
-      - birthLatitude
-      - birthLongitude
-      - relocationLatitude
-      - relocationLongitude
+    ProgressionsRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '1990-07-15'
+          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+        time:
+          type: string
+          format: time
+          example: '14:30:00'
+          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+        timezone:
+          anyOf:
+          - type: number
+            minimum: -14
+            maximum: 14
+          - type: string
+          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          example: -5
+        nodeType:
+          type: string
+          enum:
+          - mean
+          - 'true'
+          default: 'true'
+          example: 'true'
+          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
+        targetDate:
+          type: string
+          format: date
+          example: '2025-07-15'
+          description: Date to progress the chart to, in YYYY-MM-DD format. Usually today or a forecast date. The day-for-a-year key turns the elapsed years since birth into the same number of ephemeris days after the birth moment.
+      required:
+      - date
+      - time
+      - latitude
+      - longitude
+      - timezone
+      - targetDate
+    RelocationPlanet:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - Sun
+          - Moon
+          - Mercury
+          - Venus
+          - Mars
+          - Jupiter
+          - Saturn
+          - Uranus
+          - Neptune
+          - Pluto
+          - North Node
+          - South Node
+          - Chiron
+          - Black Moon Lilith
+          example: Sun
+          description: Body name. One of the 10 classical planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto), the lunar nodes (North Node, South Node), Chiron, or Black Moon Lilith (the mean lunar apogee). The nodes follow the request `nodeType`, which defaults to the true (osculating) node; pass "mean" for the smoothed node. The two differ by up to about 1.8 degrees and no other body is affected.
+        longitude:
+          type: number
+          minimum: 0
+          maximum: 360
+          example: 112.45
+          description: Tropical ecliptic longitude in degrees (0-360). Primary coordinate for zodiac sign and aspect calculations.
+        latitude:
+          type: number
+          example: 0.01
+          description: Ecliptic latitude in degrees. Near zero for most planets, varies for the Moon and Pluto, and reaches up to about 5 degrees for Black Moon Lilith (projected from the inclined mean lunar orbit).
+        sign:
+          type: string
+          example: Cancer
+          description: Tropical zodiac sign this planet occupies. Determined by 30-degree divisions of ecliptic longitude.
+        degree:
+          type: number
+          minimum: 0
+          maximum: 30
+          example: 22.45
+          description: Degree within the zodiac sign (0-29.999). Indicates how far the planet has progressed through the sign.
+        house:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 7
+          description: House placement (1-12). Determined by the selected house system and birth location.
+        speed:
+          type: number
+          example: 0.9571
+          description: Daily motion in degrees per day. Negative values indicate retrograde motion.
+        isRetrograde:
+          type: boolean
+          example: false
+          description: Whether the planet appears to move backward from Earth perspective. Retrograde periods signal review and introspection.
+        nameLocalized:
+          type: string
+          example: Sol
+          description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+        signLocalized:
+          type: string
+          example: Cáncer
+          description: Zodiac sign name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+        interpretation:
+          type: object
+          properties:
+            summary:
+              type: string
+              example: Your Sun in Leo in The Third House reveals how you express self-awareness and ego in the realm of communication.
+              description: One-sentence interpretation of this planet in its sign and relocated house.
+            detailed:
+              type: string
+              example: Sun represents self-awareness and ego. In Leo, this energy becomes confident and expressive...
+              description: Multi-sentence interpretation of this relocated placement.
+            keywords:
+              type: array
+              items:
+                type: string
+              example:
+              - Confident
+              - Expressive
+              - Communicative
+              description: Key themes for this relocated placement.
+          required:
+          - summary
+          - detailed
+          - keywords
+          description: Relocated placement interpretation. The planet keeps its natal sign, so this reads its meaning through the new house it occupies at this location.
+      required:
+      - name
+      - longitude
+      - latitude
+      - sign
+      - degree
+      - house
+      - speed
+      - isRetrograde
     AspectPatternsRequest:
       type: object
       properties:
@@ -14534,289 +14666,145 @@ components:
         latitude: 37.77
         longitude: -122.42
         timezone: -8
-    ProgressionsResponse:
+    HousesResponse:
       type: object
       properties:
-        birthDetails:
+        date:
+          type: string
+          example: '1990-07-15'
+          description: Input date used for this house cusp calculation.
+        time:
+          type: string
+          example: '14:30:00'
+          description: Input time used for this house cusp calculation.
+        latitude:
+          type: number
+          example: 40.7128
+          description: Observer latitude used for horizon-based house calculations.
+        longitude:
+          type: number
+          example: -74.006
+          description: Observer longitude used for local sidereal time.
+        timezone:
+          type: number
+          example: -5
+          description: Timezone offset from UTC applied to this calculation.
+        houseSystem:
+          type: string
+          example: placidus
+          description: House system used for this calculation (placidus, whole-sign, equal, koch, or all).
+        ascendant:
           type: object
           properties:
-            date:
+            sign:
               type: string
-              format: date
-              example: '1990-07-15'
-              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-            time:
-              type: string
-              format: time
-              example: '14:30:00'
-              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-            latitude:
+              example: Taurus
+              description: Zodiac sign on the Ascendant (rising sign). Determines the first house cusp.
+            degree:
               type: number
-              minimum: -90
-              maximum: 90
-              example: 40.7128
-              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+              example: 15.32
+              description: Degree within the Ascendant sign (0-29.999).
             longitude:
               type: number
-              minimum: -180
-              maximum: 180
-              example: -74.006
-              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-            timezone:
-              type: number
-              minimum: -12
-              maximum: 14
-              example: -5
-              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+              example: 45.32
+              description: Absolute ecliptic longitude of the Ascendant in degrees (0-360).
           required:
-          - date
-          - time
-          - latitude
+          - sign
+          - degree
           - longitude
-          - timezone
-          description: Echo of the birth moment and place the progressed chart is built from.
-        targetDate:
-          type: string
-          example: '2025-07-15'
-          description: The requested date the chart was progressed to.
-        progressedDate:
-          type: string
-          example: '1990-08-17'
-          description: UTC calendar date of the progressed moment, the ephemeris day whose real positions stand in for the target date. One day after birth per year of elapsed life.
-        elapsedYears:
-          type: number
-          example: 35
-          description: Years elapsed between birth and the target date, measured in mean tropical years. Drives both the progressed planets and the Naibod progression of the angles. Negative values progress the chart converse (before birth).
-        planets:
+          description: Ascendant (rising sign) position. The eastern horizon point at the moment of birth, defining personality expression and physical appearance in Western astrology.
+        midheaven:
+          type: object
+          properties:
+            sign:
+              type: string
+              example: Aquarius
+              description: Zodiac sign on the Midheaven (MC). Indicates career direction and public reputation.
+            degree:
+              type: number
+              example: 8.76
+              description: Degree within the Midheaven sign (0-29.999).
+            longitude:
+              type: number
+              example: 308.76
+              description: Absolute ecliptic longitude of the Midheaven in degrees (0-360).
+          required:
+          - sign
+          - degree
+          - longitude
+          description: Midheaven (MC) position. The highest point of the ecliptic at birth, representing career aspirations and public image in natal astrology.
+        houses:
           type: array
           items:
             type: object
             properties:
-              name:
-                type: string
-                example: Sun
-                description: Body name in canonical English. One of the 10 classical planets, the lunar nodes, Chiron, or Black Moon Lilith. Unchanged by the lang parameter, so it stays safe to compare against in code. Use nameLocalized for anything a reader sees.
-              nameLocalized:
-                type: string
-                example: Sol
-                description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              number:
+                type: number
+                example: 1
+                description: House number (1-12). Each house governs specific life areas.
               longitude:
                 type: number
-                minimum: 0
-                maximum: 360
-                example: 165.18
-                description: Progressed tropical ecliptic longitude in degrees (0 to 360).
+                example: 45.32
+                description: Ecliptic longitude of this house cusp in degrees (0-360).
               sign:
                 type: string
-                example: Virgo
-                description: Tropical zodiac sign the progressed body falls in. Always English, whatever the lang parameter says. Use signLocalized for anything a reader sees.
-              signLocalized:
-                type: string
-                example: Virgo
-                description: Zodiac sign name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+                example: Taurus
+                description: Zodiac sign on this house cusp.
               degree:
                 type: number
-                minimum: 0
-                maximum: 30
-                example: 15.18
-                description: Degree of the progressed body within its zodiac sign (0 to 29.999).
-              house:
-                type: integer
-                minimum: 1
-                maximum: 12
-                example: 2
-                description: Whole-sign house (1 to 12) counted from the progressed Ascendant sign. The 1st house is the entire sign the progressed Ascendant falls in.
-              speed:
-                type: number
-                example: 0.985
-                description: Daily motion of the body at the progressed instant in degrees per day. Negative values indicate retrograde motion.
-              isRetrograde:
-                type: boolean
-                example: false
-                description: Whether the body is retrograde at the progressed instant, true when the daily speed is negative.
-              interpretation:
-                type: string
-                example: Your progressed Sun in Virgo reflects how self-awareness and ego has matured and shifted since birth.
-                description: Plain language meaning of this progressed body in its sign, suitable for chart reports and AI agents. Localized to the requested language.
+                example: 15.32
+                description: Degree within the zodiac sign on this cusp (0-29.999).
             required:
-            - name
+            - number
             - longitude
             - sign
             - degree
-            - house
-            - speed
-            - isRetrograde
-            - interpretation
-          description: 'Every progressed body in canonical order: the 10 classical planets, the lunar nodes, Chiron, and Black Moon Lilith. The progressed Sun moves about one degree per year and the progressed Moon about one sign per two and a half years, so these two are the headline movers in any progressed reading.'
-        ascendant:
+          description: 'All 12 house cusps with their zodiac positions. House cusps divide the chart into life areas: identity (1st), resources (2nd), communication (3rd), home (4th), creativity (5th), health (6th), partnerships (7th), transformation (8th), philosophy (9th), career (10th), community (11th), spirituality (12th).'
+        comparison:
           type: object
-          properties:
-            longitude:
-              type: number
-              minimum: 0
-              maximum: 360
-              example: 134.27
-              description: Absolute tropical ecliptic longitude of the progressed angle in degrees (0 to 360).
-            sign:
-              type: string
-              example: Leo
-              description: Tropical zodiac sign the progressed angle falls in. Always English, whatever the lang parameter says. Use signLocalized for anything a reader sees.
-            signLocalized:
-              type: string
-              example: Leo
-              description: Zodiac sign name on this angle in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-            degree:
-              type: number
-              minimum: 0
-              maximum: 30
-              example: 14.27
-              description: Degree of the progressed angle within its zodiac sign (0 to 29.999).
-          required:
-          - longitude
-          - sign
-          - degree
-          description: Progressed Ascendant, the rising degree advanced by the Naibod arc per year. Marks the evolving outward style and immediate environment.
-        midheaven:
-          type: object
-          properties:
-            longitude:
-              type: number
-              minimum: 0
-              maximum: 360
-              example: 134.27
-              description: Absolute tropical ecliptic longitude of the progressed angle in degrees (0 to 360).
-            sign:
-              type: string
-              example: Leo
-              description: Tropical zodiac sign the progressed angle falls in. Always English, whatever the lang parameter says. Use signLocalized for anything a reader sees.
-            signLocalized:
-              type: string
-              example: Leo
-              description: Zodiac sign name on this angle in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-            degree:
-              type: number
-              minimum: 0
-              maximum: 30
-              example: 14.27
-              description: Degree of the progressed angle within its zodiac sign (0 to 29.999).
-          required:
-          - longitude
-          - sign
-          - degree
-          description: Progressed Midheaven, the culminating degree advanced by the Naibod arc per year. Marks the evolving vocation and public direction.
-        summary:
-          type: string
-          example: Your secondary progressed chart advances the birth chart by one day for each year of life.
-          description: Short overview of the progressed chart led by the progressed Sun and Moon. Localized to the requested language.
+          additionalProperties:
+            type: object
+            properties:
+              houses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    number:
+                      type: number
+                      example: 1
+                      description: House number (1-12). Each house governs specific life areas.
+                    longitude:
+                      type: number
+                      example: 45.32
+                      description: Ecliptic longitude of this house cusp in degrees (0-360), as this house system places it.
+                    sign:
+                      type: string
+                      example: Taurus
+                      description: Zodiac sign on this house cusp in this house system.
+                    degree:
+                      type: number
+                      example: 15.32
+                      description: Degree within the zodiac sign on this cusp (0-29.999).
+                  required:
+                  - number
+                  - longitude
+                  - sign
+                  - degree
+                description: All 12 house cusps as this system computes them. Compare the same house number across the four keys to see how far the systems disagree, which is largest at high latitudes and for the intermediate cusps.
+            required:
+            - houses
+          description: Side-by-side house cusp comparison across all four systems (Placidus, Whole Sign, Equal, Koch). Only included when houseSystem is set to "all". Useful for educational tools and system comparison.
       required:
-      - birthDetails
-      - targetDate
-      - progressedDate
-      - elapsedYears
-      - planets
+      - date
+      - time
+      - latitude
+      - longitude
+      - timezone
+      - houseSystem
       - ascendant
       - midheaven
-      - summary
-    ProfectionsResponse:
-      type: object
-      properties:
-        birthDetails:
-          type: object
-          properties:
-            date:
-              type: string
-              format: date
-              example: '1990-07-15'
-              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-            time:
-              type: string
-              format: time
-              example: '14:30:00'
-              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-            latitude:
-              type: number
-              minimum: -90
-              maximum: 90
-              example: 40.7128
-              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-            longitude:
-              type: number
-              minimum: -180
-              maximum: 180
-              example: -74.006
-              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-            timezone:
-              type: number
-              minimum: -12
-              maximum: 14
-              example: -5
-              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
-          required:
-          - date
-          - time
-          - latitude
-          - longitude
-          - timezone
-          description: Echo of the birth moment and place used to derive the natal Ascendant and the lord of the year placement.
-        targetDate:
-          type: string
-          format: date
-          example: '2025-08-04'
-          description: Target date whose profection year was computed, echoed from the request.
-        age:
-          type: integer
-          minimum: 0
-          example: 30
-          description: Completed whole years from birth to the target date. Age 0 is the birth year and profects the first house.
-        profectedHouse:
-          type: integer
-          minimum: 1
-          maximum: 12
-          example: 7
-          description: Profected whole sign house activated for the year (1 to 12), computed as age modulo 12 plus 1. House 1 is the rising sign and the cycle repeats every twelve years.
-        profectedSign:
-          type: string
-          example: Leo
-          description: 'Tropical zodiac sign on the profected house: the rising sign advanced by one whole sign for each completed year.'
-        lordOfYear:
-          type: string
-          example: Sun
-          description: 'Lord of the year (annual time lord): the traditional ruling planet of the profected sign whose natal condition and transits color the themes of the year.'
-        lordNatalPosition:
-          type: object
-          properties:
-            sign:
-              type: string
-              example: Leo
-              description: Zodiac sign the lord of the year occupies in the natal chart.
-            house:
-              type: integer
-              minimum: 1
-              maximum: 12
-              example: 6
-              description: Natal house the lord of the year occupies (1 to 12), in the requested house system.
-          required:
-          - sign
-          - house
-          description: 'Where the lord of the year sits in the birth chart: the natal sign and house that ground the theme of the profection year.'
-        interpretation:
-          type: string
-          example: This profection year activates The Seventh House in Leo, making Sun your lord of the year. The year takes its tone from partnerships and relationships and from how Sun sits in your birth chart.
-          description: Plain language reading of the profection year, combining the profected house theme, the profected sign, and the lord of the year. Localized to the requested language.
-        summary:
-          type: string
-          example: At age 30, the annual profection activates house 7 in Leo, making Sun the lord of the year for 2025-08-04.
-          description: Short overview of the profection year for previews and report intros.
-      required:
-      - birthDetails
-      - targetDate
-      - age
-      - profectedHouse
-      - profectedSign
-      - lordOfYear
-      - lordNatalPosition
-      - interpretation
-      - summary
+      - houses
     NatalChartResponse:
       type: object
       properties:
@@ -15381,407 +15369,6 @@ components:
       - partOfFortune
       - vertex
       - summary
-    ProgressionsRequest:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          example: '1990-07-15'
-          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-        time:
-          type: string
-          format: time
-          example: '14:30:00'
-          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-        latitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7128
-          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-        longitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-        timezone:
-          anyOf:
-          - type: number
-            minimum: -14
-            maximum: 14
-          - type: string
-          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
-          example: -5
-        nodeType:
-          type: string
-          enum:
-          - mean
-          - 'true'
-          default: 'true'
-          example: 'true'
-          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
-        targetDate:
-          type: string
-          format: date
-          example: '2025-07-15'
-          description: Date to progress the chart to, in YYYY-MM-DD format. Usually today or a forecast date. The day-for-a-year key turns the elapsed years since birth into the same number of ephemeris days after the birth moment.
-      required:
-      - date
-      - time
-      - latitude
-      - longitude
-      - timezone
-      - targetDate
-    ProfectionsRequest:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          example: '1990-07-15'
-          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-        time:
-          type: string
-          format: time
-          example: '14:30:00'
-          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-        latitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7128
-          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-        longitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-        timezone:
-          anyOf:
-          - type: number
-            minimum: -14
-            maximum: 14
-          - type: string
-          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
-          example: -5
-        nodeType:
-          type: string
-          enum:
-          - mean
-          - 'true'
-          default: 'true'
-          example: 'true'
-          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
-        targetDate:
-          type: string
-          format: date
-          example: '2025-08-04'
-          description: Date whose profection year you want, in YYYY-MM-DD format. The completed whole years from the birth date to this date select the profected house and sign. Must fall on or after the birth date.
-        houseSystem:
-          type: string
-          enum:
-          - placidus
-          - whole-sign
-          - equal
-          - koch
-          default: placidus
-          example: placidus
-          description: House system used only to report where the lord of the year sits in the natal chart. The profected house and sign always use whole sign profection from the rising sign. Placidus (default), Whole Sign, Equal, or Koch.
-      required:
-      - date
-      - time
-      - latitude
-      - longitude
-      - timezone
-      - targetDate
-    FixedStarsResponse:
-      type: object
-      properties:
-        birthDetails:
-          type: object
-          properties:
-            date:
-              type: string
-              format: date
-              example: '1990-07-15'
-              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-            time:
-              type: string
-              format: time
-              example: '14:30:00'
-              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-            latitude:
-              type: number
-              minimum: -90
-              maximum: 90
-              example: 40.7128
-              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-            longitude:
-              type: number
-              minimum: -180
-              maximum: 180
-              example: -74.006
-              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-            timezone:
-              type: number
-              minimum: -12
-              maximum: 14
-              example: -5
-              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
-          required:
-          - date
-          - time
-          - latitude
-          - longitude
-          - timezone
-          description: Echo of the birth moment and place used to precess every star.
-        orb:
-          type: number
-          example: 1
-          description: Conjunction orb in degrees applied to detect contacts between stars and natal points.
-        stars:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                example: regulus
-                description: Lowercase identifier for the fixed star.
-              name:
-                type: string
-                example: Regulus
-                description: Proper name of the fixed star.
-              longitude:
-                type: number
-                minimum: 0
-                maximum: 360
-                example: 150.06
-                description: Tropical ecliptic longitude of the star in degrees (0-360), precessed from its J2000 position to the chart date.
-              sign:
-                type: string
-                example: Virgo
-                description: Tropical zodiac sign the star currently occupies.
-              degree:
-                type: number
-                minimum: 0
-                maximum: 30
-                example: 0.06
-                description: Degree within the zodiac sign (0-29.999).
-              magnitude:
-                type: number
-                example: 1.4
-                description: Apparent visual magnitude. Lower is brighter, and the brightest stars are negative.
-              nature:
-                type: string
-                example: Mars and Jupiter
-                description: Traditional planetary nature of the star in classical astrology.
-              keywords:
-                type: array
-                items:
-                  type: string
-                example:
-                - royalty
-                - honor
-                - power
-                - ambition
-                - downfall
-                description: Traditional astrological keywords associated with the star.
-              conjunctions:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    point:
-                      type: string
-                      example: Sun
-                      description: 'Natal point conjunct this star: a planet name, or the chart angles MC and ASC. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use pointLocalized for anything a reader sees.'
-                    pointLocalized:
-                      type: string
-                      example: Sol
-                      description: Natal point name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-                    pointLongitude:
-                      type: number
-                      example: 149.21
-                      description: Tropical ecliptic longitude of the natal point in degrees (0-360).
-                    orb:
-                      type: number
-                      example: 0.62
-                      description: Angular separation in degrees between the star and the natal point. Smaller means a tighter, stronger contact.
-                  required:
-                  - point
-                  - pointLongitude
-                  - orb
-                description: Natal points within the chosen orb of this star. Empty when no planet or angle contacts the star.
-            required:
-            - id
-            - name
-            - longitude
-            - sign
-            - degree
-            - magnitude
-            - nature
-            - keywords
-            - conjunctions
-          description: Every catalog star with its precessed tropical position, magnitude, traditional nature, and any conjunctions to the natal chart.
-        conjunctions:
-          type: array
-          items:
-            type: object
-            properties:
-              star:
-                type: string
-                example: Regulus
-                description: Proper name of the conjunct fixed star.
-              point:
-                type: string
-                example: Sun
-                description: 'Natal point conjunct the star: a planet name, or the chart angles MC and ASC. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use pointLocalized for anything a reader sees.'
-              pointLocalized:
-                type: string
-                example: Sol
-                description: Natal point name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              orb:
-                type: number
-                example: 0.62
-                description: Angular separation in degrees between the star and the natal point.
-              interpretation:
-                type: string
-                example: The fixed star Regulus sits within 0.6 degrees of your Sun, a star of Mars and Jupiter nature in classical astrology. A star this close to a chart point colors how that point expresses itself with its traditional meaning.
-                description: Plain language meaning of this star contact, blending the star traditional nature with the chart point. Localized to the requested language.
-            required:
-            - star
-            - point
-            - orb
-            - interpretation
-          description: Flat list of every star to natal point conjunction, sorted tightest first, each with an interpretation. The high-value summary of where fixed stars touch the chart.
-        summary:
-          type: string
-          example: Fixed star positions for 1990-07-15 with 3 conjunctions within 1 degrees across the major named stars including Regulus, Spica, and Algol.
-          description: Short overview of the fixed-star report for previews and report intros.
-      required:
-      - birthDetails
-      - orb
-      - stars
-      - conjunctions
-      - summary
-    LilithRequest:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          example: '1990-07-15'
-          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-        time:
-          type: string
-          format: time
-          example: '14:30:00'
-          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-        latitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7128
-          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-        longitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-        timezone:
-          anyOf:
-          - type: number
-            minimum: -14
-            maximum: 14
-          - type: string
-          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
-          example: -5
-        nodeType:
-          type: string
-          enum:
-          - mean
-          - 'true'
-          default: 'true'
-          example: 'true'
-          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
-        houseSystem:
-          type: string
-          enum:
-          - placidus
-          - whole-sign
-          - equal
-          - koch
-          default: placidus
-          example: placidus
-          description: House system used to place each Lilith variant in a house. Placidus (default), Whole Sign, Equal, or Koch.
-      required:
-      - date
-      - time
-      - latitude
-      - longitude
-      - timezone
-    ArabicLotsRequest:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          example: '1990-07-15'
-          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
-        time:
-          type: string
-          format: time
-          example: '14:30:00'
-          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
-        latitude:
-          type: number
-          minimum: -90
-          maximum: 90
-          example: 40.7128
-          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
-        longitude:
-          type: number
-          minimum: -180
-          maximum: 180
-          example: -74.006
-          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
-        timezone:
-          anyOf:
-          - type: number
-            minimum: -14
-            maximum: 14
-          - type: string
-          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
-          example: -5
-        nodeType:
-          type: string
-          enum:
-          - mean
-          - 'true'
-          default: 'true'
-          example: 'true'
-          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
-        houseSystem:
-          type: string
-          enum:
-          - placidus
-          - whole-sign
-          - equal
-          - koch
-          default: placidus
-          example: placidus
-          description: House system used to place the Sun, which determines the chart sect (day when the Sun is above the horizon, night when below) and therefore which lot formula applies. Placidus (default), Whole Sign, Equal, or Koch.
-      required:
-      - date
-      - time
-      - latitude
-      - longitude
-      - timezone
     TransitsRequest:
       type: object
       properties:
@@ -15852,264 +15439,109 @@ components:
           - longitude
           - timezone
           description: Optional natal chart data to compare transits against
-    AspectsResponse:
+    AspectsRequest:
       type: object
       properties:
         date:
           type: string
+          format: date
           example: '1990-07-15'
-          description: Date used for this aspect calculation (YYYY-MM-DD).
+          description: Date in YYYY-MM-DD format
         time:
           type: string
+          format: time
           example: '14:30:00'
-          description: Time used for this calculation (HH:MM:SS).
+          description: Time in HH:MM:SS format (24-hour)
         timezone:
-          type: number
+          anyOf:
+          - type: number
+            minimum: -14
+            maximum: 14
+          - type: string
+          description: 'Timezone offset from UTC in decimal hours (NOT minutes format). Examples: New York EST = -5, India IST = 5.5 (NOT 5:30), Tokyo JST = 9. IMPORTANT: Use decimal format (5.5, not 5:30).'
           example: -5
-          description: Timezone offset from UTC in decimal hours.
-        aspectsFound:
-          type: number
-          example: 12
-          description: Total number of aspects found after any filters applied.
-        aspects:
+        planets:
           type: array
           items:
-            type: object
-            properties:
-              planet1:
-                type: string
-                example: Sun
-                description: First planet in the aspect pair. Always English, whatever the lang parameter says. Use planet1Localized for anything a reader sees.
-              planet1Localized:
-                type: string
-                example: Sol
-                description: First planet name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              planet2:
-                type: string
-                example: Moon
-                description: Second planet in the aspect pair. Always English, whatever the lang parameter says. Use planet2Localized for anything a reader sees.
-              planet2Localized:
-                type: string
-                example: Luna
-                description: Second planet name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              type:
-                type: string
-                example: TRINE
-                description: Aspect type (CONJUNCTION, OPPOSITION, TRINE, SQUARE, SEXTILE, etc.). Always English, whatever the lang parameter says. Use typeLocalized for anything a reader sees.
-              typeLocalized:
-                type: string
-                example: Trígono
-                description: Aspect type name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              angle:
-                type: number
-                example: 120
-                description: Exact angle defining this aspect type in degrees.
-              orb:
-                type: number
-                example: 2.5
-                description: Distance from exact aspect in degrees. Tighter orb means stronger influence.
-              isApplying:
-                type: boolean
-                example: true
-                description: Whether the aspect is applying (growing stronger) or separating (fading).
-              strength:
-                type: number
-                example: 75
-                description: Aspect strength (0-100) based on orb tightness.
-              interpretation:
-                type: string
-                example: harmonious
-                description: 'Aspect nature for this pair: harmonious, challenging, or neutral. Always English, whatever the lang parameter says, because it is an identifier to compare and style on. This is the field to branch on; meaning.nature is the reference card characterisation of the aspect type and is translated for display.'
-              meaning:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    example: Trine
-                    description: Aspect display name.
-                  description:
-                    type: object
-                    properties:
-                      short:
-                        type: string
-                        example: Planets in trine support each other. Trines, by nature, are accepting. They allow us to accept others, ourselves, and situations. The talents that trines offer a native are so natural that they are almost unconscious.
-                        description: Brief aspect description.
-                      long:
-                        type: string
-                        example: These talents are second nature and completely natural. So, for example, if a chart has Venus trine Neptune, the native may be poetic, romantic, or artistic, and may easily accept a romantic partner for who they are. With Venus square Neptune the same qualities exist, but expressing them takes conscious work rather than coming naturally.
-                        description: Detailed aspect description with astrological context.
-                    required:
-                    - short
-                    - long
-                    description: Aspect meaning in short and long form.
-                  keywords:
-                    type: array
-                    items:
-                      type: string
-                    example:
-                    - accept
-                    - accepting
-                    - difficult
-                    - natural
-                    - support
-                    - talent
-                    description: Keywords associated with this aspect type.
-                  nature:
-                    type: string
-                    example: harmonious
-                    description: How this aspect type is characterised in its reference card, in the requested language, exactly like the name, description and keywords beside it. This is a property of the aspect TYPE, so branch on the aspect-level interpretation field instead, which is always English and is the classification applied to this particular pair.
-                required:
-                - name
-                - description
-                - keywords
-                - nature
-                description: Aspect meaning with keywords, description, and nature classification.
-            required:
-            - planet1
-            - planet2
-            - type
-            - angle
-            - orb
-            - isApplying
-            - strength
-            - interpretation
-          description: All aspects found between the specified planets, with strength, orb, and interpretation.
-        patterns:
+            type: string
+          example:
+          - Sun
+          - Moon
+          - Mercury
+          - Venus
+          - Mars
+          description: 'Optional: specific bodies to calculate aspects for (defaults to all 14: the 10 classical planets, the lunar nodes, Chiron, and Black Moon Lilith)'
+        aspectTypes:
           type: array
           items:
-            type: object
-            properties:
-              kind:
-                type: string
-                enum:
-                - GRAND_TRINE
-                - KITE
-                - T_SQUARE
-                - GRAND_CROSS
-                - YOD
-                - MYSTIC_RECTANGLE
-                - STELLIUM
-                example: GRAND_TRINE
-                description: Pattern kind identifier. GRAND_TRINE (3 trines, harmonious flow), KITE (Grand Trine with a focal outlet planet), T_SQUARE (opposition with squared apex, growth engine), GRAND_CROSS (4 planets in 2 oppositions and 4 squares, peak tension), YOD (Finger of Fate, fated adjustment), MYSTIC_RECTANGLE (oppositions softened by trines and sextiles), STELLIUM (3+ planets clustered in a sign or 10-degree arc).
-              name:
-                type: string
-                example: Grand Trine
-                description: Human-readable name of the configuration as used in astrological literature.
-              planets:
-                type: array
-                items:
-                  type: string
-                example:
-                - Sun
-                - Moon
-                - Mars
-                description: Participating bodies in canonical order. For Kite, T-Square, and Yod the apex planet appears first.
-              apex:
-                type: string
-                example: Mars
-                description: Focal planet for Kite, T-Square, and Yod patterns. Receives the released energy of the configuration and is the recommended integration point.
-              element:
-                type: string
-                enum:
-                - fire
-                - earth
-                - air
-                - water
-                example: water
-                description: Dominant element when the pattern is element-coherent (Grand Trine, Kite). Reported lowercase. Absent for patterns whose meaning does not pivot on element.
-              modality:
-                type: string
-                enum:
-                - cardinal
-                - fixed
-                - mutable
-                example: cardinal
-                description: Dominant modality for tension-based patterns (T-Square, Grand Cross). Cardinal initiates, Fixed sustains, Mutable adapts.
-              dissociate:
-                type: boolean
-                example: false
-                description: True if the pattern is out-of-sign (one or more planets in a neighboring element or modality). Dissociate patterns are still valid but operate with weakened thematic coherence.
-              tightness:
-                type: number
-                minimum: 0
-                maximum: 100
-                example: 78
-                description: Tightness score (0-100) derived from the average orb tightness across all defining aspects. Higher means closer to exact and stronger thematic expression.
-              interpretation:
-                type: string
-                example: Grand Trine in Water signs binds Sun, Moon, and Mars in flowing harmony, gifts that come easily but ask to be activated.
-                description: Concise one-line interpretation naming the participating planets and theme. Localized to the requested language via the lang query parameter (defaults to English).
-              interpretationKey:
-                type: string
-                example: aspectPattern.grandTrine
-                description: Stable template identifier used to render the interpretation. Useful for clients that wish to swap in a custom narrative template while preserving the structured variables.
-              interpretationVars:
-                type: object
-                additionalProperties:
-                  type: string
-                  example: Water
-                  description: 'One value interpolated into the interpretation template, keyed by the placeholder name it fills. Which keys are present depends on the pattern: a Grand Trine carries an element plus three planets, a T-Square carries an apex.'
-                example:
-                  element: Water
-                  planet1: Sun
-                  planet2: Moon
-                  planet3: Mars
-                description: Variables that were interpolated into the interpretation template. Names already resolved to the requested language where appropriate.
-            required:
-            - kind
-            - name
-            - planets
-            - tightness
-            - interpretation
-            - interpretationKey
-            - interpretationVars
-          description: Detected multi-planet aspect configurations (Grand Trine, Kite, T-Square, Grand Cross, Yod, Mystic Rectangle, Stellium).
-        summary:
-          type: object
-          properties:
-            totalAspects:
-              type: number
-              example: 12
-              description: Total aspects found.
-            harmonious:
-              type: number
-              example: 7
-              description: Count of harmonious aspects (trine, sextile).
-            challenging:
-              type: number
-              example: 4
-              description: Count of challenging aspects (square, opposition).
-            neutral:
-              type: number
-              example: 1
-              description: Count of neutral aspects (conjunction).
-            byType:
-              type: object
-              additionalProperties:
-                type: number
-                example: 3
-                description: Number of aspects of this type found in the chart. An aspect type with no hits is absent from the map rather than reported as zero.
-              example:
-                CONJUNCTION: 2
-                TRINE: 3
-                SQUARE: 2
-                SEXTILE: 2
-                OPPOSITION: 1
-              description: Aspect count grouped by type.
-          required:
-          - totalAspects
-          - harmonious
-          - challenging
-          - neutral
-          - byType
-          description: Aspect summary with counts by nature and type.
+            type: string
+          example:
+          - CONJUNCTION
+          - OPPOSITION
+          - TRINE
+          - SQUARE
+          description: 'Optional: specific aspect types to find (defaults to all 9)'
       required:
       - date
       - time
       - timezone
-      - aspectsFound
-      - aspects
-      - summary
+    NatalChartRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '1990-07-15'
+          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+        time:
+          type: string
+          format: time
+          example: '14:30:00'
+          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+        timezone:
+          anyOf:
+          - type: number
+            minimum: -14
+            maximum: 14
+          - type: string
+          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          example: -5
+        nodeType:
+          type: string
+          enum:
+          - mean
+          - 'true'
+          default: 'true'
+          example: 'true'
+          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
+        houseSystem:
+          type: string
+          enum:
+          - placidus
+          - whole-sign
+          - equal
+          - koch
+          default: placidus
+          example: placidus
+          description: House system for dividing the chart into 12 houses. Placidus (default) is most popular in Western astrology and time-sensitive. Whole Sign assigns one sign per house (simpler, ancient). Equal houses divide chart into 30° segments from Ascendant. Koch emphasizes houses in high latitudes.
+      required:
+      - date
+      - time
+      - latitude
+      - longitude
+      - timezone
     RelocationChartResponse:
       type: object
       properties:
@@ -16370,7 +15802,7 @@ components:
       - vertex
       - changes
       - interpretation
-    ArabicLotsResponse:
+    ProfectionsResponse:
       type: object
       properties:
         birthDetails:
@@ -16410,73 +15842,228 @@ components:
           - latitude
           - longitude
           - timezone
-          description: Echo of the birth moment and place used to compute every lot.
-        sect:
+          description: Echo of the birth moment and place used to derive the natal Ascendant and the lord of the year placement.
+        targetDate:
+          type: string
+          format: date
+          example: '2025-08-04'
+          description: Target date whose profection year was computed, echoed from the request.
+        age:
+          type: integer
+          minimum: 0
+          example: 30
+          description: Completed whole years from birth to the target date. Age 0 is the birth year and profects the first house.
+        profectedHouse:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 7
+          description: Profected whole sign house activated for the year (1 to 12), computed as age modulo 12 plus 1. House 1 is the rising sign and the cycle repeats every twelve years.
+        profectedSign:
+          type: string
+          example: Leo
+          description: 'Tropical zodiac sign on the profected house: the rising sign advanced by one whole sign for each completed year.'
+        lordOfYear:
+          type: string
+          example: Sun
+          description: 'Lord of the year (annual time lord): the traditional ruling planet of the profected sign whose natal condition and transits color the themes of the year.'
+        lordNatalPosition:
+          type: object
+          properties:
+            sign:
+              type: string
+              example: Leo
+              description: Zodiac sign the lord of the year occupies in the natal chart.
+            house:
+              type: integer
+              minimum: 1
+              maximum: 12
+              example: 6
+              description: Natal house the lord of the year occupies (1 to 12), in the requested house system.
+          required:
+          - sign
+          - house
+          description: 'Where the lord of the year sits in the birth chart: the natal sign and house that ground the theme of the profection year.'
+        interpretation:
+          type: string
+          example: This profection year activates The Seventh House in Leo, making Sun your lord of the year. The year takes its tone from partnerships and relationships and from how Sun sits in your birth chart.
+          description: Plain language reading of the profection year, combining the profected house theme, the profected sign, and the lord of the year. Localized to the requested language.
+        summary:
+          type: string
+          example: At age 30, the annual profection activates house 7 in Leo, making Sun the lord of the year for 2025-08-04.
+          description: Short overview of the profection year for previews and report intros.
+      required:
+      - birthDetails
+      - targetDate
+      - age
+      - profectedHouse
+      - profectedSign
+      - lordOfYear
+      - lordNatalPosition
+      - interpretation
+      - summary
+    SolarArcRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '1990-07-15'
+          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+        time:
+          type: string
+          format: time
+          example: '14:30:00'
+          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+        timezone:
+          anyOf:
+          - type: number
+            minimum: -14
+            maximum: 14
+          - type: string
+          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          example: -5
+        nodeType:
           type: string
           enum:
-          - day
-          - night
-          example: night
-          description: Chart sect that selected each formula. Day (diurnal) when the Sun is above the horizon, night (nocturnal) when below. Every lot swaps its two non-Ascendant terms between day and night.
-        lots:
+          - mean
+          - 'true'
+          default: 'true'
+          example: 'true'
+          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
+        targetDate:
+          type: string
+          format: date
+          example: '2025-07-15'
+          description: Date to direct the chart to, in YYYY-MM-DD format. Every natal point is advanced by the solar arc accumulated from birth to this date, about one degree for each year of life.
+      required:
+      - date
+      - time
+      - latitude
+      - longitude
+      - timezone
+      - targetDate
+    SolarArcResponse:
+      type: object
+      properties:
+        birthDetails:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+              example: '1990-07-15'
+              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+            time:
+              type: string
+              format: time
+              example: '14:30:00'
+              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+              example: 40.7128
+              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+              example: -74.006
+              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+            timezone:
+              type: number
+              minimum: -12
+              maximum: 14
+              example: -5
+              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+          required:
+          - date
+          - time
+          - latitude
+          - longitude
+          - timezone
+          description: Echo of the birth moment and place used to compute the natal chart and the solar arc.
+        targetDate:
+          type: string
+          format: date
+          example: '2025-07-15'
+          description: Echo of the date the chart was directed to.
+        solarArc:
+          type: number
+          minimum: 0
+          maximum: 360
+          example: 34.52
+          description: 'The solar arc in degrees: the secondary-progressed Sun longitude minus the natal Sun longitude. Approximately one degree per year of life. Every natal point is advanced by exactly this arc.'
+        summary:
+          type: string
+          example: Solar arc directions move every point in your chart forward by the same arc the Sun has travelled by progression, about one degree per year.
+          description: Short overview of the directed chart for previews and report intros. Localized to the requested language.
+        directed:
           type: array
           items:
             type: object
             properties:
-              id:
-                type: string
-                example: fortune
-                description: Stable machine identifier for the lot (fortune, spirit, eros, necessity, courage, victory, nemesis). Use this for lookups.
               name:
                 type: string
-                example: Part of Fortune
-                description: Name of the lot. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use nameLocalized for anything a reader sees.
+                example: Sun
+                description: Name of the directed point, covering the planets and the two angles, the Ascendant and the Midheaven, alike. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use nameLocalized for anything a reader sees.
               nameLocalized:
                 type: string
-                example: Parte de la Fortuna
-                description: Lot name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
-              longitude:
+                example: Sol
+                description: Directed point name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              natalLongitude:
                 type: number
                 minimum: 0
                 maximum: 360
-                example: 27.24
-                description: Absolute tropical ecliptic longitude of the lot in degrees (0 to 360).
+                example: 112.45
+                description: Absolute tropical ecliptic longitude of the point in the natal chart, in degrees (0 to 360).
+              directedLongitude:
+                type: number
+                minimum: 0
+                maximum: 360
+                example: 143.78
+                description: Absolute tropical ecliptic longitude after directing, in degrees (0 to 360). Equals the natal longitude plus the solar arc, normalized to a full circle.
               sign:
                 type: string
-                example: Aries
-                description: Tropical zodiac sign the lot falls in.
+                example: Leo
+                description: Tropical zodiac sign the directed point falls in. A directed point crossing into a new sign marks a developmental turning point.
               degree:
                 type: number
                 minimum: 0
                 maximum: 30
-                example: 27.24
-                description: Degree of the lot within its zodiac sign (0 to 29.999).
-              formula:
-                type: string
-                example: Ascendant + Sun - Moon
-                description: Human readable arc used for this chart, with the day or night term order already applied by sect.
+                example: 23.78
+                description: Degree of the directed point within its zodiac sign (0 to 29.999).
               interpretation:
                 type: string
-                example: Your Part of Fortune falls in Aries, marking the body, health, material wellbeing, and the flow of fortune through your life. Lots are sensitive points derived by arc from the Ascendant, Sun, Moon, and planets, with the formula reversed between day and night charts.
-                description: Plain language meaning of this lot in its sign, suitable for chart reports and AI agents. Localized to the requested language.
+                example: Your solar arc directed Sun has moved to Leo, carrying self-awareness and ego forward by the 31 degree arc.
+                description: Plain language meaning of this directed point, suitable for chart reports and AI agents. Localized to the requested language.
             required:
-            - id
             - name
-            - longitude
+            - natalLongitude
+            - directedLongitude
             - sign
             - degree
-            - formula
             - interpretation
-          description: 'The seven Hermetic lots in canonical order: Part of Fortune and Part of Spirit from the luminaries, then Eros, Necessity, Courage, Victory, and Nemesis from a planet paired with Fortune or Spirit.'
-        summary:
-          type: string
-          example: 'Seven Hermetic lots for 1990-07-15 cast from a night chart: Fortune, Spirit, Eros, Necessity, Courage, Victory, and Nemesis, each projected by arc from the Ascendant.'
-          description: Short overview of the lot set for previews and report intros.
+          description: 'Every natal point advanced by the solar arc: the planets and bodies in canonical order first, then the Ascendant and the Midheaven.'
       required:
       - birthDetails
-      - sect
-      - lots
+      - targetDate
+      - solarArc
       - summary
+      - directed
     AsteroidsResponse:
       type: object
       properties:
@@ -16598,6 +16185,419 @@ components:
       - houseSystem
       - asteroids
       - summary
+    LocalSpaceResponse:
+      type: object
+      properties:
+        birthDetails:
+          type: object
+          properties:
+            date:
+              type: string
+              example: '1990-07-15'
+              description: Birth date echoed from the request.
+            time:
+              type: string
+              example: '14:30:00'
+              description: Birth time echoed from the request.
+            latitude:
+              type: number
+              example: 40.7128
+              description: Birthplace latitude, the origin of every local space line.
+            longitude:
+              type: number
+              example: -74.006
+              description: Birthplace longitude, the origin of every local space line.
+            timezone:
+              type: number
+              example: -5
+              description: Timezone offset from UTC applied to the birth instant.
+          required:
+          - date
+          - time
+          - latitude
+          - longitude
+          - timezone
+          description: The birthplace and birth instant the map was computed for.
+        bodies:
+          type: array
+          items:
+            type: object
+            properties:
+              planet:
+                type: string
+                example: Sun
+                description: Body name (Sun, Moon, Mercury through Pluto, plus North Node, Chiron, or Black Moon Lilith when requested). Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use planetLocalized for anything a reader sees.
+              planetLocalized:
+                type: string
+                example: Sol
+                description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              symbol:
+                type: string
+                example: ☉
+                description: Unicode astronomical symbol for this body.
+              azimuth:
+                type: number
+                example: 113.63
+                description: Compass bearing of the body as seen from the birthplace, in degrees clockwise from true north (0 = north, 90 = east, 180 = south, 270 = west). This is the direction the local space line points.
+              altitude:
+                type: number
+                example: 59.48
+                description: Angular height of the body above (positive) or below (negative) the local horizon at birth, in degrees (-90 to 90).
+              compassDirection:
+                type: string
+                example: ESE
+                description: Nearest 16-point compass abbreviation for the azimuth (N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW).
+              aboveHorizon:
+                type: boolean
+                example: true
+                description: True when the body is above the local horizon (altitude greater than 0) at the birth moment.
+              line:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                          example: 39.42
+                          description: Waypoint latitude in decimal degrees.
+                        longitude:
+                          type: number
+                          example: -72.71
+                          description: Waypoint longitude in decimal degrees.
+                      required:
+                      - latitude
+                      - longitude
+                    description: Ordered latitude and longitude waypoints tracing the great-circle local space line from the birthplace along the body azimuth. The first point is the birthplace itself.
+                required:
+                - points
+                description: The great-circle directional line for this body, ready to plot on a map.
+              interpretation:
+                type: string
+                example: Your Sun line points southeast from your birthplace. Travelling or facing this direction tends to emphasize Self-awareness and ego in your daily experience.
+                description: Plain-language reading of what travelling or facing along this body line tends to emphasize. Localized when a translation exists.
+            required:
+            - planet
+            - azimuth
+            - altitude
+            - compassDirection
+            - aboveHorizon
+            - line
+            - interpretation
+          description: Every requested body with its horizon direction, altitude, compass direction, great-circle line, and interpretation.
+        summary:
+          type: string
+          example: Local space directional map of 10 celestial bodies seen from latitude 40.7128, longitude -74.006. 6 of them sit above the horizon at the birth moment.
+          description: One-line overview of the local space map.
+      required:
+      - birthDetails
+      - bodies
+      - summary
+    ProfectionsRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '1990-07-15'
+          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+        time:
+          type: string
+          format: time
+          example: '14:30:00'
+          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+        timezone:
+          anyOf:
+          - type: number
+            minimum: -14
+            maximum: 14
+          - type: string
+          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          example: -5
+        nodeType:
+          type: string
+          enum:
+          - mean
+          - 'true'
+          default: 'true'
+          example: 'true'
+          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
+        targetDate:
+          type: string
+          format: date
+          example: '2025-08-04'
+          description: Date whose profection year you want, in YYYY-MM-DD format. The completed whole years from the birth date to this date select the profected house and sign. Must fall on or after the birth date.
+        houseSystem:
+          type: string
+          enum:
+          - placidus
+          - whole-sign
+          - equal
+          - koch
+          default: placidus
+          example: placidus
+          description: House system used only to report where the lord of the year sits in the natal chart. The profected house and sign always use whole sign profection from the rising sign. Placidus (default), Whole Sign, Equal, or Koch.
+      required:
+      - date
+      - time
+      - latitude
+      - longitude
+      - timezone
+      - targetDate
+    AstrocartographyResponse:
+      type: object
+      properties:
+        birthDetails:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+              example: '1990-07-15'
+              description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+            time:
+              type: string
+              format: time
+              example: '14:30:00'
+              description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+              example: 40.7128
+              description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+              example: -74.006
+              description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+            timezone:
+              type: number
+              minimum: -12
+              maximum: 14
+              example: -5
+              description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+          required:
+          - date
+          - time
+          - latitude
+          - longitude
+          - timezone
+          description: Echo of the birth moment and place used to compute every planetary line.
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              planet:
+                type: string
+                example: Sun
+                description: Celestial body this set of planetary lines belongs to. Always English, whatever the lang parameter says, so it stays safe to compare against in code. Use planetLocalized for anything a reader sees.
+              planetLocalized:
+                type: string
+                example: Sol
+                description: Body name in the requested language, for display only. Present only when lang is set to a language other than English, since in English it would repeat its canonical partner field exactly. Never compare against this value, compare against the canonical field beside it.
+              symbol:
+                type: string
+                example: ☉
+                description: Unicode astronomical symbol for this body.
+              rightAscension:
+                type: number
+                example: 90.66
+                description: Equatorial right ascension of the body in degrees (0 to 360), the basis for every line.
+              declination:
+                type: number
+                example: 23.44
+                description: Equatorial declination of the body in degrees (-90 to 90), which sets how far the rising and setting lines curve.
+              mc:
+                type: object
+                properties:
+                  longitude:
+                    type: number
+                    example: -111.0142
+                    description: Constant geographic longitude of this vertical meridian line in decimal degrees. The body culminates (MC) along it, so plot it as a straight north to south line.
+                  interpretation:
+                    type: string
+                    example: Your Sun Midheaven line runs through places where Self-awareness and ego comes forward in your public life, career, and reputation. Living or working along this line tends to push this part of you into the spotlight.
+                    description: Plain language meaning of this Midheaven planetary line for relocation, suitable for chart reports and AI agents.
+                required:
+                - longitude
+                - interpretation
+                description: Midheaven (MC) line. Places along this meridian where the body was culminating overhead, tied to public life, career, and reputation.
+              ic:
+                type: object
+                properties:
+                  longitude:
+                    type: number
+                    example: 68.9858
+                    description: Constant geographic longitude of this vertical meridian line in decimal degrees. The body anti-culminates (IC) along it, so plot it as a straight north to south line.
+                  interpretation:
+                    type: string
+                    example: Your Sun Imum Coeli line runs through places where Self-awareness and ego settles into your home, family, and inner foundations. This line deepens your sense of roots and private life.
+                    description: Plain language meaning of this Imum Coeli planetary line for relocation, suitable for chart reports and AI agents.
+                required:
+                - longitude
+                - interpretation
+                description: Imum Coeli (IC) line, opposite the MC. Places where the body was anti-culminating, tied to home, family, and inner foundations.
+              ascendant:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                          example: 40
+                          description: Geographic latitude of this sampled point in decimal degrees.
+                        longitude:
+                          type: number
+                          example: 139.7118
+                          description: Geographic longitude in decimal degrees where the body sits exactly on the eastern (rising) horizon at this latitude.
+                      required:
+                      - latitude
+                      - longitude
+                    description: Sampled geographic points tracing this rising line from 70 South to 70 North. Join them in latitude order to draw the curved planetary line on a world map.
+                  circumpolarBeyond:
+                    type:
+                    - number
+                    - 'null'
+                    example: 68.5262
+                    description: Absolute latitude in degrees beyond which the body never crosses the horizon, so the line has no points past it. Null when the line spans the full sampled range.
+                  interpretation:
+                    type: string
+                    example: Your Sun Ascendant line runs through places where Self-awareness and ego colors your identity, vitality, and how you first come across to others. This part of you feels switched on here.
+                    description: Plain language meaning of this rising (Ascendant) planetary line for relocation, suitable for chart reports and AI agents.
+                required:
+                - points
+                - circumpolarBeyond
+                - interpretation
+                description: Ascendant (rising) line. Places where the body was on the eastern horizon, tied to identity, vitality, and self-expression.
+              descendant:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                          example: 40
+                          description: Geographic latitude of this sampled point in decimal degrees.
+                        longitude:
+                          type: number
+                          example: -1.7402
+                          description: Geographic longitude in decimal degrees where the body sits exactly on the western (setting) horizon at this latitude.
+                      required:
+                      - latitude
+                      - longitude
+                    description: Sampled geographic points tracing this setting line from 70 South to 70 North. Join them in latitude order to draw the curved planetary line on a world map.
+                  circumpolarBeyond:
+                    type:
+                    - number
+                    - 'null'
+                    example: 68.5262
+                    description: Absolute latitude in degrees beyond which the body never crosses the horizon, so the line has no points past it. Null when the line spans the full sampled range.
+                  interpretation:
+                    type: string
+                    example: Your Sun Descendant line runs through places where Self-awareness and ego shapes your close relationships, partnerships, and the people you attract. Connection themes stand out along this line.
+                    description: Plain language meaning of this setting (Descendant) planetary line for relocation, suitable for chart reports and AI agents.
+                required:
+                - points
+                - circumpolarBeyond
+                - interpretation
+                description: Descendant (setting) line. Places where the body was on the western horizon, tied to relationships and partnerships.
+            required:
+            - planet
+            - rightAscension
+            - declination
+            - mc
+            - ic
+            - ascendant
+            - descendant
+          description: One entry per body, each carrying its Midheaven, Imum Coeli, Ascendant, and Descendant planetary lines for relocation mapping.
+        summary:
+          type: string
+          example: Astrocartography lines for 1990-07-15. 10 bodies, each with Midheaven, Imum Coeli, Ascendant, and Descendant lines mapping where their themes turn angular worldwide for relocation planning.
+          description: Short overview of the astrocartography map for previews and report intros.
+      required:
+      - birthDetails
+      - lines
+      - summary
+    LilithRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '1990-07-15'
+          description: Birth date in YYYY-MM-DD format. Determines planetary positions for the specific calendar day.
+        time:
+          type: string
+          format: time
+          example: '14:30:00'
+          description: Birth time in 24-hour HH:MM:SS format. Determines the Ascendant (rising sign) and house cusps. Use 12:00:00 if unknown.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+          description: Birth location latitude in decimal degrees (-90 to 90). Positive = North, negative = South.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: -74.006
+          description: Birth location longitude in decimal degrees (-180 to 180). Positive = East, negative = West.
+        timezone:
+          anyOf:
+          - type: number
+            minimum: -14
+            maximum: 14
+          - type: string
+          description: 'Timezone: IANA name (e.g. "America/New_York", "Europe/London") OR decimal hours from UTC (e.g. -5 for EST, 1 for CET). IANA strings are resolved to the DST-correct offset for the given date, so you can pass `cities[0].timezone` from /location/search directly.'
+          example: -5
+        nodeType:
+          type: string
+          enum:
+          - mean
+          - 'true'
+          default: 'true'
+          example: 'true'
+          description: Lunar node convention. "mean" is the smoothed average node, which always moves retrograde; "true" is the osculating node, which tracks the real perturbed node, oscillates up to about 1.5 degrees either side of the mean on a 173-day cycle, and can briefly turn direct. Neither is more correct and they almost always fall in the same sign. Applies to the North and South Node. True is the osculating node and the default, because it is what most Western chart software reports; mean is the smoothed node preferred by several evolutionary schools, so pass "mean" to match one. Nothing else in the chart changes, and the two agree on the sign except when the node sits within about 1.8 degrees of a cusp. Defaults to "true".
+        houseSystem:
+          type: string
+          enum:
+          - placidus
+          - whole-sign
+          - equal
+          - koch
+          default: placidus
+          example: placidus
+          description: House system used to place each Lilith variant in a house. Placidus (default), Whole Sign, Equal, or Koch.
+      required:
+      - date
+      - time
+      - latitude
+      - longitude
+      - timezone
   securitySchemes:
     apiKey:
       type: apiKey
