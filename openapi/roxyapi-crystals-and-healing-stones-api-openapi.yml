@@ -2,12 +2,95 @@ openapi: 3.2.0
 info:
   title: Roxy Crystals and Healing Stones API
   version: 2.0.0
-  description: '# RoxyAPI: AI-Native Insight Infrastructure
+  description: '# RoxyAPI: the Spiritual OS layer for agentic AI
 
 
-    > **Base URL:** `https://roxyapi.com/api/v2`
-
-    > All endpoint paths below are relative to this base URL.'
+    > **Base URL:** `https://roxyapi.com/api/v2`.'
+  x-error-codes:
+  - code: validation_error
+    status: 400
+    meaning: A field is missing or invalid. The body lists every failing field at once in issues, each with its path and the expected shape.
+  - code: bad_request
+    status: 400
+    meaning: The request was rejected as a whole, for example a body that is not valid JSON or a date range that ends before it starts.
+  - code: date_out_of_range
+    status: 400
+    meaning: A date lies outside the span the planetary positions are served for. The error names the supported dates.
+  - code: api_key_required
+    status: 401
+    meaning: No API key was sent.
+  - code: invalid_api_key
+    status: 401
+    meaning: The key sent is malformed or cannot be verified.
+  - code: api_key_revoked
+    status: 401
+    meaning: The key was valid once and has since been revoked from the account page.
+  - code: subscription_not_found
+    status: 401
+    meaning: The key verifies, but the subscription behind it no longer exists.
+  - code: subscription_inactive
+    status: 401
+    meaning: The subscription behind the key is cancelled, expired or suspended, or a trial is past its end date.
+  - code: publishable_key_not_allowed_on_mcp
+    status: 401
+    meaning: A publishable key was used on a Remote MCP server, which takes a secret key.
+  - code: invalid_client_ip
+    status: 401
+    meaning: A keyless request could not be attributed to a caller.
+  - code: unauthorized
+    status: 401
+    meaning: Authentication failed with no more specific reason to give.
+  - code: forbidden
+    status: 403
+    meaning: The key is valid, but this request is not permitted.
+  - code: origin_required
+    status: 403
+    meaning: A publishable key with an origin allowlist was used with no Origin header, as from a server or a native app.
+  - code: origin_not_allowed
+    status: 403
+    meaning: The calling site is not on the origin allowlist of this publishable key.
+  - code: not_found
+    status: 404
+    meaning: Nothing is served at this path, or the identifier in it does not exist. A path miss adds suggestions, the closest real endpoints.
+  - code: method_not_allowed
+    status: 405
+    meaning: The path exists for a different HTTP method. The body lists the accepted methods in allow, as does the Allow header.
+  - code: conflict
+    status: 409
+    meaning: The request cannot be applied in the current state.
+  - code: gone
+    status: 410
+    meaning: The path was removed permanently.
+  - code: payload_too_large
+    status: 413
+    meaning: The request body is larger than the API accepts.
+  - code: unsupported_media_type
+    status: 415
+    meaning: 'A request with a body was sent without Content-Type: application/json.'
+  - code: unprocessable_entity
+    status: 422
+    meaning: Every field is valid, but the combination cannot be computed.
+  - code: rate_limit_exceeded
+    status: 429
+    meaning: The monthly request allowance is used up. Retry-After gives the seconds to the reset.
+  - code: rate_limit_per_minute
+    status: 429
+    meaning: The per-minute limit of the plan was reached. Retry-After gives the seconds to the next minute, and the monthly allowance is not charged.
+  - code: rate_limited
+    status: 429
+    meaning: A rate limit was reached, reported without the plan detail.
+  - code: free_tier_exhausted
+    status: 429
+    meaning: A keyless request has used up its trial allowance.
+  - code: internal_error
+    status: 500
+    meaning: The request failed inside our service. Retry with exponential backoff.
+  - code: compute_saturated
+    status: 503
+    meaning: Heavy calculations are briefly at capacity. Send the same request again after Retry-After seconds.
+  - code: error
+    status: null
+    meaning: A fallback for a status with no more specific code. The status and the error field carry the signal.
   contact:
     name: RoxyAPI Support
     url: https://roxyapi.com/contact
@@ -15,7 +98,7 @@ info:
     name: Proprietary
     url: https://roxyapi.com/policy/terms
 servers:
-- url: /api/v2
+- url: https://roxyapi.com/api/v2
   description: Production API v2
 security:
 - apiKey: []
@@ -28,7 +111,7 @@ paths:
       operationId: getCrystalsByZodiac
       tags:
       - Crystals and Healing Stones
-      summary: Crystals by Zodiac Sign
+      summary: Crystals by zodiac sign - Zodiac birthstone API
       description: Get healing crystals and gemstones associated with a specific zodiac sign. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Supports all 12 zodiac signs from Aries through Pisces. Perfect for personalized crystal recommendations based on astrological birth chart data.
       security:
       - apiKey: []
@@ -86,9 +169,7 @@ paths:
         name: limit
         in: query
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
           minimum: 0
           default: 0
           example: 0
@@ -176,6 +257,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -217,6 +301,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -231,9 +316,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -252,6 +341,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -263,6 +355,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -277,9 +370,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -293,15 +390,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/chakra/{chakra}:
     get:
       operationId: getCrystalsByChakra
       tags:
       - Crystals and Healing Stones
-      summary: Crystals by Chakra
+      summary: Crystals by chakra - Chakra healing stones API
       description: 'Get healing crystals and gemstones that resonate with a specific chakra energy center. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Supports all 7 primary chakras: Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, and Crown. Essential for crystal grid building, chakra balancing, and energy healing applications.'
       security:
       - apiKey: []
@@ -354,9 +455,7 @@ paths:
         name: limit
         in: query
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
           minimum: 0
           default: 0
           example: 0
@@ -444,6 +543,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -485,6 +587,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -499,9 +602,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -520,6 +627,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -531,6 +641,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -545,9 +656,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -561,15 +676,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/element/{element}:
     get:
       operationId: getCrystalsByElement
       tags:
       - Crystals and Healing Stones
-      summary: Crystals by Element
+      summary: Crystals by element - Elemental crystal lookup API
       description: 'Get healing crystals and gemstones associated with a specific natural element. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Supports five elements: Earth, Water, Fire, Air, and Storm. Essential for elemental crystal selection, nature-based healing, and element-themed crystal grid applications.'
       security:
       - apiKey: []
@@ -620,9 +739,7 @@ paths:
         name: limit
         in: query
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
           minimum: 0
           default: 0
           example: 0
@@ -710,6 +827,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -751,6 +871,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -765,9 +886,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -786,6 +911,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -797,6 +925,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -811,9 +940,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -827,15 +960,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/birthstone/{month}:
     get:
       operationId: getBirthstones
       tags:
       - Crystals and Healing Stones
-      summary: Birthstone Crystals by Month
+      summary: Birthstones by month - Birthstone lookup API
       description: Get the traditional birthstone crystals for a given birth month. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Based on GIA-authoritative birthstone assignments. Perfect for birthday gift recommendations, personalized crystal suggestions, and birthstone jewelry applications.
       security:
       - apiKey: []
@@ -944,6 +1081,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -985,6 +1125,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -999,9 +1140,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1020,6 +1165,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1031,6 +1179,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1045,9 +1194,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1061,15 +1214,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/search:
     get:
       operationId: searchCrystals
       tags:
       - Crystals and Healing Stones
-      summary: Search Crystals
+      summary: Search crystals - Crystal search API
       description: Search for healing crystals by keyword or name. Matches against crystal names, healing keywords, descriptions, and spiritual/emotional/physical meaning fields. Returns summary data for each crystal. Use the /crystals/{id} detail endpoint for full healing properties. Useful for building crystal search bars, keyword-based recommendation features, and healing property lookups.
       security:
       - apiKey: []
@@ -1116,9 +1273,7 @@ paths:
         name: limit
         in: query
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
           minimum: 0
           default: 0
           example: 0
@@ -1206,6 +1361,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1247,6 +1405,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1261,9 +1420,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1282,6 +1445,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1293,6 +1459,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1307,9 +1474,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1323,15 +1494,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/pairings/{id}:
     get:
       operationId: getCrystalPairings
       tags:
       - Crystals and Healing Stones
-      summary: Crystal Pairings
+      summary: Crystal pairings - Crystal combination API
       description: Get crystals that pair well with a given crystal for enhanced healing combinations. Returns the source crystal along with its recommended companion stones and their properties. Essential for crystal grid building, healing combination recommendations, and crystal shop cross-sell features.
       security:
       - apiKey: []
@@ -1456,6 +1631,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1497,6 +1675,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1511,9 +1690,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: Crystal not found in database
           content:
@@ -1529,9 +1712,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1550,6 +1738,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1561,6 +1752,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1575,9 +1767,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1591,15 +1787,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/daily:
     post:
       operationId: getDailyCrystal
       tags:
       - Crystals and Healing Stones
-      summary: Daily Crystal
+      summary: Daily crystal - Crystal of the day API
       description: Get the crystal of the day as a discovery teaser. Returns a deterministic crystal based on the current date (or a provided seed date), ensuring all users see the same crystal for any given day. Use the /crystals/{id} detail endpoint for complete spiritual, emotional, and physical healing properties. Perfect for daily guidance features, push notifications, wellness app widgets, and crystal journal integrations.
       security:
       - apiKey: []
@@ -1719,6 +1919,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1760,6 +1963,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1774,9 +1978,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1795,6 +2003,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1806,6 +2017,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1820,9 +2032,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1836,15 +2052,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/random:
     get:
       operationId: getRandomCrystal
       tags:
       - Crystals and Healing Stones
-      summary: Random Crystal
+      summary: Random crystal - Crystal discovery API
       description: Get a randomly selected healing crystal as a discovery teaser. Returns a different crystal on each request (non-deterministic). Use the /crystals/{id} detail endpoint for complete spiritual, emotional, and physical healing properties. Perfect for crystal discovery features, surprise crystal picks, crystal roulette games, and exploration widgets. For a deterministic daily crystal that is the same for all users on a given date, use the /daily endpoint instead.
       security:
       - apiKey: []
@@ -1942,6 +2162,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1983,6 +2206,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1997,9 +2221,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2018,6 +2246,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2029,6 +2260,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2043,9 +2275,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2059,18 +2295,43 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/colors:
     get:
       operationId: listCrystalColors
       tags:
       - Crystals and Healing Stones
-      summary: List Crystal Colors
-      description: List all unique crystal colors available in the database. Use these values with the color filter on GET /crystals to find crystals by color. Essential reference endpoint for building color-based crystal browsing, visual crystal pickers, and filtering UI.
+      summary: List crystal colors - Crystal color filter API
+      description: List all unique crystal colors available in the database. Use these values with the color filter on GET /crystals to find crystals by color. Essential reference endpoint for building color-based browsing of healing stones, visual crystal pickers, and filtering UI. The values are filter identifiers and stay in English under every lang, so a translated picker still submits a color the filter accepts.
       security:
       - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
       responses:
         '200':
           description: All unique crystal colors sorted alphabetically
@@ -2111,6 +2372,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2152,6 +2416,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2166,9 +2431,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2187,6 +2456,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2198,6 +2470,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2212,9 +2485,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2228,18 +2505,43 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/planets:
     get:
       operationId: listCrystalPlanets
       tags:
       - Crystals and Healing Stones
-      summary: List Crystal Planets
-      description: List all unique planetary associations available in the database. Use these values with the planet filter on GET /crystals to find crystals by ruling planet. Essential reference endpoint for astrology app builders who want to recommend crystals based on planetary placements in a birth chart.
+      summary: List crystal planets - Planetary ruler filter API
+      description: List all unique planetary associations available in the database. Use these values with the planet filter on GET /crystals to find crystals by ruling planet. Essential reference endpoint for astrology app builders who want to recommend crystals based on planetary placements in a birth chart. The values are filter identifiers and stay in English under every lang, so a translated picker still submits a planet the filter accepts.
       security:
       - apiKey: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - en
+          - tr
+          - de
+          - es
+          - hi
+          - pt
+          - fr
+          - ru
+          - zh-Hans
+          - zh-Hant
+          default: en
+          example: en
+          description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        required: false
+        description: 'Response language (BCP 47). Supported: en, tr, de, es, hi, pt, fr, ru, zh-Hans, zh-Hant. Defaults to en. Coverage varies by domain, and a field with no translation in the requested language returns English.'
+        name: lang
+        in: query
       responses:
         '200':
           description: All unique planetary associations sorted alphabetically
@@ -2280,6 +2582,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2321,6 +2626,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2335,9 +2641,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2356,6 +2666,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2367,6 +2680,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2381,9 +2695,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2397,15 +2715,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals:
     get:
       operationId: listCrystals
       tags:
       - Crystals and Healing Stones
-      summary: List All Crystals
+      summary: List all crystals - Crystal healing database API
       description: Retrieve healing crystals and gemstones with pagination. Supports optional filtering by chakra, zodiac sign, element, color, or planet. Returns minimal summary fields per crystal. Use the detail endpoint for full healing properties. Perfect for building crystal explorer apps, healing stone guides, and personalized crystal recommendation engines.
       security:
       - apiKey: []
@@ -2509,9 +2831,7 @@ paths:
         name: limit
         in: query
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
           minimum: 0
           default: 0
           example: 0
@@ -2603,6 +2923,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2644,6 +2967,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2658,9 +2982,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2679,6 +3007,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2690,6 +3021,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2704,9 +3036,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2720,15 +3056,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /crystals/{id}:
     get:
       operationId: getCrystal
       tags:
       - Crystals and Healing Stones
-      summary: Get Crystal Healing Properties
+      summary: Get crystal by id - Crystal healing properties API
       description: Get complete healing properties and metaphysical data for a specific crystal or gemstone. Returns spiritual, emotional, and physical healing interpretations along with chakra associations, zodiac connections, elemental properties, and crystal pairing recommendations. Authoritative interpretations covering all major healing crystals.
       security:
       - apiKey: []
@@ -2931,6 +3271,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2972,6 +3315,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2986,9 +3330,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: Crystal not found in database
           content:
@@ -3004,9 +3352,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3025,6 +3378,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3036,6 +3392,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3050,9 +3407,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3066,9 +3427,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
 components:
   securitySchemes:
     apiKey:

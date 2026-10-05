@@ -1,10 +1,11 @@
 {
   "provider": "roxyapi",
   "sources": [
-    "_original/roxyapi-openapi-original.json"
+    "_original/roxyapi-v2-openapi.json"
   ],
   "outputs": [
     "roxyapi-angel-numbers-api-openapi.yml",
+    "roxyapi-ayurveda-api-openapi.yml",
     "roxyapi-biorhythm-api-openapi.yml",
     "roxyapi-chinese-astrology-api-openapi.yml",
     "roxyapi-crystals-and-healing-stones-api-openapi.yml",
@@ -13,11 +14,14 @@
     "roxyapi-forecast-api-openapi.yml",
     "roxyapi-human-design-api-openapi.yml",
     "roxyapi-i-ching-api-openapi.yml",
+    "roxyapi-kabbalah-api-openapi.yml",
     "roxyapi-languages-api-openapi.yml",
     "roxyapi-location-and-timezone-api-openapi.yml",
+    "roxyapi-mesoamerican-astrology-api-openapi.yml",
     "roxyapi-numerology-api-openapi.yml",
     "roxyapi-tarot-api-openapi.yml",
     "roxyapi-usage-api-openapi.yml",
+    "roxyapi-vastu-api-openapi.yml",
     "roxyapi-vedic-astrology-api-openapi.yml",
     "roxyapi-western-astrology-api-openapi.yml"
   ],
@@ -25,11 +29,13 @@
   "errors": [],
   "warnings": [],
   "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
-    "roxyapi-openapi-original.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "apis.yml register: already-registered"
+    "roxyapi-v2-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: written (+4 apis, 20 total)"
   ],
   "skipped": [
+    "_original/roxyapi-openapi-original.json: archived document superseded by a larger archived document",
     "roxyapi-angel-numbers-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "roxyapi-biorhythm-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "roxyapi-chinese-astrology-api-openapi.yml: previously refined output, superseded by openapi/_original/",

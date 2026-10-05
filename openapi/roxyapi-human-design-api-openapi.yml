@@ -2,12 +2,95 @@ openapi: 3.2.0
 info:
   title: Roxy Human Design API
   version: 2.0.0
-  description: '# RoxyAPI: AI-Native Insight Infrastructure
+  description: '# RoxyAPI: the Spiritual OS layer for agentic AI
 
 
-    > **Base URL:** `https://roxyapi.com/api/v2`
-
-    > All endpoint paths below are relative to this base URL.'
+    > **Base URL:** `https://roxyapi.com/api/v2`.'
+  x-error-codes:
+  - code: validation_error
+    status: 400
+    meaning: A field is missing or invalid. The body lists every failing field at once in issues, each with its path and the expected shape.
+  - code: bad_request
+    status: 400
+    meaning: The request was rejected as a whole, for example a body that is not valid JSON or a date range that ends before it starts.
+  - code: date_out_of_range
+    status: 400
+    meaning: A date lies outside the span the planetary positions are served for. The error names the supported dates.
+  - code: api_key_required
+    status: 401
+    meaning: No API key was sent.
+  - code: invalid_api_key
+    status: 401
+    meaning: The key sent is malformed or cannot be verified.
+  - code: api_key_revoked
+    status: 401
+    meaning: The key was valid once and has since been revoked from the account page.
+  - code: subscription_not_found
+    status: 401
+    meaning: The key verifies, but the subscription behind it no longer exists.
+  - code: subscription_inactive
+    status: 401
+    meaning: The subscription behind the key is cancelled, expired or suspended, or a trial is past its end date.
+  - code: publishable_key_not_allowed_on_mcp
+    status: 401
+    meaning: A publishable key was used on a Remote MCP server, which takes a secret key.
+  - code: invalid_client_ip
+    status: 401
+    meaning: A keyless request could not be attributed to a caller.
+  - code: unauthorized
+    status: 401
+    meaning: Authentication failed with no more specific reason to give.
+  - code: forbidden
+    status: 403
+    meaning: The key is valid, but this request is not permitted.
+  - code: origin_required
+    status: 403
+    meaning: A publishable key with an origin allowlist was used with no Origin header, as from a server or a native app.
+  - code: origin_not_allowed
+    status: 403
+    meaning: The calling site is not on the origin allowlist of this publishable key.
+  - code: not_found
+    status: 404
+    meaning: Nothing is served at this path, or the identifier in it does not exist. A path miss adds suggestions, the closest real endpoints.
+  - code: method_not_allowed
+    status: 405
+    meaning: The path exists for a different HTTP method. The body lists the accepted methods in allow, as does the Allow header.
+  - code: conflict
+    status: 409
+    meaning: The request cannot be applied in the current state.
+  - code: gone
+    status: 410
+    meaning: The path was removed permanently.
+  - code: payload_too_large
+    status: 413
+    meaning: The request body is larger than the API accepts.
+  - code: unsupported_media_type
+    status: 415
+    meaning: 'A request with a body was sent without Content-Type: application/json.'
+  - code: unprocessable_entity
+    status: 422
+    meaning: Every field is valid, but the combination cannot be computed.
+  - code: rate_limit_exceeded
+    status: 429
+    meaning: The monthly request allowance is used up. Retry-After gives the seconds to the reset.
+  - code: rate_limit_per_minute
+    status: 429
+    meaning: The per-minute limit of the plan was reached. Retry-After gives the seconds to the next minute, and the monthly allowance is not charged.
+  - code: rate_limited
+    status: 429
+    meaning: A rate limit was reached, reported without the plan detail.
+  - code: free_tier_exhausted
+    status: 429
+    meaning: A keyless request has used up its trial allowance.
+  - code: internal_error
+    status: 500
+    meaning: The request failed inside our service. Retry with exponential backoff.
+  - code: compute_saturated
+    status: 503
+    meaning: Heavy calculations are briefly at capacity. Send the same request again after Retry-After seconds.
+  - code: error
+    status: null
+    meaning: A fallback for a status with no more specific code. The status and the error field carry the signal.
   contact:
     name: RoxyAPI Support
     url: https://roxyapi.com/contact
@@ -15,13 +98,13 @@ info:
     name: Proprietary
     url: https://roxyapi.com/policy/terms
 servers:
-- url: /api/v2
+- url: https://roxyapi.com/api/v2
   description: Production API v2
 security:
 - apiKey: []
 tags:
 - name: Human Design
-  description: 'Generate the full Human Design bodygraph from a birth moment: type, strategy, inner authority, profile, definition, incarnation cross, the nine centers, defined channels, and all 26 gate activations, plus two-person connection charts and small-group Penta analysis. Planetary positions verified against NASA JPL Horizons, the Design side solved on the exact 88 degree solar arc. One key, Remote MCP, typed SDKs.'
+  description: 'Human Design API that generates the full bodygraph from a birth moment: type, strategy, inner authority, profile, definition, incarnation cross, the nine centers, defined channels, and all 26 gate activations, plus two-person connection charts and small-group Penta analysis. Planetary positions verified against NASA JPL Horizons. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.'
 paths:
   /human-design/bodygraph:
     post:
@@ -75,7 +158,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -222,6 +305,10 @@ paths:
                       personality: The conscious side, printed in black and calculated at the moment of birth.
                       design: The unconscious side, printed in red and calculated 88 degrees of solar arc before birth.
                     description: 'What the two chart sides are: personality is the conscious mind side, design is the unconscious body side computed 88 degrees of solar arc before birth. Returned once at the top level rather than repeated across all 26 activations.'
+                  designInstantUtc:
+                    type: string
+                    example: '1972-03-14T00:55:56.900Z'
+                    description: 'The Design moment as an ISO 8601 UTC instant: the exact time the Sun stood 88 degrees of solar arc before its natal longitude, and the instant every Design activation was computed at. Compare it with the Design date a reference tool prints to validate the chart on the moment itself.'
                   incarnationCross:
                     type: object
                     properties:
@@ -250,7 +337,7 @@ paths:
                       name:
                         type: string
                         example: Left Angle Cross of the Clarion
-                        description: Canonical published name of the incarnation cross, determined by the Personality Sun gate and the angle. Falls back to a name composed from the angle and the four gates if no canonical name exists.
+                        description: Canonical published name of the incarnation cross, determined by the Personality Sun gate and the angle. All 192 crosses (64 Personality Sun gates times three angles) carry their published name, numbered variants included, so this is never a composed placeholder. Always begins with the angle followed by Cross of. Always English, whatever the lang parameter says.
                       description:
                         type: string
                         example: Shock delivered to whoever is ready for it. The reaction is often outrage, and underneath it is a change that was waiting for something to force it, which is why the shock needs a receiver.
@@ -463,6 +550,7 @@ paths:
                 - definition
                 - definitionDescription
                 - sides
+                - designInstantUtc
                 - incarnationCross
                 - centers
                 - channels
@@ -481,6 +569,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -522,6 +613,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -536,9 +628,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -557,6 +653,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -568,6 +667,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -582,9 +682,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -598,9 +702,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/connection:
     post:
       operationId: calculateConnection
@@ -656,7 +764,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -704,7 +812,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -904,6 +1012,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -945,6 +1056,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -959,9 +1071,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -980,6 +1096,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -991,6 +1110,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1005,9 +1125,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1021,9 +1145,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/penta:
     post:
       operationId: calculatePenta
@@ -1081,7 +1209,7 @@ paths:
                           minimum: -14
                           maximum: 14
                         - type: string
-                        description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                        description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                         example: America/New_York
                       latitude:
                         type: number
@@ -1276,6 +1404,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1317,6 +1448,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1331,9 +1463,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1352,6 +1488,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1363,6 +1502,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1377,9 +1517,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1393,9 +1537,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/transit:
     post:
       operationId: generateTransit
@@ -1451,7 +1599,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -1684,6 +1832,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1725,6 +1876,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1739,9 +1891,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1760,6 +1916,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1771,6 +1930,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1785,9 +1945,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1801,9 +1965,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/type:
     post:
       operationId: calculateType
@@ -1856,7 +2024,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -1977,6 +2145,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2018,6 +2189,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2032,9 +2204,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2053,6 +2229,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2064,6 +2243,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2078,9 +2258,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2094,9 +2278,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/gates:
     post:
       operationId: calculateGates
@@ -2149,7 +2337,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -2344,6 +2532,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2385,6 +2576,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2399,9 +2591,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2420,6 +2616,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2431,6 +2630,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2445,9 +2645,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2461,9 +2665,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/gates/{number}:
     get:
       operationId: getGate
@@ -2475,9 +2683,9 @@ paths:
       - apiKey: []
       parameters:
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
+          minimum: 1
+          maximum: 64
           example: 34
           description: Gate number from 1 to 64.
         required: true
@@ -2593,6 +2801,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2634,6 +2845,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2648,27 +2860,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
-        '404':
-          description: Gate number is outside the range 1 to 64
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Resource not found
-                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
-                  code:
-                    type: string
-                    example: not_found
-                    description: Machine-readable error code. Stable identifier for programmatic error handling.
-                required:
-                - error
-                - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2687,6 +2885,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2698,6 +2899,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2712,9 +2914,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2728,9 +2934,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/channels:
     post:
       operationId: calculateChannels
@@ -2783,7 +2993,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -2904,6 +3114,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2945,6 +3158,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2959,9 +3173,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2980,6 +3198,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2991,6 +3212,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3005,9 +3227,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3021,9 +3247,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/centers:
     post:
       operationId: calculateCenters
@@ -3076,7 +3306,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -3194,6 +3424,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -3235,6 +3468,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -3249,9 +3483,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3270,6 +3508,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3281,6 +3522,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3295,9 +3537,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3311,9 +3557,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/centers/{id}:
     get:
       operationId: getCenter
@@ -3419,6 +3669,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -3460,6 +3713,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -3474,9 +3728,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3495,6 +3753,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3506,6 +3767,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3520,9 +3782,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3536,9 +3802,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/profile:
     post:
       operationId: calculateProfile
@@ -3591,7 +3861,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -3667,6 +3937,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -3708,6 +3981,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -3722,9 +3996,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3743,6 +4021,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3754,6 +4035,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3768,9 +4050,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3784,9 +4070,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /human-design/variables:
     post:
       operationId: calculateVariables
@@ -3839,7 +4129,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 latitude:
                   type: number
@@ -4061,6 +4351,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -4102,6 +4395,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -4116,9 +4410,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -4137,6 +4435,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -4148,6 +4449,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -4162,9 +4464,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -4178,9 +4484,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
 components:
   securitySchemes:
     apiKey:

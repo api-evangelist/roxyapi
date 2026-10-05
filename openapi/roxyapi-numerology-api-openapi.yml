@@ -2,12 +2,95 @@ openapi: 3.2.0
 info:
   title: Roxy Numerology API
   version: 2.0.0
-  description: '# RoxyAPI: AI-Native Insight Infrastructure
+  description: '# RoxyAPI: the Spiritual OS layer for agentic AI
 
 
-    > **Base URL:** `https://roxyapi.com/api/v2`
-
-    > All endpoint paths below are relative to this base URL.'
+    > **Base URL:** `https://roxyapi.com/api/v2`.'
+  x-error-codes:
+  - code: validation_error
+    status: 400
+    meaning: A field is missing or invalid. The body lists every failing field at once in issues, each with its path and the expected shape.
+  - code: bad_request
+    status: 400
+    meaning: The request was rejected as a whole, for example a body that is not valid JSON or a date range that ends before it starts.
+  - code: date_out_of_range
+    status: 400
+    meaning: A date lies outside the span the planetary positions are served for. The error names the supported dates.
+  - code: api_key_required
+    status: 401
+    meaning: No API key was sent.
+  - code: invalid_api_key
+    status: 401
+    meaning: The key sent is malformed or cannot be verified.
+  - code: api_key_revoked
+    status: 401
+    meaning: The key was valid once and has since been revoked from the account page.
+  - code: subscription_not_found
+    status: 401
+    meaning: The key verifies, but the subscription behind it no longer exists.
+  - code: subscription_inactive
+    status: 401
+    meaning: The subscription behind the key is cancelled, expired or suspended, or a trial is past its end date.
+  - code: publishable_key_not_allowed_on_mcp
+    status: 401
+    meaning: A publishable key was used on a Remote MCP server, which takes a secret key.
+  - code: invalid_client_ip
+    status: 401
+    meaning: A keyless request could not be attributed to a caller.
+  - code: unauthorized
+    status: 401
+    meaning: Authentication failed with no more specific reason to give.
+  - code: forbidden
+    status: 403
+    meaning: The key is valid, but this request is not permitted.
+  - code: origin_required
+    status: 403
+    meaning: A publishable key with an origin allowlist was used with no Origin header, as from a server or a native app.
+  - code: origin_not_allowed
+    status: 403
+    meaning: The calling site is not on the origin allowlist of this publishable key.
+  - code: not_found
+    status: 404
+    meaning: Nothing is served at this path, or the identifier in it does not exist. A path miss adds suggestions, the closest real endpoints.
+  - code: method_not_allowed
+    status: 405
+    meaning: The path exists for a different HTTP method. The body lists the accepted methods in allow, as does the Allow header.
+  - code: conflict
+    status: 409
+    meaning: The request cannot be applied in the current state.
+  - code: gone
+    status: 410
+    meaning: The path was removed permanently.
+  - code: payload_too_large
+    status: 413
+    meaning: The request body is larger than the API accepts.
+  - code: unsupported_media_type
+    status: 415
+    meaning: 'A request with a body was sent without Content-Type: application/json.'
+  - code: unprocessable_entity
+    status: 422
+    meaning: Every field is valid, but the combination cannot be computed.
+  - code: rate_limit_exceeded
+    status: 429
+    meaning: The monthly request allowance is used up. Retry-After gives the seconds to the reset.
+  - code: rate_limit_per_minute
+    status: 429
+    meaning: The per-minute limit of the plan was reached. Retry-After gives the seconds to the next minute, and the monthly allowance is not charged.
+  - code: rate_limited
+    status: 429
+    meaning: A rate limit was reached, reported without the plan detail.
+  - code: free_tier_exhausted
+    status: 429
+    meaning: A keyless request has used up its trial allowance.
+  - code: internal_error
+    status: 500
+    meaning: The request failed inside our service. Retry with exponential backoff.
+  - code: compute_saturated
+    status: 503
+    meaning: Heavy calculations are briefly at capacity. Send the same request again after Retry-After seconds.
+  - code: error
+    status: null
+    meaning: A fallback for a status with no more specific code. The status and the error field carry the signal.
   contact:
     name: RoxyAPI Support
     url: https://roxyapi.com/contact
@@ -15,21 +98,21 @@ info:
     name: Proprietary
     url: https://roxyapi.com/policy/terms
 servers:
-- url: /api/v2
+- url: https://roxyapi.com/api/v2
   description: Production API v2
 security:
 - apiKey: []
 tags:
 - name: Numerology
-  description: Numerology API to calculate life path, expression, soul urge, personality, and maturity numbers, with Pinnacle and Challenge life-phase timing, Hidden Passion, Subconscious Self, and Cornerstone and Capstone name analysis.
+  description: Numerology API for life path numbers, complete numerology charts and compatibility, in both Pythagorean and Chaldean numerology.
 paths:
   /numerology/life-path:
     post:
       operationId: calculateLifePath
       tags:
       - Numerology
-      summary: Calculate Life Path number - Most important numerology calculation
-      description: Calculate your Life Path number from your birth date using Pythagorean numerology. This is the most significant number in your numerology chart, revealing your life purpose, natural talents, and destiny path. Automatically detects Master Numbers (11, 22, 33) and Karmic Debt numbers (13, 14, 16, 19). Returns comprehensive interpretation including personality traits, strengths, challenges, career guidance, relationship compatibility, and spiritual insights. Perfect for numerology apps, birth chart calculators, life purpose discovery tools, personal development platforms, and astrology services. Get detailed 300-500 word meanings for all numbers 1-9, 11, 22, and 33.
+      summary: Calculate Life Path number - Calculator and meaning API
+      description: Calculate a Life Path number from a birth date with Pythagorean numerology. The Life Path is the core number of a numerology chart, read from the birth year, month and day alone, with master numbers 11, 22 and 33 kept and a karmic debt of 13, 14, 16 or 19 flagged with its meaning. The response returns every reduction step and a full interpretation (archetype title, keywords, description, strengths, challenges, career, relationships and spirituality) in the language set by lang. Built for Life Path calculators, numerology apps, onboarding personality profiles and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -96,7 +179,7 @@ paths:
                   calculation:
                     type: string
                     example: 'Month: 7, Day: 15 → 1+5 = 6, Year: 1990 → 1+9+9+0 = 19 → 1+9 = 10 → 1+0 = 1 → 7+6+1=14 → 5'
-                    description: Full step-by-step breakdown of the 3-Cycle Pythagorean reduction. Shows how month, day, and year each reduce independently before combining into the final Life Path number.
+                    description: 'Every step of the calculation: the birth month, day and year each reduced, then combined into the final Life Path number.'
                   type:
                     type: string
                     enum:
@@ -106,7 +189,7 @@ paths:
                     description: Whether this is a standard single-digit number (1 to 9) or a Master Number (11, 22, 33). Master Numbers carry amplified spiritual significance and are never reduced further.
                   hasKarmicDebt:
                     type: boolean
-                    example: false
+                    example: true
                     description: Indicates whether a Karmic Debt number (13, 14, 16, or 19) appeared during the reduction chain. Karmic Debt reveals past-life challenges carried into this lifetime.
                   karmicDebtNumber:
                     type: number
@@ -117,15 +200,15 @@ paths:
                     properties:
                       description:
                         type: string
-                        example: Karmic Debt of Abuse of Freedom
+                        example: Accumulated Obligation of Moderation and Stability
                         description: Title describing the karmic debt theme and core past-life pattern.
                       challenge:
                         type: string
-                        example: Past life misuse of personal freedom, possibly through excess or manipulation.
+                        example: A past pattern of misusing personal freedom, whether through overindulgence, excess, or the...
                         description: The specific challenge or pattern from past lives that must be confronted.
                       resolution:
                         type: string
-                        example: Learn balance, moderation, and responsible use of freedom.
+                        example: Develop moderation as a practiced discipline rather than a reactive restriction. Build and honor...
                         description: Practical guidance for resolving the karmic debt and transforming the challenge into growth.
                     required:
                     - description
@@ -144,45 +227,45 @@ paths:
                         items:
                           type: string
                         example:
-                        - adventurous
                         - freedom
-                        - versatile
-                        - dynamic
-                        - curious
-                        description: Ten defining personality traits and energetic themes associated with this number. Useful for quick personality snapshots, tag clouds, and compatibility matching.
+                        - adventure
+                        - change
+                        - versatility
+                        - curiosity
+                        description: Defining personality traits and energetic themes of this number. Useful for quick personality snapshots, tag clouds and compatibility matching.
                       description:
                         type: string
-                        example: In the span of single-digit numbers 1 to 9, 5 is the number in the exact middle. It acts as a go-between and a pivotal point of change...
-                        description: In-depth 300 to 500 word interpretation covering personality, purpose, and life themes. Written by numerology experts with decades of practice. Suitable for full-page readings and detailed reports.
+                        example: The 5 is the most kinetic of all single-digit numbers. It is in constant motion, oriented toward...
+                        description: Core interpretation of the number covering personality, purpose and life themes. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full-page reading.
                       strengths:
                         type: array
                         items:
                           type: string
                         example:
-                        - Curious
                         - Adaptable
-                        - Social
+                        - Resourceful
+                        - Socially fluent
                         description: Core strengths and positive qualities. Each entry includes a trait name followed by a detailed explanation of how it manifests in daily life.
                       challenges:
                         type: array
                         items:
                           type: string
                         example:
-                        - Non-committal
                         - Unreliable
+                        - Impulsive
                         - Directionless
                         description: Growth areas and shadow qualities to be aware of. Each entry names the challenge and explains its root cause and how to work through it constructively.
                       career:
                         type: string
-                        example: Life Path 5 thrives in careers that offer freedom, variety, and constant stimulation...
+                        example: The 5 requires variety, autonomy, and stimulation in its professional life. Sales, journalism...
                         description: Tailored career guidance covering ideal industries, roles, and work environments. Includes specific job titles and explains why certain professional paths align with this number.
                       relationships:
                         type: string
-                        example: Life Path 5 individuals are exciting, charming, and freedom-loving partners...
+                        example: The 5 brings vitality and spontaneity to relationships but requires genuine freedom within them to...
                         description: Love, friendship, and family dynamics. Covers romantic compatibility with other Life Path numbers, communication style, and the key relationship lessons for this number.
                       spirituality:
                         type: string
-                        example: Five is the rebel, the traveler, the agent of change. It vibrates with adventure and liberation...
+                        example: The 5 encounters the sacred primarily through direct experience rather than formal practice....
                         description: Spiritual path, soul lessons, and recommended practices. Explores the deeper purpose behind this number and offers guidance for personal growth and inner alignment.
                     required:
                     - title
@@ -213,6 +296,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -254,6 +340,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -268,9 +355,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -289,6 +380,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -300,6 +394,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -314,9 +409,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -330,16 +429,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/expression:
     post:
       operationId: calculateExpression
       tags:
       - Numerology
-      summary: Calculate Expression number - Natural talents and life goals
-      description: Calculate your Expression (Destiny) number from your full birth name using Pythagorean numerology. This number reveals your natural talents, abilities, and life goals. It shows what you came here to do and what tools you have to accomplish your life purpose. Returns comprehensive interpretation including personality traits, career paths, relationship dynamics, and spiritual insights. Automatically detects Master Numbers (11, 22, 33). Perfect for name numerology apps, career guidance tools, personal development platforms, and talent assessment services. Get detailed 300-500 word meanings for all numbers 1-9, 11, 22, and 33.
+      summary: Calculate Expression number - Destiny number calculator API
+      description: Calculate the Expression number, also called the Destiny number, from a full birth name with Pythagorean numerology. Every letter is valued and the name is reduced name by name, with master numbers 11, 22 and 33 kept and a karmic debt of 13, 14, 16 or 19 flagged with its meaning. The response lists every letter value and returns a full interpretation of natural talents, career, relationships and spiritual path in the language set by lang. Built for name numerology apps, career and personal brand tools, and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -374,7 +477,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name (first, middle, last)
+                  description: Full birth name (first, middle, last). A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - fullName
       responses:
@@ -387,12 +490,12 @@ paths:
                 properties:
                   number:
                     type: number
-                    example: 7
-                    description: 'Expression number (also called Destiny number) derived from all letters in the full birth name. Reveals natural talents, abilities, and the goals you are meant to achieve. Values: 1 to 9, 11, 22, or 33.'
+                    example: 6
+                    description: 'Expression number (also called Destiny number) from every letter of the full birth name. Reveals natural talents, abilities, and the goals you are meant to achieve. Values: 1 to 9, 11, 22, or 33.'
                   calculation:
                     type: string
-                    example: 1+6+8+5 + 5+9+3+3+9+1+4 + 1+4+9+2+8 = 78 → 7+8 = 15 → 1+5 = 6
-                    description: Full Pythagorean letter-to-number conversion showing every letter value in the birth name, grouped by word, then summed and reduced to the final Expression number.
+                    example: 'John: J=1, O=6, H=8, N=5 = 20 → 2; William: W=5, I=9, L=3, L=3, I=9, A=1, M=4 = 34 → 7; Smith: S=1, M=4, I=9, T=2, H=8 = 24 → 6 → 2+7+6 = 15 → 6'
+                    description: 'Every letter value of the birth name, grouped by name: each name is summed and reduced, then the names are added and reduced to the final Expression number.'
                   type:
                     type: string
                     enum:
@@ -403,7 +506,7 @@ paths:
                   hasKarmicDebt:
                     type: boolean
                     example: false
-                    description: Whether a Karmic Debt number (13, 14, 16, 19) appeared during the name reduction. Indicates inherited challenges embedded in your given name.
+                    description: Whether a Karmic Debt number (13, 14, 16, 19) appeared in the final reduction, the sum of the reduced names. Indicates inherited challenges embedded in your given name.
                   karmicDebtNumber:
                     type: number
                     example: 14
@@ -413,15 +516,15 @@ paths:
                     properties:
                       description:
                         type: string
-                        example: Karmic Debt of Abuse of Freedom
+                        example: Accumulated Obligation of Moderation and Stability
                         description: Title describing the karmic debt theme. Identifies the core past-life pattern that this debt number carries forward.
                       challenge:
                         type: string
-                        example: Past life misuse of personal freedom, possibly through excess or manipulation.
+                        example: A past pattern of misusing personal freedom, whether through overindulgence, excess, or the...
                         description: The specific challenge or pattern from past lives that must be confronted. Explains the root cause of recurring obstacles.
                       resolution:
                         type: string
-                        example: Learn balance, moderation, and responsible use of freedom.
+                        example: Develop moderation as a practiced discipline rather than a reactive restriction. Build and honor...
                         description: Practical guidance for resolving the karmic debt. Actionable steps for transforming the inherited challenge into growth.
                     required:
                     - description
@@ -433,53 +536,52 @@ paths:
                     properties:
                       title:
                         type: string
-                        example: The Seeker
+                        example: The Nurturer
                         description: Numerology archetype for this Expression number. Captures the essence of your natural abilities, such as "The Communicator" for 3 or "The Master Intuitive" for 11.
                       keywords:
                         type: array
                         items:
                           type: string
                         example:
-                        - analytical
-                        - spiritual
-                        - wise
-                        - introspective
-                        - perfectionist
+                        - love
+                        - harmony
+                        - responsibility
+                        - nurturing
+                        - family
                         description: Defining traits and talent themes for this Expression number. Ideal for personality profiles, compatibility engines, and talent-matching features.
                       description:
                         type: string
-                        example: People with a 7 Expression number have a natural gift for analysis and investigation...
-                        description: Expert-written 300 to 500 word interpretation of the natural abilities, life mission, and destiny encoded in your birth name. Covers how these talents manifest across life stages.
+                        example: The 6 is the most relationship-oriented of the single-digit numbers, organized around a genuine...
+                        description: Core interpretation of the natural abilities, life mission and destiny the birth name describes. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                       strengths:
                         type: array
                         items:
                           type: string
                         example:
-                        - Deep thinking
-                        - Intuition
-                        - Research ability
-                        - Spiritual insight
+                        - Supportive
+                        - Protective
+                        - Responsible
                         description: Natural talents and innate gifts. Each strength includes a detailed explanation of how it shows up in work, relationships, and personal growth.
                       challenges:
                         type: array
                         items:
                           type: string
                         example:
-                        - Aloofness
-                        - Over-analysis
-                        - Skepticism
+                        - Overprotective
+                        - Self-neglecting
+                        - Idealistic
                         description: Shadow side of your talents and areas requiring conscious effort. Each challenge explains its root cause and practical strategies for transformation.
                       career:
                         type: string
-                        example: Life Path 7 excels in careers that reward deep thinking, research, and intellectual exploration...
+                        example: The 6 is most effective in roles where its capacity for care and its aesthetic sensibility can both...
                         description: Professional guidance aligned with your natural Expression talents. Covers ideal industries, specific roles, and the work environments where you will thrive.
                       relationships:
                         type: string
-                        example: Life Path 7 individuals are introspective, thoughtful partners who seek deep connections...
+                        example: The 6 is a devoted and attentive partner who brings warmth, stability, and genuine investment to...
                         description: How your Expression number shapes love, friendship, and family bonds. Includes compatibility insights with other numbers and communication patterns.
                       spirituality:
                         type: string
-                        example: Seven is on a great quest for truth and meaning, the most spiritual of all numbers...
+                        example: The spiritual life of the 6 is inseparable from its relational life. It finds the sacred in acts of...
                         description: The spiritual dimension of your Expression energy. Explores soul lessons, recommended practices, and the deeper purpose your talents are meant to serve.
                     required:
                     - title
@@ -510,6 +612,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -551,6 +656,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -565,9 +671,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -586,6 +696,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -597,6 +710,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -611,9 +725,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -627,16 +745,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/bridge:
     post:
       operationId: calculateBridgeNumbers
       tags:
       - Numerology
-      summary: Calculate Bridge Numbers - Harmonize different aspects of personality
-      description: 'Calculate three Bridge Numbers that reveal the adjustments needed to create harmony between different aspects of your numerology profile. Bridge Numbers are the absolute difference between pairs of core numbers: Life Path and Expression, Expression and Personality, Expression and Soul Urge. A Bridge of 0 means the two aspects are already aligned. Higher bridges (1 to 8) indicate greater tension and provide specific guidance on what changes to make. Bridge Numbers are essential for personal development, coaching applications, self-improvement platforms, and AI-powered personality analysis tools. Requires both a full birth name and birth date to calculate all four core numbers (Life Path, Expression, Soul Urge, Personality) internally before deriving the bridges.'
+      summary: Calculate Bridge Numbers - Numerology bridge numbers API
+      description: 'Calculate four numerology Bridge numbers from a full birth name and birth date: Life Path and Expression, Expression and Soul Urge, Soul Urge and Personality, and Expression and Personality. Each bridge is the distance between two core numbers, from 0 to 8, where 0 means the two are already in harmony, and comes with guidance for closing the gap in the language set by lang. Built for personal development, coaching and personality analysis tools and AI agents.'
       security:
       - apiKey: []
       parameters:
@@ -671,7 +793,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full legal birth name as it appears on the birth certificate. Used to calculate Expression, Soul Urge, and Personality numbers. Include first, middle, and last names separated by spaces.
+                  description: Full birth name as it appears on the birth certificate, first, middle and last names separated by spaces. Used to calculate the Expression, Soul Urge and Personality numbers. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
                 year:
                   type: integer
                   minimum: 100
@@ -697,7 +819,7 @@ paths:
               - day
       responses:
         '200':
-          description: Successfully calculated three Bridge Numbers with actionable harmony guidance
+          description: Successfully calculated four Bridge Numbers with actionable harmony guidance
           content:
             application/json:
               schema:
@@ -796,7 +918,54 @@ paths:
                     - from
                     - to
                     - meaning
-                    description: Bridge between Expression and Personality numbers. Reveals the gap between your true talents (all letters) and how others perceive you (consonants only). A high bridge means others may not see your real capabilities, requiring you to present yourself more authentically.
+                    description: Bridge between Expression and Personality numbers, a pairing this API adds beside the classical bridges. Reveals the gap between your true talents (all letters) and how others perceive you (consonants only). A high bridge means others may not see your real capabilities, requiring you to present yourself more authentically.
+                  soulUrgePersonality:
+                    type: object
+                    properties:
+                      bridge:
+                        type: integer
+                        minimum: 0
+                        maximum: 8
+                        example: 3
+                        description: Bridge number (0 to 8). The absolute difference between two core numerology numbers after reducing master numbers to single digits. 0 means the two aspects are already in natural harmony. Higher values indicate greater tension requiring conscious adjustment.
+                      from:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            example: Life Path
+                            description: Name of the first core number in this bridge pair. Identifies which aspect of personality or destiny is being compared.
+                          number:
+                            type: number
+                            example: 5
+                            description: The reduced single-digit value (1 to 9) of the first core number used in the bridge calculation.
+                        required:
+                        - name
+                        - number
+                      to:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            example: Expression
+                            description: Name of the second core number in this bridge pair. Identifies the other aspect of personality or destiny being compared.
+                          number:
+                            type: number
+                            example: 8
+                            description: The reduced single-digit value (1 to 9) of the second core number used in the bridge calculation.
+                        required:
+                        - name
+                        - number
+                      meaning:
+                        type: string
+                        example: Focus on developing self-discipline and a consistent work ethic. Channel your creative ideas into structured plans with clear milestones. Regular routines and organized habits will help you align your inner vision with your outer expression.
+                        description: Actionable guidance for bridging the gap between these two aspects of your numerology profile. Explains what adjustments to make to bring these energies into harmony.
+                    required:
+                    - bridge
+                    - from
+                    - to
+                    - meaning
+                    description: Bridge between Soul Urge and Personality numbers, one of the classical bridges. Reveals the gap between your inner self (vowels only) and the image others meet first (consonants only). A high bridge means what you want and how you come across pull apart, calling for a more transparent presentation of your real motives.
                   expressionSoulUrge:
                     type: object
                     properties:
@@ -847,6 +1016,7 @@ paths:
                 required:
                 - lifePathExpression
                 - expressionPersonality
+                - soulUrgePersonality
                 - expressionSoulUrge
         '400':
           description: Validation error. `issues[]` lists every failed field.
@@ -862,6 +1032,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -903,6 +1076,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -917,9 +1091,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -938,6 +1116,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -949,6 +1130,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -963,9 +1145,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -979,16 +1165,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/soul-urge:
     post:
       operationId: calculateSoulUrge
       tags:
       - Numerology
-      summary: Calculate Soul Urge number - Inner motivations and desires
-      description: Calculate your Soul Urge (Heart Desire) number from the vowels in your birth name using Pythagorean numerology. This number reveals your innermost desires, motivations, and what your soul truly wants to experience. It shows what drives you from within, your emotional needs, and what brings you fulfillment. Returns comprehensive interpretation including personality traits, emotional needs, relationship desires, and spiritual longings. Automatically detects Master Numbers (11, 22, 33). Perfect for self-discovery apps, emotional intelligence tools, relationship counseling platforms, and personal development services. Get detailed 300-500 word meanings for all numbers 1-9, 11, 22, and 33.
+      summary: Calculate Soul Urge number - Heart Desire number calculator API
+      description: Calculate the Soul Urge number, also called the Heart Desire number, from the vowels of a full birth name with Pythagorean numerology. A, E, I, O and U are the vowels and Y and W count as consonants; master numbers 11, 22 and 33 are kept and a karmic debt of 13, 14, 16 or 19 is flagged with its meaning. The response lists every vowel name by name and returns a full interpretation of inner motivation, relationships and spiritual path in the language set by lang. Built for self-discovery apps, dating profiles, coaching tools and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -1023,7 +1213,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name (vowels will be extracted)
+                  description: Full birth name. Its vowels A, E, I, O and U give the Soul Urge, so a name with none is refused. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - fullName
       responses:
@@ -1036,12 +1226,12 @@ paths:
                 properties:
                   number:
                     type: number
-                    example: 6
+                    example: 7
                     description: Your Soul Urge number (also called Heart Desire number), revealing your innermost motivations and what your soul truly craves. Values range from 1 to 9 for single digits, or 11, 22, 33 for Master Numbers.
                   calculation:
                     type: string
-                    example: 6+9+1 + 9+9+1 + 9 = 44 → 4+4 = 8
-                    description: Full step-by-step Pythagorean reduction using only the vowels (A, E, I, O, U) from the birth name. Shows each vowel mapped to its numeric value, grouped by word, then summed and reduced to the final Soul Urge number.
+                    example: 'Vowels: John: O=6 = 6; William: I=9, I=9, A=1 = 19 → 10 → 1; Smith: I=9 = 9 → 6+1+9 = 16 → 7'
+                    description: 'Every vowel (A, E, I, O, U) of the birth name with its value, grouped by name: each name is summed and reduced, then the names are added and reduced to the final Soul Urge number.'
                   type:
                     type: string
                     enum:
@@ -1051,26 +1241,26 @@ paths:
                     description: Whether this is a standard single-digit number (1 to 9) or a Master Number (11, 22, 33). Master Numbers in the Soul Urge position indicate a soul with amplified spiritual longing and heightened inner sensitivity.
                   hasKarmicDebt:
                     type: boolean
-                    example: false
+                    example: true
                     description: Indicates whether a Karmic Debt number (13, 14, 16, or 19) appeared during the vowel reduction chain. Karmic Debt in the Soul Urge reveals past-life emotional patterns and unresolved inner desires carried into this lifetime.
                   karmicDebtNumber:
                     type: number
-                    example: 13
+                    example: 16
                     description: The specific Karmic Debt number detected during the vowel reduction, if any. Each debt number (13, 14, 16, 19) represents a distinct past-life emotional lesson that influences your deepest desires and motivations.
                   karmicDebtMeaning:
                     type: object
                     properties:
                       description:
                         type: string
-                        example: Karmic Debt of Laziness and Negativity
+                        example: Accumulated Obligation of Humility and Authentic Love
                         description: Title describing the karmic debt theme and core past-life pattern.
                       challenge:
                         type: string
-                        example: Past life tendency toward shortcuts and laziness.
+                        example: A past pattern centered on ego, misuse of relational power, or the destruction of bonds through...
                         description: The specific challenge from past lives that must be confronted.
                       resolution:
                         type: string
-                        example: Learn discipline, hard work, and persistence.
+                        example: Develop authentic humility by setting aside the need for status in close relationships. Build...
                         description: Practical guidance for resolving the karmic debt.
                     required:
                     - description
@@ -1082,53 +1272,52 @@ paths:
                     properties:
                       title:
                         type: string
-                        example: The Nurturer
+                        example: The Seeker
                         description: Numerology archetype for this Soul Urge number. Reveals the deepest inner motivation, such as "The Seeker" for 7 or "The Master Teacher" for 33.
                       keywords:
                         type: array
                         items:
                           type: string
                         example:
-                        - caring
-                        - responsible
-                        - harmonious
-                        - protective
-                        - service
+                        - wisdom
+                        - introspection
+                        - analysis
+                        - mystery
+                        - solitude
                         description: Core emotional drives and inner motivations for this Soul Urge. Useful for understanding hidden desires, emotional needs, and what truly fulfills someone at the deepest level.
                       description:
                         type: string
-                        example: People with a 6 Soul Urge number have a deep desire to nurture and care for others...
-                        description: Expert-written 300 to 500 word exploration of the inner self, hidden desires, and emotional landscape. Reveals what the heart truly craves beneath the surface persona.
+                        example: The 7 is the most internally-oriented of the single-digit numbers. While other numbers are engaged...
+                        description: Core interpretation of the inner self, hidden desires and emotional landscape. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                       strengths:
                         type: array
                         items:
                           type: string
                         example:
-                        - Compassion
-                        - Responsibility
-                        - Harmony creation
-                        - Service orientation
+                        - Analytical
+                        - Spiritually perceptive
+                        - Depth of focus
                         description: Emotional superpowers and inner gifts. Each strength describes how it shapes decision-making, relationships, and the pursuit of personal fulfillment.
                       challenges:
                         type: array
                         items:
                           type: string
                         example:
-                        - Over-responsibility
-                        - Martyrdom
-                        - Interference
+                        - Withdrawn
+                        - Overly private
+                        - Skeptical to excess
                         description: Inner shadows and emotional patterns to balance. Explains how each challenge manifests when the Soul Urge energy is overextended or repressed.
                       career:
                         type: string
-                        example: Life Path 6 excels in careers built around service, nurturing, and creating harmony...
+                        example: The 7 performs at its highest level in roles that reward solitary investigation, analytical depth...
                         description: Career paths that satisfy your deepest emotional needs. Focuses on work that feeds the soul rather than just the resume, aligned with inner fulfillment.
                       relationships:
                         type: string
-                        example: Life Path 6 individuals are devoted, nurturing, and deeply romantic partners...
+                        example: The 7 forms relationships with care and some difficulty, opening its interior world slowly and only...
                         description: How your Soul Urge shapes what you need from love, friendship, and family. Covers emotional compatibility, attachment style, and the key to feeling truly seen.
                       spirituality:
                         type: string
-                        example: With the beautiful number 6, it is all about love and unconditional compassion...
+                        example: The 7 is the most naturally spiritual of the single-digit numbers, not in a doctrinal sense but in...
                         description: The spiritual hunger at your core. Explores what your soul is seeking in this lifetime and the practices that bring you closest to inner peace and alignment.
                     required:
                     - title
@@ -1159,6 +1348,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1200,6 +1392,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1214,9 +1407,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1235,6 +1432,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1246,6 +1446,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1260,9 +1461,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1276,16 +1481,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/personality:
     post:
       operationId: calculatePersonality
       tags:
       - Numerology
-      summary: Calculate Personality number - How others perceive you
-      description: Calculate your Personality number from the consonants in your birth name using Pythagorean numerology. This number reveals how others perceive you, your outer personality, and first impressions you make. It represents the mask you show the world and your social persona. Returns comprehensive interpretation including public image, social dynamics, professional presence, and relationship first impressions. Automatically detects Master Numbers (11, 22, 33). Perfect for personal branding apps, social skills training, professional development platforms, and communication coaching services. Get detailed 300-500 word meanings for all numbers 1-9, 11, 22, and 33.
+      summary: Calculate Personality number - Outer personality numerology API
+      description: Calculate the Personality number from the consonants of a full birth name with Pythagorean numerology. Every letter other than A, E, I, O and U is a consonant, Y and W included; master numbers 11, 22 and 33 are kept and a karmic debt of 13, 14, 16 or 19 is flagged with its meaning. The response lists every consonant name by name and returns a full interpretation of first impressions, public image, career and relationships in the language set by lang. Built for personal branding apps, social and dating profiles, coaching tools and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -1320,7 +1529,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name (consonants will be extracted)
+                  description: Full birth name. Its consonants give the Personality number, so a name with none is refused. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - fullName
       responses:
@@ -1333,12 +1542,12 @@ paths:
                 properties:
                   number:
                     type: number
-                    example: 9
+                    example: 8
                     description: Your Personality number, derived from the consonants in your birth name. Reveals how others perceive you, your outer persona, and the first impression you project. Values range from 1 to 9 for single digits, or 11, 22, 33 for Master Numbers.
                   calculation:
                     type: string
-                    example: 1+8+5 + 5+3+3+4 + 1+4+2+8 = 44 → 4+4 = 8
-                    description: Full step-by-step Pythagorean reduction using only the consonants from the birth name. Shows each consonant mapped to its numeric value, grouped by word, then summed and reduced to the final Personality number.
+                    example: 'Consonants: John: J=1, H=8, N=5 = 14 → 5; William: W=5, L=3, L=3, M=4 = 15 → 6; Smith: S=1, M=4, T=2, H=8 = 15 → 6 → 5+6+6 = 17 → 8'
+                    description: 'Every consonant of the birth name with its value, grouped by name: each name is summed and reduced, then the names are added and reduced to the final Personality number.'
                   type:
                     type: string
                     enum:
@@ -1359,15 +1568,15 @@ paths:
                     properties:
                       description:
                         type: string
-                        example: Karmic Debt of Ego and Relationships
+                        example: Accumulated Obligation of Humility and Authentic Love
                         description: Title describing the karmic debt theme and core past-life pattern.
                       challenge:
                         type: string
-                        example: Past life issues with ego, pride, or relationship destruction.
+                        example: A past pattern centered on ego, misuse of relational power, or the destruction of bonds through...
                         description: The specific challenge from past lives that must be confronted.
                       resolution:
                         type: string
-                        example: Learn humility, compassion, and authentic connection.
+                        example: Develop authentic humility by setting aside the need for status in close relationships. Build...
                         description: Practical guidance for resolving the karmic debt.
                     required:
                     - description
@@ -1379,53 +1588,52 @@ paths:
                     properties:
                       title:
                         type: string
-                        example: The Humanitarian
+                        example: The Powerhouse
                         description: Numerology archetype for this Personality number. Represents the outer mask you show the world, such as "The Builder" for 4 or "The Powerhouse" for 8.
                       keywords:
                         type: array
                         items:
                           type: string
                         example:
-                        - compassionate
-                        - charismatic
-                        - idealistic
-                        - generous
-                        - wise
+                        - achievement
+                        - authority
+                        - abundance
+                        - ambition
+                        - material mastery
                         description: Traits that define your public persona and first impression. These are the qualities others perceive before they get to know the real you.
                       description:
                         type: string
-                        example: People with a 9 Personality number project warmth and compassion to others...
-                        description: Expert-written 300 to 500 word analysis of the outer personality, social presence, and the image you project to the world. Reveals the gap between how others see you and who you truly are.
+                        example: The 8 is the number most directly associated with material mastery and the exercise of authority in...
+                        description: Core interpretation of the outer personality, social presence and the image projected to the world. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                       strengths:
                         type: array
                         items:
                           type: string
                         example:
-                        - Charisma
-                        - Compassion
-                        - Wisdom
-                        - Universal understanding
+                        - Ambitious
+                        - Resilient
+                        - Organizationally capable
                         description: Your strongest social assets and public-facing gifts. These qualities shape how you are received in professional settings, social gatherings, and first meetings.
                       challenges:
                         type: array
                         items:
                           type: string
                         example:
-                        - Emotional distance
-                        - Impracticality
-                        - Scattered energy
+                        - Controlling
+                        - Status-oriented
+                        - Imbalanced in personal life
                         description: Blind spots in your public persona. Patterns others notice that you may not, including defense mechanisms and image-management tendencies that can limit authentic connection.
                       career:
                         type: string
-                        example: Life Path 9 excels in careers that serve the greater good and allow creative expression...
+                        example: The 8 is drawn to professional domains where strategic intelligence and organizational capability...
                         description: How your outward presence shapes professional opportunities. Covers the industries, roles, and environments where your public image creates the greatest advantage.
                       relationships:
                         type: string
-                        example: Life Path 9 individuals are compassionate, devoted, and emotionally generous partners...
+                        example: The 8 is loyal and reliable in close relationships, and it expresses care primarily through...
                         description: First impressions in love and social dynamics. Explores how your Personality number attracts certain partners, sets relationship expectations, and influences group dynamics.
                       spirituality:
                         type: string
-                        example: The number 9 shines its light of love and wisdom into the world, guiding others toward awakening...
+                        example: The spiritual path of the 8 runs through its engagement with material life rather than away from...
                         description: The spiritual energy you radiate to others. Explores how your outer presence serves as a channel for deeper purpose, and what your public path reveals about your soul mission.
                     required:
                     - title
@@ -1456,6 +1664,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1497,6 +1708,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1511,9 +1723,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1532,6 +1748,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1543,6 +1762,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1557,9 +1777,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1573,16 +1797,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/birth-day:
     post:
       operationId: calculateBirthDay
       tags:
       - Numerology
-      summary: Calculate Birth Day number - Special talents from day of birth
-      description: Calculate your Birth Day number from the day you were born (1-31) using Pythagorean numerology. This number reveals special talents and abilities you possess from birth. It shows natural gifts that can help you achieve your life purpose. Returns comprehensive interpretation including innate talents, natural abilities, career advantages, and how to leverage your special gifts. Automatically detects Master Numbers (11, 22) and reduces double-digit days. Perfect for talent discovery apps, career counseling platforms, personal development services, and skill assessment tools. Get detailed 300-500 word meanings for all numbers 1-9, 11, and 22.
+      summary: Calculate Birth Day number - Birthday numerology API
+      description: Calculate the Birth Day number from the day of the month a person was born, 1 to 31, with Pythagorean numerology. The 11th, 22nd and 29th keep the master numbers 11 and 22, other two-digit days reduce to one digit, and the 13th, 14th, 16th and 19th are flagged as karmic debt with their meaning. The response returns the calculation and a full interpretation of the special talents the day brings in the language set by lang. Built for birthday features, talent and career discovery tools, and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -1631,11 +1859,11 @@ paths:
                   number:
                     type: number
                     example: 5
-                    description: Your Birth Day number, revealing the special talents and innate abilities you carry from the day you were born. Values range from 1 to 9 for single digits, or 11, 22 for Master Numbers (days 11 and 22 are never reduced).
+                    description: Your Birth Day number, revealing the special talents and innate abilities you carry from the day you were born. Values range from 1 to 9 for single digits, or 11, 22 for Master Numbers (the 11th, 22nd and 29th).
                   calculation:
                     type: string
-                    example: 23 → 2+3 = 5
-                    description: Step-by-step digit reduction of the birth day. Single-digit days (1 to 9) remain as-is, Master Number days (11, 22) are preserved, and all other double-digit days are reduced by summing their digits.
+                    example: 23 → 5
+                    description: Step-by-step digit reduction of the birth day. Single-digit days (1 to 9) remain as they are, a day that is or reduces to 11 or 22 keeps it, and every other two-digit day is reduced to one digit.
                   type:
                     type: string
                     enum:
@@ -1692,7 +1920,7 @@ paths:
                       description:
                         type: string
                         example: People born on a 5 Birth Day have natural versatility and adaptability...
-                        description: Expert-written 300 to 500 word reading of the special abilities your birth day bestows. Covers how these gifts complement your Life Path and Expression numbers.
+                        description: Core interpretation of the special abilities the birth day brings and how they complement the Life Path and Expression numbers. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                       strengths:
                         type: array
                         items:
@@ -1753,6 +1981,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1794,6 +2025,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1808,9 +2040,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1829,6 +2065,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1840,6 +2079,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1854,9 +2094,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1870,16 +2114,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/maturity:
     post:
       operationId: calculateMaturity
       tags:
       - Numerology
-      summary: Calculate Maturity number - Who you become in later life
-      description: Calculate your Maturity (Realization) number by adding Life Path and Expression numbers using Pythagorean numerology. This number reveals who you become in the second half of life, typically manifesting after age 35-40. It shows the ultimate goal of personal development and mature self-expression. Returns comprehensive interpretation including life transformation, mature personality, later-life purpose, and wisdom development. Automatically detects Master Numbers (11, 22, 33). Perfect for life coaching apps, midlife guidance platforms, personal development services, and aging wisdom tools. Get detailed 300-500 word meanings for all numbers 1-9, 11, 22, and 33.
+      summary: Calculate Maturity number - Realization number numerology API
+      description: Calculate the Maturity number, also called the Realization number, from the Life Path and Expression numbers with Pythagorean numerology. Send a full birth name and birth date, the two numbers precomputed, or one of each; master numbers 11, 22 and 33 are kept at full value and in the result. The Maturity number describes who a person grows into in the second half of life, usually felt from around 35 to 40, and the response returns the calculation and a full interpretation in the language set by lang. Built for life coaching apps, midlife and later-life guidance, and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -1926,7 +2174,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name to calculate Expression number automatically. Use instead of passing expression directly.
+                  description: Full birth name to calculate the Expression number automatically. Use instead of passing expression directly. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
                 year:
                   type: integer
                   minimum: 100
@@ -1959,7 +2207,7 @@ paths:
                     description: Your Maturity number (also called Realization number), revealing who you are becoming in the second half of life. Derived from the sum of your Life Path and Expression numbers. Values range from 1 to 9 for single digits, or 11, 22, 33 for Master Numbers.
                   calculation:
                     type: string
-                    example: 5 + 7 = 12 → 1+2 = 3
+                    example: Life Path 5 + Expression 7 = 12 → 3
                     description: Full step-by-step reduction showing Life Path plus Expression combined and reduced to the final Maturity number. This synthesis represents the convergence of your life purpose and natural talents into mature wisdom.
                   type:
                     type: string
@@ -2017,7 +2265,7 @@ paths:
                       description:
                         type: string
                         example: People with a 3 Maturity number grow into creative and joyful expression...
-                        description: Expert-written 300 to 500 word guide to the person you are evolving into. The Maturity number is the sum of Life Path and Expression, representing the wisdom gained through lived experience.
+                        description: Core interpretation of the person being grown into in the second half of life, the wisdom gained through lived experience. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                       strengths:
                         type: array
                         items:
@@ -2078,6 +2326,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2119,6 +2370,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2133,9 +2385,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2154,6 +2410,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2165,6 +2424,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2179,9 +2439,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2195,16 +2459,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/karmic-lessons:
     post:
       operationId: analyzeKarmicLessons
       tags:
       - Numerology
-      summary: Analyze Karmic Lessons - Life lessons from missing numbers
-      description: Analyze your Karmic Lessons from your birth name using Pythagorean numerology. Karmic lessons are indicated by numbers missing from your name (numbers 1-9 that do not appear). These represent challenges you came to learn and skills you need to develop in this lifetime. Returns comprehensive analysis including missing numbers, specific lessons for each, challenges to overcome, and practical guidance for development. Perfect for spiritual growth apps, personal development platforms, life coaching services, and self-improvement tools. Get detailed lesson descriptions, development strategies, and practical exercises for each missing number.
+      summary: Analyze Karmic Lessons - Missing numbers numerology API
+      description: 'Analyze the Karmic Lessons of a full birth name with Pythagorean numerology: the numbers 1 to 9 that no letter of the name carries. Each missing number is returned with its lesson, a fuller explanation and practical guidance for developing it, in the language set by lang, beside the count of letters behind every number present. Built for spiritual growth apps, coaching tools, full numerology reports and AI agents.'
       security:
       - apiKey: []
       parameters:
@@ -2239,7 +2507,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name to analyze for missing numbers
+                  description: Full birth name to analyze for missing numbers. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - fullName
       responses:
@@ -2317,6 +2585,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2358,6 +2629,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2372,9 +2644,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2393,6 +2669,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2404,6 +2683,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2418,9 +2698,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2434,16 +2718,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/karmic-debt:
     post:
       operationId: checkKarmicDebt
       tags:
       - Numerology
-      summary: Detect Karmic Debt numbers - Past life challenges (13, 14, 16, 19)
-      description: Check for Karmic Debt numbers (13, 14, 16, 19) in Life Path, Expression, Soul Urge, or Personality calculations using Pythagorean numerology. Karmic debt indicates challenges carried from past lives that must be resolved in this lifetime. These numbers appear during reduction and represent specific lessons and tests. Returns comprehensive analysis including debt descriptions, challenges to overcome, and resolution guidance. Perfect for spiritual growth apps, karmic astrology platforms, past life exploration services, and personal transformation tools. Get detailed meanings for all four karmic debt numbers with practical resolution strategies.
+      summary: Detect Karmic Debt numbers - Karmic debt 13, 14, 16, 19 API
+      description: 'Detect Karmic Debt numbers 13, 14, 16 and 19 across the five core numbers that carry them: Life Path, Expression, Soul Urge, Personality and Birth Day. Send a birth date, a full birth name, or both, and only the positions those inputs reach are read; each debt is listed once with its challenge and resolution guidance in the language set by lang. Built for spiritual growth apps, karmic readings, coaching tools and AI agents.'
       security:
       - apiKey: []
       parameters:
@@ -2490,13 +2778,13 @@ paths:
                   minimum: 1
                   maximum: 31
                   example: 15
-                  description: Birth day (checks Life Path)
+                  description: Birth day (checks Birth Day on its own, and Life Path with year and month)
                 fullName:
                   type: string
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name (checks Expression, Soul Urge, Personality)
+                  description: Full birth name (checks Expression, Soul Urge, Personality). A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
       responses:
         '200':
           description: Successfully detected karmic debt with detailed meanings
@@ -2516,7 +2804,7 @@ paths:
                     example:
                     - 14
                     - 16
-                    description: All karmic debt numbers found (13, 14, 16, 19)
+                    description: 'All karmic debt numbers found (13, 14, 16, 19), each listed once, in core-number order: Life Path, Expression, Soul Urge, Personality, Birth Day.'
                   meanings:
                     type: array
                     items:
@@ -2566,6 +2854,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2607,6 +2898,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2621,9 +2913,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2642,6 +2938,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2653,6 +2952,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2667,9 +2967,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2683,16 +2987,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/personal-day:
     post:
       operationId: calculatePersonalDay
       tags:
       - Numerology
-      summary: Calculate Personal Day - Daily personalized numerology forecast
-      description: Calculate your Personal Day number from birth month, day, and a target date. Personal Day is the most granular cycle in Pythagorean numerology, revealing the specific energy and theme for a single calendar day personalized to you. Unlike generic daily numbers, this is based on YOUR birth data combined with the calendar date. Returns the daily theme, actionable guidance, and parent month and year context. Perfect for daily push notifications, morning briefings, calendar widget integrations, daily content generation, and life coaching tools.
+      summary: Calculate Personal Day - Daily numerology forecast API
+      description: Calculate the Personal Day number from a birth month and day with Pythagorean numerology, the 1 to 9 theme of a single calendar day personalized to the birthday. The day is targetDate, or today in UTC when omitted. The response returns the day theme and guidance with the parent Personal Month and Personal Year, in the language set by lang. Built for daily push notifications, morning briefings, calendar widgets and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -2738,7 +3046,7 @@ paths:
                   type: string
                   format: date
                   example: '2026-04-04'
-                  description: Target date in YYYY-MM-DD format. Defaults to today (UTC).
+                  description: Target date in YYYY-MM-DD format, in the years 100 to 2100. Defaults to today (UTC).
               required:
               - month
               - day
@@ -2805,6 +3113,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2846,6 +3157,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2860,9 +3172,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2881,6 +3197,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2892,6 +3211,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2906,9 +3226,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2922,16 +3246,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/personal-month:
     post:
       operationId: calculatePersonalMonth
       tags:
       - Numerology
-      summary: Calculate Personal Month - Monthly numerology forecast
-      description: Calculate your Personal Month number from birth month, day, and a target year and month. Personal Month reveals the specific theme and energy influencing each calendar month within your Personal Year cycle. Returns the monthly theme, practical focus guidance, and the parent Personal Year context. Perfect for monthly forecast features, push notification content, calendar integrations, editorial monthly columns, and life coaching tools.
+      summary: Calculate Personal Month - Monthly numerology forecast API
+      description: Calculate the Personal Month number from a birth month and day with Pythagorean numerology, the 1 to 9 theme of one calendar month inside the Personal Year. The year and month are the ones sent, each defaulting to the current UTC year and month when omitted. The response returns the month theme, practical focus and the parent Personal Year with its theme, in the language set by lang. Built for monthly forecast features, push notifications, editorial columns and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -2975,16 +3303,16 @@ paths:
                   description: Birth day (1-31)
                 year:
                   type: integer
-                  minimum: 2020
+                  minimum: 100
                   maximum: 2100
                   example: 2026
-                  description: Target year for calculation (defaults to current year)
+                  description: Target year. Defaults to the current UTC year.
                 targetMonth:
                   type: integer
                   minimum: 1
                   maximum: 12
                   example: 4
-                  description: Target calendar month to forecast (1-12, defaults to current month)
+                  description: Target calendar month to forecast (1 to 12). Defaults to the current UTC month.
               required:
               - month
               - day
@@ -3041,6 +3369,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -3082,6 +3413,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -3096,9 +3428,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3117,6 +3453,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3128,6 +3467,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3142,9 +3482,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3158,16 +3502,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/personal-year:
     post:
       operationId: calculatePersonalYear
       tags:
       - Numerology
-      summary: Calculate Personal Year - Annual cycle and forecast for current year
-      description: Calculate your Personal Year number from your birth month, day, and current year using Pythagorean numerology. Personal Year runs in 9-year cycles (1-9) and reveals the theme, opportunities, and challenges for the current year. Each year has a specific energy and lessons. Returns comprehensive annual forecast including year theme, opportunities, challenges, and actionable advice. Perfect for yearly planning apps, life coaching platforms, astrology services, and personal development tools. Get detailed forecasts for all 9 Personal Year cycles with practical guidance.
+      summary: Calculate Personal Year - Personal Year number forecast API
+      description: Calculate the Personal Year number from a birth month and day with Pythagorean numerology, the 1 to 9 cycle that sets the theme of a calendar year. The year is the one sent, or the current UTC year when omitted, and it turns over on 1 January; the birth year is not needed. The response returns the place in the nine-year cycle, the theme, a forecast, opportunities, challenges and advice in the language set by lang. Built for yearly planning features, New Year content, coaching tools and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -3211,10 +3559,10 @@ paths:
                   description: Birth day (1-31)
                 year:
                   type: integer
-                  minimum: 2020
+                  minimum: 100
                   maximum: 2100
                   example: 2025
-                  description: Year to calculate (defaults to current year)
+                  description: Year to forecast. Defaults to the current UTC year; the Personal Year turns over on 1 January.
               required:
               - month
               - day
@@ -3287,6 +3635,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -3328,6 +3679,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -3342,9 +3694,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3363,6 +3719,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3374,6 +3733,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3388,9 +3748,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3404,16 +3768,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/compatibility:
     post:
       operationId: calculateNumCompatibility
       tags:
       - Numerology
-      summary: Calculate Compatibility - Relationship dynamics between two people
-      description: 'Calculate numerology compatibility between two people using Pythagorean numerology. Accepts two input modes per person: pre-calculated Life Path, Expression, and Soul Urge numbers, or raw name and birthdate for automatic calculation. You can mix modes across persons (e.g. numbers for person1, raw inputs for person2). Provides comprehensive relationship analysis with overall compatibility score (0-100), individual aspect compatibility (Life Path 50% weight, Expression 30%, Soul Urge 20%), relationship strengths, challenges, and practical advice. Uses detailed compatibility matrix for all number combinations. Perfect for dating apps, relationship counseling platforms, matchmaking services, and compatibility tools. Get actionable insights for improving relationship dynamics.'
+      summary: Calculate numerology compatibility - Love match scoring API
+      description: Calculate numerology compatibility between two people from their Life Path, Expression and Soul Urge numbers. Send each person as a full birth name with a birth date, or as precomputed numbers, and mix the two modes freely across the pair. The response returns an overall score from 50 to 100 with its rating, a score and description for each number pair, and the strengths, challenges and advice for the relationship, in the language set by lang. Built for dating apps, matchmaking, relationship coaching and AI companions.
       security:
       - apiKey: []
       parameters:
@@ -3446,24 +3814,6 @@ paths:
                 person1:
                   type: object
                   properties:
-                    lifePath:
-                      type: integer
-                      minimum: 1
-                      maximum: 33
-                      example: 5
-                      description: Person 1 Life Path number (1-9, 11, 22, 33). Optional if year, month, day are provided.
-                    expression:
-                      type: integer
-                      minimum: 1
-                      maximum: 33
-                      example: 7
-                      description: Person 1 Expression number (1-9, 11, 22, 33). Optional if fullName is provided.
-                    soulUrge:
-                      type: integer
-                      minimum: 1
-                      maximum: 33
-                      example: 6
-                      description: Person 1 Soul Urge number (1-9, 11, 22, 33). Optional if fullName is provided.
                     fullName:
                       type: string
                       minLength: 1
@@ -3488,27 +3838,27 @@ paths:
                       maximum: 31
                       example: 15
                       description: Birth day (1-31). Required with year and month for automatic Life Path calculation.
-                person2:
-                  type: object
-                  properties:
                     lifePath:
                       type: integer
                       minimum: 1
                       maximum: 33
-                      example: 3
-                      description: Person 2 Life Path number (1-9, 11, 22, 33). Optional if year, month, day are provided.
+                      example: 5
+                      description: Person 1 Life Path number (1-9, 11, 22, 33). Optional if year, month, day are provided.
                     expression:
                       type: integer
                       minimum: 1
                       maximum: 33
-                      example: 9
-                      description: Person 2 Expression number (1-9, 11, 22, 33). Optional if fullName is provided.
+                      example: 7
+                      description: Person 1 Expression number (1-9, 11, 22, 33). Optional if fullName is provided.
                     soulUrge:
                       type: integer
                       minimum: 1
                       maximum: 33
-                      example: 2
-                      description: Person 2 Soul Urge number (1-9, 11, 22, 33). Optional if fullName is provided.
+                      example: 6
+                      description: Person 1 Soul Urge number (1-9, 11, 22, 33). Optional if fullName is provided.
+                person2:
+                  type: object
+                  properties:
                     fullName:
                       type: string
                       minLength: 1
@@ -3533,6 +3883,24 @@ paths:
                       maximum: 31
                       example: 22
                       description: Birth day (1-31). Required with year and month for automatic Life Path calculation.
+                    lifePath:
+                      type: integer
+                      minimum: 1
+                      maximum: 33
+                      example: 3
+                      description: Person 2 Life Path number (1-9, 11, 22, 33). Optional if year, month, day are provided.
+                    expression:
+                      type: integer
+                      minimum: 1
+                      maximum: 33
+                      example: 9
+                      description: Person 2 Expression number (1-9, 11, 22, 33). Optional if fullName is provided.
+                    soulUrge:
+                      type: integer
+                      minimum: 1
+                      maximum: 33
+                      example: 2
+                      description: Person 2 Soul Urge number (1-9, 11, 22, 33). Optional if fullName is provided.
               required:
               - person1
               - person2
@@ -3547,11 +3915,11 @@ paths:
                   overallScore:
                     type: number
                     example: 78
-                    description: Overall compatibility score (0-100)
+                    description: 'Overall compatibility score: 50% Life Path, 30% Expression and 20% Soul Urge pair scores, rounded. Every pair score runs 50 to 100, so the overall score does too.'
                   rating:
                     type: string
                     example: Very Compatible
-                    description: 'Compatibility rating: Highly Compatible, Very Compatible, Compatible, Moderately Compatible, or Challenging.'
+                    description: 'Compatibility rating from overallScore: Highly Compatible (90 and up), Very Compatible (75 to 89), Compatible (60 to 74) or Moderately Compatible (50 to 59). The scale also names Challenging below 45, which no pair of core numbers reaches.'
                   lifePath:
                     type: object
                     properties:
@@ -3566,7 +3934,7 @@ paths:
                       compatibility:
                         type: number
                         example: 85
-                        description: Life Path compatibility score (0-100)
+                        description: Life Path compatibility score (50-100)
                       description:
                         type: string
                         example: 5 and 3 create an exciting dynamic partnership...
@@ -3590,7 +3958,7 @@ paths:
                       compatibility:
                         type: number
                         example: 70
-                        description: Expression compatibility score (0-100)
+                        description: Expression compatibility score (50-100)
                       description:
                         type: string
                         example: 7 and 9 share spiritual depth...
@@ -3614,7 +3982,7 @@ paths:
                       compatibility:
                         type: number
                         example: 90
-                        description: Soul Urge compatibility score (0-100)
+                        description: Soul Urge compatibility score (50-100)
                       description:
                         type: string
                         example: 6 and 2 have complementary emotional needs...
@@ -3670,6 +4038,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -3711,6 +4082,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -3725,9 +4097,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -3746,6 +4122,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -3757,6 +4136,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -3771,9 +4151,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -3787,16 +4171,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/chart:
     post:
       operationId: generateNumerologyChart
       tags:
       - Numerology
-      summary: Generate Complete Numerology Chart - Full profile analysis
-      description: 'Generate a comprehensive numerology chart combining all major calculations: Life Path, Expression, Soul Urge, Personality, Birth Day, Maturity, Karmic Lessons, Karmic Debt, and Personal Year. This single endpoint provides everything needed for a full numerology reading. Returns detailed interpretations for all numbers, karmic analysis, yearly forecast, and holistic summary. Perfect for numerology apps, complete reading services, birth chart generators, and comprehensive analysis tools. Save multiple API calls by getting the full chart in one request. Ideal for generating PDF reports or detailed user profiles.'
+      summary: Generate numerology chart - Complete numerology reading API
+      description: Generate a complete numerology chart from a full birth name and birth date in one call. It returns the six core numbers (Life Path, Expression, Soul Urge, Personality, Birth Day and Maturity) with their calculations and full interpretations, the four Pinnacles and four Challenges with their ages, Karmic Lessons, karmic debt in all five positions, Hidden Passion, Subconscious Self, Cornerstone, Capstone and First Vowel, the Birth Day profile for the exact day, lucky associations, the Maturity activation status, the Personal Year with the current Personal Month, and a written summary, in the language set by lang. The Personal Year uses currentYear or the current UTC year, while the Personal Month and the age behind the Maturity status read the current UTC date. Built for full numerology readings, PDF reports, onboarding profiles and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -3831,7 +4219,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: John William Smith
-                  description: Full birth name as it appears on the birth certificate. Used for all letter-based Pythagorean numerology calculations including Expression, Soul Urge, Personality, and Karmic Lessons.
+                  description: 'Full birth name as it appears on the birth certificate. Used for every letter-based number in the chart: Expression, Soul Urge, Personality, Karmic Lessons, Hidden Passion, Subconscious Self and the special letters. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.'
                 year:
                   type: integer
                   minimum: 100
@@ -3852,10 +4240,10 @@ paths:
                   description: Birth day (1-31)
                 currentYear:
                   type: integer
-                  minimum: 2020
+                  minimum: 100
                   maximum: 2100
                   example: 2025
-                  description: Year for Personal Year calculation (defaults to current year)
+                  description: 'Calendar year for the Personal Year, defaults to the current UTC year. It moves the Personal Year only: the nested personalMonth and maturityStatus.currentAge always read the current UTC date.'
               required:
               - fullName
               - year
@@ -3933,7 +4321,7 @@ paths:
                               description:
                                 type: string
                                 example: The 5 is the most kinetic of all single-digit numbers. It is in constant motion, oriented toward what is new, and constitutionally resistant to the kind of settled routine that other numbers find stabilizing...
-                                description: Authoritative 300 to 500 word interpretation covering personality, life purpose, and core themes. Written by numerology experts and suitable for full-page readings or PDF report generation.
+                                description: Core interpretation of the Life Path covering personality, life purpose and core themes. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                               strengths:
                                 type: array
                                 items:
@@ -3990,7 +4378,7 @@ paths:
                             description: Expression (Destiny) number derived from full birth name using Pythagorean numerology.
                           calculation:
                             type: string
-                            example: J=1, O=6, H=8, N=5, W=5, I=9, L=3, L=3, I=9, A=1, M=4, S=1, M=4, I=9, T=2, H=8 → 1+6+8+5+5+9+3+3+9+1+4+1+4+9+2+8 = 78 → 15 → 1+5 = 6
+                            example: 'John: J=1, O=6, H=8, N=5 = 20 → 2; William: W=5, I=9, L=3, L=3, I=9, A=1, M=4 = 34 → 7; Smith: S=1, M=4, I=9, T=2, H=8 = 24 → 6 → 2+7+6 = 15 → 6'
                             description: Letter-to-number conversion showing how the Expression number was calculated.
                           type:
                             type: string
@@ -4027,7 +4415,7 @@ paths:
                               description:
                                 type: string
                                 example: The 6 is the most relationship-oriented of the single-digit numbers, organized around a genuine drive to care for those within its sphere...
-                                description: Expert-written 300 to 500 word analysis of natural abilities, life goals, and the talents your birth name reveals. Suitable for detailed readings and personality assessments.
+                                description: Core interpretation of the natural abilities, life goals and talents the birth name describes. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                               strengths:
                                 type: array
                                 items:
@@ -4084,7 +4472,7 @@ paths:
                             description: Soul Urge (Heart Desire) number from vowels in birth name.
                           calculation:
                             type: string
-                            example: 'Vowels: O=6, I=9, I=9, A=1, I=9 → 6+9+9+1+9 = 34 → 7'
+                            example: 'Vowels: John: O=6 = 6; William: I=9, I=9, A=1 = 19 → 10 → 1; Smith: I=9 = 9 → 6+1+9 = 16 → 7'
                             description: Vowel extraction and reduction calculation.
                           type:
                             type: string
@@ -4094,11 +4482,11 @@ paths:
                             description: Single digit or master number.
                           hasKarmicDebt:
                             type: boolean
-                            example: false
+                            example: true
                             description: Whether karmic debt was encountered.
                           karmicDebtNumber:
                             type: number
-                            example: 13
+                            example: 16
                             description: Karmic debt number if present.
                           meaning:
                             type: object
@@ -4121,7 +4509,7 @@ paths:
                               description:
                                 type: string
                                 example: The 7 is the most internally-oriented of the single-digit numbers. While other numbers are engaged primarily with the external world of action, relationship, and material achievement, the 7 is fundamentally concerned with the interior world of understanding...
-                                description: Expert-written 300 to 500 word exploration of the inner self, hidden desires, and emotional landscape. Reveals what the heart truly craves beneath the surface persona.
+                                description: Core interpretation of the inner self, hidden desires and emotional landscape. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                               strengths:
                                 type: array
                                 items:
@@ -4178,7 +4566,7 @@ paths:
                             description: Personality number from consonants in birth name.
                           calculation:
                             type: string
-                            example: 'Consonants: J=1, H=8, N=5, W=5, L=3, L=3, M=4, S=1, M=4, T=2, H=8 → 1+8+5+5+3+3+4+1+4+2+8 = 44 → 8'
+                            example: 'Consonants: John: J=1, H=8, N=5 = 14 → 5; William: W=5, L=3, L=3, M=4 = 15 → 6; Smith: S=1, M=4, T=2, H=8 = 15 → 6 → 5+6+6 = 17 → 8'
                             description: Consonant extraction and reduction calculation.
                           type:
                             type: string
@@ -4215,7 +4603,7 @@ paths:
                               description:
                                 type: string
                                 example: The 8 is the number most directly associated with material mastery and the exercise of authority in the world. It is oriented toward achievement, and it brings to that orientation an uncommon combination of strategic intelligence, organizational capability, and physical endurance...
-                                description: Expert-written 300 to 500 word analysis of the outer personality, social presence, and the image you project to the world. Reveals the gap between perception and inner truth.
+                                description: Core interpretation of the outer personality, social presence and the image projected to the world. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                               strengths:
                                 type: array
                                 items:
@@ -4309,7 +4697,7 @@ paths:
                               description:
                                 type: string
                                 example: 'Its instinct is to tend: to notice when someone needs support and to provide it in ways that are practical and consistent rather than occasional and showy...'
-                                description: Expert-written 300 to 500 word reading of the special abilities your birth day bestows. Covers how these gifts complement your Life Path and Expression numbers.
+                                description: Core interpretation of the special abilities the birth day brings and how they complement the Life Path and Expression numbers. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                               strengths:
                                 type: array
                                 items:
@@ -4403,7 +4791,7 @@ paths:
                               description:
                                 type: string
                                 example: 'Eleven operates on a fundamentally different frequency than the single-digit numbers. The foundation of 2 is present: the need to relate, to listen, to balance, to work alongside others. But 11 adds a perceptive capacity that transcends ordinary observation...'
-                                description: Expert-written 300 to 500 word guide to the person you are evolving into. The Maturity number represents the wisdom gained through lived experience and reveals your ultimate destination.
+                                description: Core interpretation of the person being grown into in the second half of life, the wisdom gained through lived experience. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                               strengths:
                                 type: array
                                 items:
@@ -4531,7 +4919,7 @@ paths:
                               type: number
                             example:
                             - 14
-                            description: List of karmic debt numbers found (13=laziness, 14=abuse of freedom, 16=ego destruction, 19=selfishness).
+                            description: 'List of karmic debt numbers found (13=laziness, 14=abuse of freedom, 16=ego destruction, 19=selfishness), each listed once, in core-number order: Life Path, Expression, Soul Urge, Personality, Birth Day.'
                           meanings:
                             type: array
                             items:
@@ -4613,7 +5001,7 @@ paths:
                               personalMonth:
                                 type: number
                                 example: 3
-                                description: Personal Month number (1-9).
+                                description: 'Personal Month number (1-9): the Personal Year above plus the current UTC calendar month, reduced to one digit.'
                               theme:
                                 type: string
                                 example: Expression and Connection
@@ -4626,7 +5014,7 @@ paths:
                             - personalMonth
                             - theme
                             - focus
-                            description: Personal Month forecast nested within the Personal Year cycle.
+                            description: Personal Month forecast for the current UTC calendar month, applied to the Personal Year above. With a currentYear other than the current year, it pairs that Personal Year with the current month.
                         required:
                         - personalYear
                         - cycle
@@ -4659,7 +5047,7 @@ paths:
                               - number
                               - 'null'
                               example: 31
-                              description: Age when this phase ends. Null for the 4th Pinnacle (lasts rest of life).
+                              description: Last whole age of this phase, inclusive. The First Pinnacle ends at 36 minus the Life Path reduced to one digit and each later phase starts the year after; null for the 4th Pinnacle (lasts rest of life).
                             meaning:
                               type: object
                               properties:
@@ -4701,7 +5089,7 @@ paths:
                           - startAge
                           - endAge
                           - meaning
-                        description: Four Pinnacle numbers representing major life phases with age ranges and meanings.
+                        description: Four Pinnacle numbers representing major life phases, master numbers 11, 22 and 33 kept, with age ranges and meanings.
                       challenges:
                         type: array
                         items:
@@ -4718,13 +5106,13 @@ paths:
                             startAge:
                               type: number
                               example: 0
-                              description: Age when this Challenge period begins.
+                              description: Age when this Challenge is most felt. The 3rd (Main) Challenge starts at 0 and lasts for life; the 1st, 2nd and 4th take the ages of their Pinnacle phase as an approximation, since Challenges have no fixed durations.
                             endAge:
                               type:
                               - number
                               - 'null'
                               example: 31
-                              description: Age when this period ends. Null for the 4th Challenge.
+                              description: Last whole age of the period, inclusive, approximate as startAge explains. Null for the 3rd (Main) Challenge and the 4th, which last for life.
                             meaning:
                               type: object
                               properties:
@@ -4756,14 +5144,14 @@ paths:
                           - startAge
                           - endAge
                           - meaning
-                        description: Four Challenge numbers representing life obstacles aligned with Pinnacle timing.
+                        description: Four Challenge numbers representing life obstacles. The 3rd (Main) Challenge lasts for life; the other three are timed approximately with the Pinnacle phases.
                       hiddenPassion:
                         type: object
                         properties:
                           number:
                             type: number
                             example: 1
-                            description: Hidden Passion number (1-9). The most frequently occurring number in the birth name.
+                            description: Hidden Passion number (1-9). The most frequently occurring number in the birth name; when several tie, the lowest of them.
                           count:
                             type: number
                             example: 3
@@ -4775,7 +5163,7 @@ paths:
                             example:
                             - 1
                             - 9
-                            description: All numbers tied for highest frequency (usually one, sometimes multiple).
+                            description: All numbers tied for highest frequency, in ascending order (usually one, sometimes multiple).
                           title:
                             type: string
                             example: Compulsion Toward Leadership
@@ -4875,7 +5263,7 @@ paths:
                               letter:
                                 type: string
                                 example: O
-                                description: First vowel in the full name (A, E, I, O, or U).
+                                description: First vowel of the first name (A, E, I, O or U). A first name with none of them takes its Y, the vowel sound of names like Lynn; one with no Y either takes the first A, E, I, O or U of the rest of the name.
                               meaning:
                                 type: string
                                 example: The instinctive emotional response is principled and measured. Reactions are filtered through a sense of what is right and appropriate before full expression occurs.
@@ -4978,7 +5366,7 @@ paths:
                       currentAge:
                         type: number
                         example: 36
-                        description: Current age calculated from the birth year.
+                        description: The current UTC calendar year minus the birth year. The birthday is not considered, so before the birthday it reads one more than the age in whole years, and currentYear does not move it.
                       activationRange:
                         type: string
                         example: 35-40
@@ -5074,6 +5462,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -5115,6 +5506,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -5129,9 +5521,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -5150,6 +5546,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -5161,6 +5560,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -5175,9 +5575,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -5191,16 +5595,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/meanings/{number}:
     get:
       operationId: getNumberMeaning
       tags:
       - Numerology
-      summary: Get Number Meaning - Interpretation for any number 1-9, 11, 22, 33
-      description: Get the complete meaning and interpretation for any numerology number (1-9, 11, 22, 33) using Pythagorean numerology. Returns comprehensive description including archetype title, keywords, personality traits, strengths, weaknesses, career guidance, relationship dynamics, and spiritual insights. Master numbers (11, 22, 33) include amplified meanings with their reduced base number. Perfect for numerology reference tools, educational apps, quick lookups, and building custom numerology calculators. Get detailed 300-500 word expert-written meanings for all 12 valid numerology numbers.
+      summary: Get number meaning - Numerology number meanings API
+      description: Get the full numerology meaning of any number 1 to 9 or the master numbers 11, 22 and 33. The response returns the archetype title, keywords, a core description, strengths, challenges, career, relationships and spirituality in the language set by lang, the same reading every core number endpoint returns for that number. Built for numerology reference pages, custom calculators, educational apps and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -5273,7 +5681,7 @@ paths:
                       description:
                         type: string
                         example: In the span of single-digit numbers 1 to 9, 5 is the number in the exact middle...
-                        description: Authoritative 300 to 500 word interpretation covering personality, life purpose, and core themes. Written by numerology experts and suitable for full-page readings.
+                        description: Core interpretation of the number covering personality, life purpose and core themes. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.
                       strengths:
                         type: array
                         items:
@@ -5331,6 +5739,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -5372,6 +5783,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -5386,9 +5798,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: Number meaning not found
           content:
@@ -5404,9 +5820,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -5425,6 +5846,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -5436,6 +5860,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -5450,9 +5875,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -5466,16 +5895,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/daily:
     post:
       operationId: getDailyNumber
       tags:
       - Numerology
-      summary: Get daily numerology number - Number of the Day with interpretation
-      description: Receive a daily numerology number (1-9, 11, 22, 33) for guidance and reflection. Uses seeded randomness so the same seed gets the same number on the same date, perfect for "Number of the Day" features in numerology apps, wellness platforms, and daily guidance tools. Returns the number with full interpretation including archetype, keywords, strengths, challenges, career, relationships, and spiritual insights. Ideal for daily push notifications, morning briefings, and personalized numerology experiences.
+      summary: Get daily numerology number - Number of the Day API
+      description: Get the numerology Number of the Day, one of 1 to 9, 11, 22 or 33, with its full interpretation. The same seed returns the same number for the same date, so a user keeps one number all day, and the date defaults to today in UTC. The response returns the number, its type, a daily message and the archetype, keywords, strengths, challenges, career, relationships and spirituality reading in the language set by lang. Built for Number of the Day widgets, push notifications and daily content.
       security:
       - apiKey: []
       parameters:
@@ -5567,7 +6000,7 @@ paths:
                       description:
                         type: string
                         example: The 7 is the most internally-oriented of the single-digit numbers. While other numbers are engaged primarily with the external world of action, relationship, and material achievement, the 7 is fundamentally concerned with the interior world of understanding...
-                        description: Expert-written 300 to 500 word interpretation of the daily energy. Covers personality resonance, life themes, and how this number influences the day.
+                        description: 'Core interpretation of the number of the day: its personality resonance, life themes and how it colors the day. Together with the strengths, challenges, career, relationships and spirituality fields it makes a full reading.'
                       strengths:
                         type: array
                         items:
@@ -5628,6 +6061,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -5669,6 +6105,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -5683,9 +6120,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -5704,6 +6145,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -5715,6 +6159,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -5729,9 +6174,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -5745,16 +6194,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/chaldean:
     post:
       operationId: calculateChaldean
       tags:
       - Numerology
-      summary: Chaldean numerology name reading - Destiny, compound number, planetary ruler
-      description: Calculate a complete Chaldean numerology reading for a name. The older Chaldean system maps letters to values 1 to 8 by vibration (the number 9 is sacred and never assigned to a letter) and reads the unreduced two-digit compound number (10 to 52, also called a fadic number, defined by Cheiro) in addition to the single-digit root. Returns the Destiny or name number from all letters, the Soul Urge from vowels, and the Personality from consonants, each with its compound number, root, and Cheiro compound interpretation, plus the planetary ruler of the Destiny root and a caution flag for the karmic numbers 4 and 8. Perfect for Chaldean numerology calculators, name analysis tools, and AI numerology assistants that need both the compound and root layers in one call.
+      summary: Calculate Chaldean numerology - Chaldean name number calculator API
+      description: Calculate a complete Chaldean numerology reading for a name, following Cheiro. The Destiny or name number, the Soul Urge from the vowels and the Personality from the consonants each come with the compound number from 10 to 52, the single-digit root and the classical compound interpretation, and a longer name is read name by name with every step shown in its calculation. The response adds the planetary ruler and meaning of the Destiny root, a caution flag for the roots 4 and 8, and a summary, in the language set by lang. Built for Chaldean numerology calculators, name analysis tools and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -5789,7 +6242,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: Helen
-                  description: The name to analyze. Chaldean tradition uses the name a person is most known by, not necessarily the full legal birth name.
+                  description: The name to analyze. Chaldean tradition uses the name a person is most known by, not necessarily the full legal birth name. It needs at least one vowel (A, E, I, O, U) and one consonant, since the Soul Urge is read from the vowels and the Personality from the consonants; Y counts as a consonant. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - name
       responses:
@@ -5810,7 +6263,7 @@ paths:
                       total:
                         type: number
                         example: 23
-                        description: Raw sum of the Chaldean letter values before any reduction.
+                        description: 'The sum the compound is read from: for a one-word name, its Chaldean letter total; for a longer name, the sum of each word reduced to its single number, as Cheiro works John Smith (18 to 9, 17 to 8, total 17).'
                       compound:
                         type:
                         - number
@@ -5824,7 +6277,7 @@ paths:
                       calculation:
                         type: string
                         example: H=5, E=5, L=3, E=5, N=5 = 23 → 5
-                        description: Letter-by-letter Chaldean breakdown summed to the total, then to compound and root.
+                        description: Letter-by-letter Chaldean breakdown, name by name for a longer name, summed to the total, then to compound and root.
                       compoundMeaning:
                         type:
                         - object
@@ -5875,7 +6328,7 @@ paths:
                       total:
                         type: number
                         example: 23
-                        description: Raw sum of the Chaldean letter values before any reduction.
+                        description: 'The sum the compound is read from: for a one-word name, its Chaldean letter total; for a longer name, the sum of each word reduced to its single number, as Cheiro works John Smith (18 to 9, 17 to 8, total 17).'
                       compound:
                         type:
                         - number
@@ -5889,7 +6342,7 @@ paths:
                       calculation:
                         type: string
                         example: H=5, E=5, L=3, E=5, N=5 = 23 → 5
-                        description: Letter-by-letter Chaldean breakdown summed to the total, then to compound and root.
+                        description: Letter-by-letter Chaldean breakdown, name by name for a longer name, summed to the total, then to compound and root.
                       compoundMeaning:
                         type:
                         - object
@@ -5940,7 +6393,7 @@ paths:
                       total:
                         type: number
                         example: 23
-                        description: Raw sum of the Chaldean letter values before any reduction.
+                        description: 'The sum the compound is read from: for a one-word name, its Chaldean letter total; for a longer name, the sum of each word reduced to its single number, as Cheiro works John Smith (18 to 9, 17 to 8, total 17).'
                       compound:
                         type:
                         - number
@@ -5954,7 +6407,7 @@ paths:
                       calculation:
                         type: string
                         example: H=5, E=5, L=3, E=5, N=5 = 23 → 5
-                        description: Letter-by-letter Chaldean breakdown summed to the total, then to compound and root.
+                        description: Letter-by-letter Chaldean breakdown, name by name for a longer name, summed to the total, then to compound and root.
                       compoundMeaning:
                         type:
                         - object
@@ -6070,6 +6523,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -6111,6 +6567,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -6125,9 +6582,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -6146,6 +6607,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -6157,6 +6621,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -6171,9 +6636,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -6187,16 +6656,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/compound-number/{number}:
     get:
       operationId: getCompoundNumber
       tags:
       - Numerology
-      summary: Compound number meaning - Cheiro Chaldean interpretation 10 to 52
-      description: Get the classical Chaldean interpretation of a compound number (also called a fadic number) from 10 to 52, as defined by Cheiro in the Book of Numbers. Compound numbers are the unreduced two-digit numbers that reveal the hidden influence behind a name or date, beyond the single-digit root. Each returns its symbolic title (such as The Wheel of Fortune for 10, The Star of the Magi for 17, or The Crown of the Magi for 21), its nature (fortunate, unfortunate, or mixed), and a full interpretation. Numbers 33 to 52 share the meaning of a lower number in their series, returned with a sameAs pointer. Perfect for Chaldean numerology references, compound number lookups, and AI numerology tools.
+      summary: Get compound number meaning - Chaldean compound numbers 10 to 52 API
+      description: Get the classical Chaldean meaning of a compound number, also called a fadic number, from 10 to 52 as Cheiro defines it. A compound number is the unreduced two-digit total behind a name or date, read beside its single-digit root. The response returns the root, the nature (fortunate, unfortunate or mixed), the full interpretation in the language set by lang, and the symbolic name where Cheiro gives one, such as The Wheel of Fortune for 10 or The Crown of the Magi for 21; a number from 33 up that repeats a lower one carries a sameAs pointer to it. Built for Chaldean numerology references, name analysis tools and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -6287,6 +6760,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -6328,6 +6804,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -6342,9 +6819,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -6363,6 +6844,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -6374,6 +6858,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -6388,9 +6873,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -6404,16 +6893,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/dual:
     post:
       operationId: calculateDual
       tags:
       - Numerology
-      summary: Dual numerology - Pythagorean and Chaldean name numbers in one call
-      description: Calculate a name number in both major numerology systems at once and compare them. The Pythagorean system maps letters 1 to 9 in alphabetical order and preserves master numbers (11, 22, 33), giving the Expression or Destiny number used in modern Western numerology. The Chaldean system maps letters 1 to 8 by vibration, reads the compound number (10 to 52), and reduces to a root 1 to 9. Returns both results with their interpretations, plus an agreement flag showing whether the two systems point to the same single-digit energy. The only numerology API that returns Pythagorean and Chaldean for a name in a single request, ideal for comparison tools and AI numerology assistants.
+      summary: Calculate dual numerology - Pythagorean and Chaldean name number API
+      description: Calculate a name number in both Pythagorean and Chaldean numerology in one call and compare them. The Pythagorean side returns the Expression or Destiny number with master numbers 11, 22 and 33 kept; the Chaldean side returns the compound number from 10 to 52, the root, its planetary ruler and the compound interpretation; each shows its calculation name by name. An agreement flag and a plain-language note show whether the two systems point to the same single-digit energy, in the language set by lang. Built for system comparison tools, name analysis features and AI agents.
       security:
       - apiKey: []
       parameters:
@@ -6448,7 +6941,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: David
-                  description: The name to analyze in both systems.
+                  description: The name to analyze in both systems. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - name
       responses:
@@ -6518,7 +7011,7 @@ paths:
                       total:
                         type: number
                         example: 16
-                        description: Raw Chaldean letter total.
+                        description: 'The sum the compound is read from: for a one-word name, its Chaldean letter total; for a longer name, the sum of each word reduced to its single number, as Cheiro works John Smith (18 to 9, 17 to 8, total 17).'
                       calculation:
                         type: string
                         example: D=4, A=1, V=6, I=1, D=4 = 16 → 7
@@ -6609,6 +7102,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -6650,6 +7146,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -6664,9 +7161,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -6685,6 +7186,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -6696,6 +7200,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -6710,9 +7215,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -6726,16 +7235,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /numerology/business-name:
     post:
       operationId: calculateBusinessName
       tags:
       - Numerology
-      summary: Business name numerology - Chaldean brand name analysis and lucky numbers
-      description: Analyze a business or brand name with Chaldean numerology, the system practitioners use for trade names. Returns the name number (compound and root), its planetary ruler, an overall business rating, the industries the number favors, and whether the compound is one of Cheiro fortunate compounds. The most favorable business roots are 1 (leadership), 3 (expansion), 5 (commerce) and 6 (beauty and hospitality); the numbers 4 and 8 carry caution as the karmic numbers of instability and heavy demand. Use it to vet a company name, compare brand options, or guide a naming decision. This is positioning guidance layered over the fundamentals of a memorable, available name, not a guarantee.
+      summary: Calculate business name numerology - Brand name numerology API
+      description: Analyze a business or brand name with Chaldean numerology, the system practitioners use for trade names. The name is read word by word, and the response returns the compound number and root with every step, the planetary ruler, a business rating, the industries the number favors, whether the compound is one of the fortunate compounds Cheiro names, and guidance, in the language set by lang. The roots 1, 3, 5 and 6 rate excellent, 2 and 9 good, 7 and 8 caution and 4 avoid. Built for naming tools, brand agencies and founder apps; the rating is positioning guidance, not a guarantee.
       security:
       - apiKey: []
       parameters:
@@ -6770,7 +7283,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   example: Ford
-                  description: The business or brand name to evaluate.
+                  description: The business or brand name to evaluate. A name in any script is converted to Latin letters before it is counted, Cyrillic and Greek as the passport spelling and accents folded to the base letter, and the calculation lists the letters counted. For a script that does not write its vowels, send the Latin spelling the person uses.
               required:
               - name
       responses:
@@ -6788,7 +7301,7 @@ paths:
                   total:
                     type: number
                     example: 21
-                    description: Raw Chaldean letter total of the name.
+                    description: 'The sum the compound is read from: for a one-word name, its Chaldean letter total; for a longer name, the sum of each word reduced to its single number, as Cheiro works John Smith (18 to 9, 17 to 8, total 17).'
                   compound:
                     type:
                     - number
@@ -6902,6 +7415,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -6943,6 +7459,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -6957,9 +7474,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -6978,6 +7499,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -6989,6 +7513,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -7003,9 +7528,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -7019,9 +7548,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
 components:
   securitySchemes:
     apiKey:

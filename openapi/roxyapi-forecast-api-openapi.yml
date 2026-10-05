@@ -2,12 +2,95 @@ openapi: 3.2.0
 info:
   title: Roxy Forecast API
   version: 2.0.0
-  description: '# RoxyAPI: AI-Native Insight Infrastructure
+  description: '# RoxyAPI: the Spiritual OS layer for agentic AI
 
 
-    > **Base URL:** `https://roxyapi.com/api/v2`
-
-    > All endpoint paths below are relative to this base URL.'
+    > **Base URL:** `https://roxyapi.com/api/v2`.'
+  x-error-codes:
+  - code: validation_error
+    status: 400
+    meaning: A field is missing or invalid. The body lists every failing field at once in issues, each with its path and the expected shape.
+  - code: bad_request
+    status: 400
+    meaning: The request was rejected as a whole, for example a body that is not valid JSON or a date range that ends before it starts.
+  - code: date_out_of_range
+    status: 400
+    meaning: A date lies outside the span the planetary positions are served for. The error names the supported dates.
+  - code: api_key_required
+    status: 401
+    meaning: No API key was sent.
+  - code: invalid_api_key
+    status: 401
+    meaning: The key sent is malformed or cannot be verified.
+  - code: api_key_revoked
+    status: 401
+    meaning: The key was valid once and has since been revoked from the account page.
+  - code: subscription_not_found
+    status: 401
+    meaning: The key verifies, but the subscription behind it no longer exists.
+  - code: subscription_inactive
+    status: 401
+    meaning: The subscription behind the key is cancelled, expired or suspended, or a trial is past its end date.
+  - code: publishable_key_not_allowed_on_mcp
+    status: 401
+    meaning: A publishable key was used on a Remote MCP server, which takes a secret key.
+  - code: invalid_client_ip
+    status: 401
+    meaning: A keyless request could not be attributed to a caller.
+  - code: unauthorized
+    status: 401
+    meaning: Authentication failed with no more specific reason to give.
+  - code: forbidden
+    status: 403
+    meaning: The key is valid, but this request is not permitted.
+  - code: origin_required
+    status: 403
+    meaning: A publishable key with an origin allowlist was used with no Origin header, as from a server or a native app.
+  - code: origin_not_allowed
+    status: 403
+    meaning: The calling site is not on the origin allowlist of this publishable key.
+  - code: not_found
+    status: 404
+    meaning: Nothing is served at this path, or the identifier in it does not exist. A path miss adds suggestions, the closest real endpoints.
+  - code: method_not_allowed
+    status: 405
+    meaning: The path exists for a different HTTP method. The body lists the accepted methods in allow, as does the Allow header.
+  - code: conflict
+    status: 409
+    meaning: The request cannot be applied in the current state.
+  - code: gone
+    status: 410
+    meaning: The path was removed permanently.
+  - code: payload_too_large
+    status: 413
+    meaning: The request body is larger than the API accepts.
+  - code: unsupported_media_type
+    status: 415
+    meaning: 'A request with a body was sent without Content-Type: application/json.'
+  - code: unprocessable_entity
+    status: 422
+    meaning: Every field is valid, but the combination cannot be computed.
+  - code: rate_limit_exceeded
+    status: 429
+    meaning: The monthly request allowance is used up. Retry-After gives the seconds to the reset.
+  - code: rate_limit_per_minute
+    status: 429
+    meaning: The per-minute limit of the plan was reached. Retry-After gives the seconds to the next minute, and the monthly allowance is not charged.
+  - code: rate_limited
+    status: 429
+    meaning: A rate limit was reached, reported without the plan detail.
+  - code: free_tier_exhausted
+    status: 429
+    meaning: A keyless request has used up its trial allowance.
+  - code: internal_error
+    status: 500
+    meaning: The request failed inside our service. Retry with exponential backoff.
+  - code: compute_saturated
+    status: 503
+    meaning: Heavy calculations are briefly at capacity. Send the same request again after Retry-After seconds.
+  - code: error
+    status: null
+    meaning: A fallback for a status with no more specific code. The status and the error field carry the signal.
   contact:
     name: RoxyAPI Support
     url: https://roxyapi.com/contact
@@ -15,13 +98,13 @@ info:
     name: Proprietary
     url: https://roxyapi.com/policy/terms
 servers:
-- url: /api/v2
+- url: https://roxyapi.com/api/v2
   description: Production API v2
 security:
 - apiKey: []
 tags:
 - name: Forecast
-  description: Forecast API that merges upcoming transit aspects, sign ingresses, retrograde stations, new and full moons, biorhythm critical days, and Vimshottari dasha changes into one time-ordered forecast for a single subject. The only cross-domain forecast timeline behind one key, positions verified against NASA JPL Horizons, available over Remote MCP with typed SDKs. Horizon capped at 90 days.
+  description: Astrology forecast API that merges upcoming transit aspects, sign ingresses, retrograde stations, new and full moons, biorhythm critical days, and Vimshottari dasha changes into one time-ordered forecast for a single subject, with positions verified against NASA JPL Horizons. One key covers every RoxyAPI domain, with Remote MCP and typed SDKs.
 paths:
   /forecast/timeline:
     post:
@@ -78,7 +161,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -181,7 +264,7 @@ paths:
                       timezone:
                         type: number
                         example: -4
-                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the offset in force at the birth date and time, so this is the literal number applied, never the name.
                       latitude:
                         type: number
                         minimum: -90
@@ -225,7 +308,7 @@ paths:
                         datetime:
                           type: string
                           example: '2026-07-04T08:42:11Z'
-                          description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                          description: Exact instant of the event as an ISO-8601 UTC datetime, to the nearest second. Astronomical events are refined to this instant by search, not reported at a daily sample point; a dasha-change is the period boundary itself, counted from the birth instant.
                         domain:
                           type: string
                           enum:
@@ -249,7 +332,7 @@ paths:
                         body:
                           type: string
                           example: Saturn
-                          description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                          description: 'Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, or the critical cycle for biorhythm days. For a dasha-change, the Vimshottari lords outermost first, joined by a hyphen, then one space and the level: Saturn Mahadasha, Saturn-Mercury Antardasha, Saturn-Mercury-Ketu Pratyantardasha. Lords are always one of Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury. Never localized.'
                         target:
                           type: string
                           example: Moon
@@ -260,8 +343,8 @@ paths:
                           description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
                         orb:
                           type: number
-                          example: 0.12
-                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                          example: 0
+                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant, rounded to three decimals. The instant is the moment the aspect perfects, so this reads 0. Absent for other event types.
                         station:
                           type: string
                           enum:
@@ -291,7 +374,7 @@ paths:
                           description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
                         description:
                           type: string
-                          example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                          example: Transiting Saturn square natal Moon, an exact aspect.
                           description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
                         significance:
                           type: number
@@ -326,6 +409,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -367,6 +453,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -381,9 +468,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -402,6 +493,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -413,6 +507,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -427,9 +522,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -443,9 +542,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /forecast/transits:
     post:
       operationId: forecastTransits
@@ -501,7 +604,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -564,7 +667,7 @@ paths:
                       timezone:
                         type: number
                         example: -4
-                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the offset in force at the birth date and time, so this is the literal number applied, never the name.
                       latitude:
                         type: number
                         minimum: -90
@@ -608,7 +711,7 @@ paths:
                         datetime:
                           type: string
                           example: '2026-07-04T08:42:11Z'
-                          description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                          description: Exact instant of the event as an ISO-8601 UTC datetime, to the nearest second. Astronomical events are refined to this instant by search, not reported at a daily sample point; a dasha-change is the period boundary itself, counted from the birth instant.
                         domain:
                           type: string
                           enum:
@@ -632,7 +735,7 @@ paths:
                         body:
                           type: string
                           example: Saturn
-                          description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                          description: 'Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, or the critical cycle for biorhythm days. For a dasha-change, the Vimshottari lords outermost first, joined by a hyphen, then one space and the level: Saturn Mahadasha, Saturn-Mercury Antardasha, Saturn-Mercury-Ketu Pratyantardasha. Lords are always one of Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury. Never localized.'
                         target:
                           type: string
                           example: Moon
@@ -643,8 +746,8 @@ paths:
                           description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
                         orb:
                           type: number
-                          example: 0.12
-                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                          example: 0
+                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant, rounded to three decimals. The instant is the moment the aspect perfects, so this reads 0. Absent for other event types.
                         station:
                           type: string
                           enum:
@@ -674,7 +777,7 @@ paths:
                           description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
                         description:
                           type: string
-                          example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                          example: Transiting Saturn square natal Moon, an exact aspect.
                           description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
                         significance:
                           type: number
@@ -709,6 +812,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -750,6 +856,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -764,9 +871,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -785,6 +896,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -796,6 +910,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -810,9 +925,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -826,9 +945,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /forecast/significant-dates:
     post:
       operationId: findSignificantDates
@@ -884,7 +1007,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -987,7 +1110,7 @@ paths:
                       timezone:
                         type: number
                         example: -4
-                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the offset in force at the birth date and time, so this is the literal number applied, never the name.
                       latitude:
                         type: number
                         minimum: -90
@@ -1031,7 +1154,7 @@ paths:
                         datetime:
                           type: string
                           example: '2026-07-04T08:42:11Z'
-                          description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                          description: Exact instant of the event as an ISO-8601 UTC datetime, to the nearest second. Astronomical events are refined to this instant by search, not reported at a daily sample point; a dasha-change is the period boundary itself, counted from the birth instant.
                         domain:
                           type: string
                           enum:
@@ -1055,7 +1178,7 @@ paths:
                         body:
                           type: string
                           example: Saturn
-                          description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                          description: 'Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, or the critical cycle for biorhythm days. For a dasha-change, the Vimshottari lords outermost first, joined by a hyphen, then one space and the level: Saturn Mahadasha, Saturn-Mercury Antardasha, Saturn-Mercury-Ketu Pratyantardasha. Lords are always one of Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury. Never localized.'
                         target:
                           type: string
                           example: Moon
@@ -1066,8 +1189,8 @@ paths:
                           description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
                         orb:
                           type: number
-                          example: 0.12
-                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                          example: 0
+                          description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant, rounded to three decimals. The instant is the moment the aspect perfects, so this reads 0. Absent for other event types.
                         station:
                           type: string
                           enum:
@@ -1097,7 +1220,7 @@ paths:
                           description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
                         description:
                           type: string
-                          example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                          example: Transiting Saturn square natal Moon, an exact aspect.
                           description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
                         significance:
                           type: number
@@ -1132,6 +1255,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1173,6 +1299,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1187,9 +1314,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1208,6 +1339,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1219,6 +1353,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1233,9 +1368,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1249,9 +1388,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /forecast/digest:
     post:
       operationId: generateDigest
@@ -1307,7 +1450,7 @@ paths:
                         minimum: -14
                         maximum: 14
                       - type: string
-                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                      description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                       example: America/New_York
                     latitude:
                       type: number
@@ -1411,7 +1554,7 @@ paths:
                       timezone:
                         type: number
                         example: -4
-                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the DST-correct offset for the birth date, so this is the literal number applied, never the name.
+                        description: Decimal UTC offset the forecast was computed with, resolved from whatever the request sent. An IANA name is resolved to the offset in force at the birth date and time, so this is the literal number applied, never the name.
                       latitude:
                         type: number
                         minimum: -90
@@ -1528,7 +1671,7 @@ paths:
                               datetime:
                                 type: string
                                 example: '2026-07-04T08:42:11Z'
-                                description: Exact instant of the event as an ISO-8601 UTC datetime. Astronomical events are refined to this instant by search, not reported at a daily sample point.
+                                description: Exact instant of the event as an ISO-8601 UTC datetime, to the nearest second. Astronomical events are refined to this instant by search, not reported at a daily sample point; a dasha-change is the period boundary itself, counted from the birth instant.
                               domain:
                                 type: string
                                 enum:
@@ -1552,7 +1695,7 @@ paths:
                               body:
                                 type: string
                                 example: Saturn
-                                description: Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, a mahadasha, antardasha, or pratyantardasha label for dasha changes, or the critical cycle for biorhythm days.
+                                description: 'Primary subject of the event. A transiting planet for western events, Sun for a solar eclipse, Moon for a lunar eclipse or a new or full moon, or the critical cycle for biorhythm days. For a dasha-change, the Vimshottari lords outermost first, joined by a hyphen, then one space and the level: Saturn Mahadasha, Saturn-Mercury Antardasha, Saturn-Mercury-Ketu Pratyantardasha. Lords are always one of Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury. Never localized.'
                               target:
                                 type: string
                                 example: Moon
@@ -1563,8 +1706,8 @@ paths:
                                 description: For a transit-aspect, the angular relationship. One of conjunction, sextile, square, trine, opposition. Absent for other event types.
                               orb:
                                 type: number
-                                example: 0.12
-                                description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant. Tighter orb means a more exact and significant aspect.
+                                example: 0
+                                description: For a transit-aspect, the separation in degrees from the exact aspect at the reported instant, rounded to three decimals. The instant is the moment the aspect perfects, so this reads 0. Absent for other event types.
                               station:
                                 type: string
                                 enum:
@@ -1594,7 +1737,7 @@ paths:
                                 description: 'For a lunar-phase event, which syzygy it is: new-moon (Sun-Moon conjunction) or full-moon (Sun-Moon opposition). The intermediate quarters are not emitted. A stable machine value, never localized. Absent for other event types.'
                               description:
                                 type: string
-                                example: Transiting Saturn square natal Moon, an exact aspect within 0.12 degrees.
+                                example: Transiting Saturn square natal Moon, an exact aspect.
                                 description: 'Plain-language summary of the event, suitable for direct display. The only localized field: when lang is set this sentence, and the body, target, and aspect names within it, render in the requested language while the structured fields stay English.'
                               significance:
                                 type: number
@@ -1637,6 +1780,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1678,6 +1824,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1692,9 +1839,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1713,6 +1864,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1724,6 +1878,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1738,9 +1893,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1754,9 +1913,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /forecast/solar-return:
     post:
       operationId: forecastSolarReturn
@@ -1805,8 +1968,8 @@ paths:
                   description: Birth time in 24-hour HH:MM:SS format. Pins the exact natal Sun position that defines the solar return moment.
                 year:
                   type: integer
-                  minimum: 1900
-                  maximum: 2200
+                  minimum: 1551
+                  maximum: 2649
                   example: 2026
                   description: Year to cast the solar return for. The chart is erected for the moment in this year when the transiting Sun returns to the natal Sun longitude, on or within a day of the birthday.
                 latitude:
@@ -1827,7 +1990,7 @@ paths:
                     minimum: -14
                     maximum: 14
                   - type: string
-                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the DST-correct offset for the birth date, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state on that date. Invalid timezones return 400 with a validation error.'
+                  description: 'IANA name (e.g. "America/New_York", "Europe/London", "UTC"), decimal hours (e.g. -5 for EST, 1 for CET), or a fixed UTC offset (e.g. "-05:00", "+01:00"). Prefer the IANA name: it is resolved to the offset in force at the birth date and time, historical daylight-saving rules included, while a fixed offset or decimal is taken literally and will be wrong if it does not match the daylight-saving state at that moment. On a transition day a time in the repeated hour is read as its first occurrence and a time in the skipped hour is moved forward past the gap. Invalid timezones return 400 with a validation error.'
                   example: America/New_York
                 houseSystem:
                   type: string
@@ -1879,7 +2042,7 @@ paths:
                         description: Longitude used for local sidereal time and the Midheaven.
                       timezone:
                         type: number
-                        example: -5
+                        example: -4
                         description: Decimal timezone offset applied to the output datetime.
                     required:
                     - latitude
@@ -1938,8 +2101,8 @@ paths:
                             type: number
                             minimum: -12
                             maximum: 14
-                            example: -5
-                            description: 'Timezone offset from UTC in decimal hours. Examples: New York = -5, London = 0, India = 5.5, Tokyo = 9.'
+                            example: -4
+                            description: 'Timezone offset from UTC in decimal hours, resolved for the birth date. Examples: New York = -5 in winter and -4 in summer, London = 0, India = 5.5, Tokyo = 9.'
                         required:
                         - date
                         - time
@@ -1970,17 +2133,17 @@ paths:
                               - Chiron
                               - Black Moon Lilith
                               example: Sun
-                              description: Body name. One of the 10 classical planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto), the lunar nodes (North Node, South Node), Chiron, or Black Moon Lilith (the mean lunar apogee). The nodes follow the request `nodeType`, which defaults to the true (osculating) node; pass "mean" for the smoothed node. The two differ by up to about 1.8 degrees and no other body is affected.
+                              description: Body name. One of the 10 classical planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto), the lunar nodes (North Node, South Node), Chiron, or Black Moon Lilith (the mean lunar apogee). The lunar nodes follow the request nodeType, which defaults to the true (osculating) node; pass "mean" for the smoothed node. The two differ by up to about 1.8 degrees and no other body is affected.
                             longitude:
                               type: number
                               minimum: 0
                               maximum: 360
                               example: 112.45
-                              description: Tropical ecliptic longitude in degrees (0-360). Primary coordinate for zodiac sign and aspect calculations.
+                              description: 'Apparent geocentric tropical longitude on the true ecliptic of date, in degrees (0-360): light time and aberration applied, nutation included, the convention desktop chart software and the NASA JPL Horizons observer tables print, so it compares directly with either. Primary coordinate for zodiac sign and aspect calculations.'
                             latitude:
                               type: number
                               example: 0.01
-                              description: Ecliptic latitude in degrees. Near zero for most planets, varies for the Moon and Pluto, and reaches up to about 5 degrees for Black Moon Lilith (projected from the inclined mean lunar orbit).
+                              description: Apparent geocentric ecliptic latitude of date, in degrees. Near zero for most planets, varies for the Moon and Pluto, and reaches up to about 5 degrees for Black Moon Lilith (projected from the inclined mean lunar orbit).
                             sign:
                               type: string
                               example: Cancer
@@ -2014,7 +2177,7 @@ paths:
                           - house
                           - speed
                           - isRetrograde
-                        description: 'All 14 celestial bodies in the tropical zodiac with house placements: the 10 classical planets (Sun through Pluto), the lunar nodes (North Node, South Node, in the requested `nodeType` convention), Chiron, and Black Moon Lilith.'
+                        description: 'All 14 celestial bodies in the tropical zodiac with house placements: the 10 classical planets (Sun through Pluto), the lunar nodes (North Node, South Node, in the requested `nodeType` convention), Chiron, and Black Moon Lilith. Chiron is included for charts from 1600 to 2500 and omitted outside that range.'
                       houses:
                         type: array
                         items:
@@ -2250,6 +2413,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -2291,6 +2457,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2305,9 +2472,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2326,6 +2497,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2337,6 +2511,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2351,9 +2526,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2367,9 +2546,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
 components:
   securitySchemes:
     apiKey:

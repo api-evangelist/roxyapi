@@ -2,12 +2,95 @@ openapi: 3.2.0
 info:
   title: Roxy I Ching API
   version: 2.0.0
-  description: '# RoxyAPI: AI-Native Insight Infrastructure
+  description: '# RoxyAPI: the Spiritual OS layer for agentic AI
 
 
-    > **Base URL:** `https://roxyapi.com/api/v2`
-
-    > All endpoint paths below are relative to this base URL.'
+    > **Base URL:** `https://roxyapi.com/api/v2`.'
+  x-error-codes:
+  - code: validation_error
+    status: 400
+    meaning: A field is missing or invalid. The body lists every failing field at once in issues, each with its path and the expected shape.
+  - code: bad_request
+    status: 400
+    meaning: The request was rejected as a whole, for example a body that is not valid JSON or a date range that ends before it starts.
+  - code: date_out_of_range
+    status: 400
+    meaning: A date lies outside the span the planetary positions are served for. The error names the supported dates.
+  - code: api_key_required
+    status: 401
+    meaning: No API key was sent.
+  - code: invalid_api_key
+    status: 401
+    meaning: The key sent is malformed or cannot be verified.
+  - code: api_key_revoked
+    status: 401
+    meaning: The key was valid once and has since been revoked from the account page.
+  - code: subscription_not_found
+    status: 401
+    meaning: The key verifies, but the subscription behind it no longer exists.
+  - code: subscription_inactive
+    status: 401
+    meaning: The subscription behind the key is cancelled, expired or suspended, or a trial is past its end date.
+  - code: publishable_key_not_allowed_on_mcp
+    status: 401
+    meaning: A publishable key was used on a Remote MCP server, which takes a secret key.
+  - code: invalid_client_ip
+    status: 401
+    meaning: A keyless request could not be attributed to a caller.
+  - code: unauthorized
+    status: 401
+    meaning: Authentication failed with no more specific reason to give.
+  - code: forbidden
+    status: 403
+    meaning: The key is valid, but this request is not permitted.
+  - code: origin_required
+    status: 403
+    meaning: A publishable key with an origin allowlist was used with no Origin header, as from a server or a native app.
+  - code: origin_not_allowed
+    status: 403
+    meaning: The calling site is not on the origin allowlist of this publishable key.
+  - code: not_found
+    status: 404
+    meaning: Nothing is served at this path, or the identifier in it does not exist. A path miss adds suggestions, the closest real endpoints.
+  - code: method_not_allowed
+    status: 405
+    meaning: The path exists for a different HTTP method. The body lists the accepted methods in allow, as does the Allow header.
+  - code: conflict
+    status: 409
+    meaning: The request cannot be applied in the current state.
+  - code: gone
+    status: 410
+    meaning: The path was removed permanently.
+  - code: payload_too_large
+    status: 413
+    meaning: The request body is larger than the API accepts.
+  - code: unsupported_media_type
+    status: 415
+    meaning: 'A request with a body was sent without Content-Type: application/json.'
+  - code: unprocessable_entity
+    status: 422
+    meaning: Every field is valid, but the combination cannot be computed.
+  - code: rate_limit_exceeded
+    status: 429
+    meaning: The monthly request allowance is used up. Retry-After gives the seconds to the reset.
+  - code: rate_limit_per_minute
+    status: 429
+    meaning: The per-minute limit of the plan was reached. Retry-After gives the seconds to the next minute, and the monthly allowance is not charged.
+  - code: rate_limited
+    status: 429
+    meaning: A rate limit was reached, reported without the plan detail.
+  - code: free_tier_exhausted
+    status: 429
+    meaning: A keyless request has used up its trial allowance.
+  - code: internal_error
+    status: 500
+    meaning: The request failed inside our service. Retry with exponential backoff.
+  - code: compute_saturated
+    status: 503
+    meaning: Heavy calculations are briefly at capacity. Send the same request again after Retry-After seconds.
+  - code: error
+    status: null
+    meaning: A fallback for a status with no more specific code. The status and the error field carry the signal.
   contact:
     name: RoxyAPI Support
     url: https://roxyapi.com/contact
@@ -15,7 +98,7 @@ info:
     name: Proprietary
     url: https://roxyapi.com/policy/terms
 servers:
-- url: /api/v2
+- url: https://roxyapi.com/api/v2
   description: Production API v2
 security:
 - apiKey: []
@@ -28,8 +111,8 @@ paths:
       operationId: getDailyHexagram
       tags:
       - I-Ching
-      summary: Get daily I-Ching hexagram
-      description: Receive a daily I-Ching hexagram for guidance and reflection. This endpoint uses seeded randomness to ensure the same seed gets the same hexagram on the same day - perfect for "Hexagram of the Day" features in oracle apps, meditation platforms, and daily wisdom tools. Returns the hexagram with judgment, image, and interpretations for love, career, decisions, and practical advice based on ancient Chinese wisdom from the Book of Changes.
+      summary: Daily hexagram - Daily I-Ching oracle API
+      description: Receive a daily I-Ching hexagram for guidance and reflection. This endpoint uses seeded randomness to ensure the same seed gets the same hexagram on the same day, perfect for "Hexagram of the Day" features in oracle apps, meditation platforms, and daily wisdom tools. Returns the hexagram with judgment, image, and interpretations for love, career, decisions, and practical advice based on ancient Chinese wisdom from the Book of Changes.
       security:
       - apiKey: []
       parameters:
@@ -188,6 +271,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -229,6 +315,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -243,9 +330,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -264,6 +355,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -275,6 +369,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -289,11 +384,15 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
-          description: Failed to generate daily hexagram
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -301,21 +400,23 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: Resource not found
-                    description: Human-readable error message. The wording may change, so do not parse it programmatically. Switch on the stable code instead.
+                    description: Human-readable error message. May change wording.
                   code:
                     type: string
-                    example: not_found
-                    description: Machine-readable error code. Stable identifier for programmatic error handling.
+                    description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/daily/cast:
     post:
       operationId: castDailyReading
       tags:
       - I-Ching
-      summary: Cast daily I-Ching reading with changing lines
+      summary: Cast daily reading with changing lines - I-Ching divination API
       description: Cast a complete daily I-Ching reading using the traditional three-coin method with seeded randomness. Unlike the simple daily hexagram, this provides the full casting experience with line values (6-9), changing line positions, and the resulting hexagram if transformation occurs. Same seed + same date = same casting result. Perfect for I-Ching divination apps requiring authentic oracle experience with daily consistency.
       security:
       - apiKey: []
@@ -441,6 +542,15 @@ paths:
                         - decision
                         - advice
                         description: Modern interpretations across life areas based on ancient I-Ching wisdom.
+                      binary:
+                        type: string
+                        example: '111111'
+                        description: Binary line pattern (6 digits, bottom to top). 1 = yang (solid line), 0 = yin (broken line). Lines 1-3 form the lower trigram, lines 4-6 form the upper trigram.
+                      changingLines:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChangingLine'
+                        description: The oracle statement and meaning of each line that came up CHANGING, and only those. The changing lines are what the cast is actually about, so this saves a second call to read them and stops a consuming agent from having to invent them.
                     required:
                     - number
                     - symbol
@@ -452,6 +562,7 @@ paths:
                     - judgment
                     - image
                     - interpretation
+                    - binary
                   lines:
                     type: array
                     items:
@@ -577,6 +688,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -618,6 +732,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -632,9 +747,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -653,6 +772,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -664,6 +786,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -678,9 +801,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -694,15 +821,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/hexagrams:
     get:
       operationId: listHexagrams
       tags:
       - I-Ching
-      summary: List all 64 hexagrams
+      summary: List all 64 hexagrams - I-Ching hexagram catalog API
       description: Browse all 64 I-Ching hexagrams from the Book of Changes with their Chinese names, English translations, and trigram compositions. The hexagrams are ordered by the traditional King Wen sequence used in I-Ching divination for 3,000 years. Each hexagram represents a unique life situation combining two trigrams (Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake) into profound wisdom for decision-making and self-understanding.
       security:
       - apiKey: []
@@ -739,9 +870,7 @@ paths:
         name: limit
         in: query
       - schema:
-          type:
-          - integer
-          - 'null'
+          type: integer
           minimum: 0
           default: 0
           example: 0
@@ -794,6 +923,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -835,6 +967,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -849,9 +982,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -870,6 +1007,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -881,6 +1021,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -895,9 +1036,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -911,15 +1056,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/hexagrams/random:
     get:
       operationId: getRandomHexagram
       tags:
       - I-Ching
-      summary: Get a random hexagram
+      summary: Random hexagram - I-Ching hexagram picker API
       description: Receive a random I-Ching hexagram with full interpretation. Perfect for daily oracle features, meditation prompts, or exploring the Book of Changes. Returns complete hexagram data including judgment, image, interpretations for love/career/decisions, and all six changing line meanings.
       security:
       - apiKey: []
@@ -965,6 +1114,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1006,6 +1158,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1020,9 +1173,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: No hexagrams available.
           content:
@@ -1038,9 +1195,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1059,6 +1221,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1070,6 +1235,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1084,9 +1250,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1100,15 +1270,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/hexagrams/lookup:
     get:
       operationId: lookupHexagram
       tags:
       - I-Ching
-      summary: Lookup hexagram by line pattern
+      summary: Lookup hexagram by line pattern - I-Ching binary lookup API
       description: 'Find an I-Ching hexagram by its binary line pattern. Provide 6 digits (0 or 1) representing broken (yin) and solid (yang) lines from bottom to top. Use this for custom divination interfaces where users input their own line configurations, or to find hexagrams matching specific trigram combinations. Example: "111111" returns Hexagram 1 (The Creative), "000000" returns Hexagram 2 (The Receptive).'
       security:
       - apiKey: []
@@ -1163,6 +1337,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1204,6 +1381,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1218,9 +1396,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: No hexagram found for pattern.
           content:
@@ -1236,9 +1418,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1257,6 +1444,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1268,6 +1458,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1282,9 +1473,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1298,21 +1493,25 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/hexagrams/{number}:
     get:
       operationId: getHexagram
       tags:
       - I-Ching
-      summary: Get hexagram by number
+      summary: Get hexagram by number - I-Ching hexagram detail API
       description: Retrieve complete I-Ching hexagram details by King Wen sequence number (1-64). Returns the full hexagram with Chinese name, English translation, judgment text, image text, modern interpretations for general situations, love, career, and decision-making, plus all six changing line meanings. Use this to display detailed hexagram information after casting or for educational reference.
       security:
       - apiKey: []
       parameters:
       - schema:
-          type: number
+          type: integer
           minimum: 1
           maximum: 64
           example: 1
@@ -1362,6 +1561,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1403,6 +1605,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1417,9 +1620,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: Hexagram not found.
           content:
@@ -1435,9 +1642,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1456,6 +1668,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1467,6 +1682,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1481,9 +1697,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1497,15 +1717,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/cast:
     get:
       operationId: castReading
       tags:
       - I-Ching
-      summary: Cast an I-Ching reading
+      summary: Cast an I-Ching reading - Hexagram divination API
       description: Generate an authentic I-Ching reading using the traditional three-coin casting method. Each of the six lines is determined by virtually tossing three coins, producing values 6-9 where 6 (old yin) and 9 (old yang) are changing lines. Returns the primary hexagram with full interpretation, the line values showing which lines are changing, and if any lines change, the resulting hexagram that the primary transforms into. Optionally provide a seed for reproducible castings. Perfect for divination apps, oracle features, and decision-making tools.
       security:
       - apiKey: []
@@ -1595,6 +1819,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1636,6 +1863,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1650,9 +1878,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1671,6 +1903,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1682,6 +1917,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1696,9 +1932,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1712,16 +1952,20 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/trigrams:
     get:
       operationId: listTrigrams
       tags:
       - I-Ching
-      summary: List all 8 trigrams
-      description: 'Retrieve all 8 I-Ching trigrams (bagua) - the fundamental building blocks of hexagrams. Each trigram consists of three lines and represents a primal force of nature: Heaven (Qian), Earth (Kun), Thunder (Zhen), Wind (Xun), Water (Kan), Fire (Li), Mountain (Gen), and Lake (Dui). Understanding trigrams is essential for interpreting hexagram meanings, as each hexagram combines an upper and lower trigram.'
+      summary: List all 8 trigrams - Bagua trigram catalog API
+      description: 'Retrieve all 8 I-Ching trigrams (bagua), the fundamental building blocks of hexagrams. Each trigram consists of three lines and represents a primal force of nature: Heaven (Qian), Earth (Kun), Thunder (Zhen), Wind (Xun), Water (Kan), Fire (Li), Mountain (Gen), and Lake (Dui). Understanding trigrams is essential for interpreting hexagram meanings, as each hexagram combines an upper and lower trigram.'
       security:
       - apiKey: []
       parameters:
@@ -1779,6 +2023,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1820,6 +2067,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -1834,9 +2082,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -1855,6 +2107,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -1866,6 +2121,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -1880,9 +2136,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -1896,15 +2156,19 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
   /iching/trigrams/{id}:
     get:
       operationId: getTrigram
       tags:
       - I-Ching
-      summary: Get trigram by number or name
+      summary: Get trigram by number or name - Bagua trigram detail API
       description: Retrieve a specific I-Ching trigram by its number (1-8) or English name (Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake). Returns complete trigram information including Chinese name, pinyin, element associations, core attributes, and symbolic meaning. Use this to understand the component trigrams of any hexagram.
       security:
       - apiKey: []
@@ -1958,6 +2222,9 @@ paths:
                     type: string
                     enum:
                     - validation_error
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   issues:
                     type: array
                     description: Every validation failure. Use this to rebuild a valid request.
@@ -1999,6 +2266,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - issues
         '401':
           description: Invalid or missing API key
@@ -2013,9 +2281,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '404':
           description: Trigram not found.
           content:
@@ -2031,9 +2303,14 @@ paths:
                     type: string
                     example: not_found
                     description: Machine-readable error code. Stable identifier for programmatic error handling.
+                  doc_url:
+                    type: string
+                    example: https://roxyapi.com/docs/errors#not_found
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself. The same URL in every environment, so it is safe to log, print in a CLI, or paste into a bug report.
                 required:
                 - error
                 - code
+                - doc_url
         '405':
           description: Method not allowed. The path exists but only responds to the methods listed in `allow[]` and the `Allow` response header.
           headers:
@@ -2052,6 +2329,9 @@ paths:
                     type: string
                     enum:
                     - method_not_allowed
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                   allow:
                     type: array
                     items:
@@ -2063,6 +2343,7 @@ paths:
                 required:
                 - error
                 - code
+                - doc_url
                 - allow
         '429':
           description: Monthly rate limit exceeded
@@ -2077,9 +2358,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
         '500':
           description: Internal server error
           content:
@@ -2093,9 +2378,13 @@ paths:
                   code:
                     type: string
                     description: Machine-readable error code. Stable identifier.
+                  doc_url:
+                    type: string
+                    description: Absolute URL of the documented explanation of this code, anchored at the code itself, for example https://roxyapi.com/docs/errors#not_found.
                 required:
                 - error
                 - code
+                - doc_url
 components:
   schemas:
     Trigram:
@@ -2195,45 +2484,35 @@ components:
       required:
       - position
       - text
-    BasicHexagram:
+    Interpretation:
       type: object
       properties:
-        number:
-          type: number
-          example: 1
-          description: Hexagram number in King Wen sequence (1-64).
-        symbol:
+        general:
           type: string
-          example: ䷀
-          description: Unicode hexagram symbol for display.
-        chinese:
+          example: This hexagram represents the primal power of creation and the energy of pure initiative.
+          description: General life situation interpretation of this hexagram.
+        love:
           type: string
-          example: 乾
-          description: Original Chinese name of the hexagram.
-        english:
+          example: A time of strong attraction and passionate connection. Take the initiative in expressing your feelings.
+          description: Love and relationship guidance from this hexagram.
+        career:
           type: string
-          example: The Creative
-          description: English translation of the hexagram name.
-        pinyin:
+          example: Exceptional opportunities for advancement and recognition. Your creative ideas are at their peak.
+          description: Career and professional life interpretation.
+        decision:
           type: string
-          example: Qián
-          description: Pinyin romanization of the Chinese name with tone marks.
-        upperTrigram:
+          example: The time is right for bold action. Trust your instincts and move forward with confidence.
+          description: Decision-making guidance for whether to act, wait, retreat, or advance based on this hexagram.
+        advice:
           type: string
-          example: Heaven
-          description: 'Upper trigram (lines 4-6). One of 8 trigrams: Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake.'
-        lowerTrigram:
-          type: string
-          example: Heaven
-          description: Lower trigram (lines 1-3). Combines with upper trigram to form the hexagram.
+          example: 'Be like the heavens: consistent, powerful, and untiring. Make yourself strong through steady effort.'
+          description: Practical wisdom and actionable advice from this hexagram for daily life application.
       required:
-      - number
-      - symbol
-      - chinese
-      - english
-      - pinyin
-      - upperTrigram
-      - lowerTrigram
+      - general
+      - love
+      - career
+      - decision
+      - advice
     BasicTrigram:
       type: object
       properties:
@@ -2336,35 +2615,45 @@ components:
       - image
       - interpretation
       - changingLines
-    Interpretation:
+    BasicHexagram:
       type: object
       properties:
-        general:
+        number:
+          type: number
+          example: 1
+          description: Hexagram number in King Wen sequence (1-64).
+        symbol:
           type: string
-          example: This hexagram represents the primal power of creation and the energy of pure initiative.
-          description: General life situation interpretation of this hexagram.
-        love:
+          example: ䷀
+          description: Unicode hexagram symbol for display.
+        chinese:
           type: string
-          example: A time of strong attraction and passionate connection. Take the initiative in expressing your feelings.
-          description: Love and relationship guidance from this hexagram.
-        career:
+          example: 乾
+          description: Original Chinese name of the hexagram.
+        english:
           type: string
-          example: Exceptional opportunities for advancement and recognition. Your creative ideas are at their peak.
-          description: Career and professional life interpretation.
-        decision:
+          example: The Creative
+          description: English translation of the hexagram name.
+        pinyin:
           type: string
-          example: The time is right for bold action. Trust your instincts and move forward with confidence.
-          description: Decision-making guidance for whether to act, wait, retreat, or advance based on this hexagram.
-        advice:
+          example: Qián
+          description: Pinyin romanization of the Chinese name with tone marks.
+        upperTrigram:
           type: string
-          example: 'Be like the heavens: consistent, powerful, and untiring. Make yourself strong through steady effort.'
-          description: Practical wisdom and actionable advice from this hexagram for daily life application.
+          example: Heaven
+          description: 'Upper trigram (lines 4-6). One of 8 trigrams: Heaven, Earth, Thunder, Wind, Water, Fire, Mountain, Lake.'
+        lowerTrigram:
+          type: string
+          example: Heaven
+          description: Lower trigram (lines 1-3). Combines with upper trigram to form the hexagram.
       required:
-      - general
-      - love
-      - career
-      - decision
-      - advice
+      - number
+      - symbol
+      - chinese
+      - english
+      - pinyin
+      - upperTrigram
+      - lowerTrigram
   securitySchemes:
     apiKey:
       type: apiKey

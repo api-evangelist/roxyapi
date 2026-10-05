@@ -1,25 +1,33 @@
 name: RoxyAPI
-description: Multi-domain spiritual intelligence API exposing 210+ endpoints across 14 domains (Western Astrology,
-  Vedic Astrology, Forecast, Human Design, Chinese Astrology, Feng Shui, Numerology, Tarot, Biorhythm, I-Ching,
-  Crystals, Dreams, Angel Numbers, Location/Timezone) under a single API key. Powered by the proprietary Roxy Ephemeris
-  engine verified against NASA JPL Horizons DE441. Offers a live OpenAPI 3.1 contract, 15 remote MCP servers (14
-  per-domain plus a keyless docs server), llms.txt, an AGENTS.md agent playbook, an APIs.json index, an RFC 9727
-  api-catalog, typed SDKs in five languages, and drop-in UI components.
+description: Multi-domain spiritual intelligence API exposing 261 operations across 18 domains (Western Astrology,
+  Vedic Astrology, Forecast, Human Design, Chinese Astrology, Feng Shui, Mesoamerican Astrology, Vastu, Numerology,
+  Kabbalah, Tarot, Biorhythm, Ayurveda, I-Ching, Crystals, Dreams, Angel Numbers, Location/Timezone) plus platform
+  usage and language operations, under a single API key. Commercial hosted API sold on monthly plans. Powered by the
+  proprietary Roxy Ephemeris engine verified against NASA JPL Horizons DE441. Offers a live OpenAPI 3.1 contract
+  regenerated on every deploy, 19 remote MCP servers (18 per-domain plus a keyless docs server), llms.txt, an AGENTS.md
+  agent playbook, an APIs.json index listing 19 APIs, an RFC 9727 api-catalog, typed SDKs in five languages, and
+  drop-in UI components.
 url: https://raw.githubusercontent.com/api-evangelist/roxyapi/refs/heads/main/apis.yml
 image: https://roxyapi.com/logo.png
 deliveryModel:
-  model: unknown
+  model: saas
   open_source: false
-  commercial: false
-  callable_host: false
-  label: Delivery model not determined — needs a product licence on record
-  confidence: low
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
   source:
-  - none
-  generated: '2026-08-28'
-  method: derived
+  - pricing
+  - license
+  - openapi
+  evidence:
+  - https://roxyapi.com/pricing
+  - https://roxyapi.com/policy/license
+  - https://roxyapi.com/api/v2/openapi.json
+  generated: '2026-10-05'
+  method: provider-correction
 created: '2026-07-09'
-modified: '2026-09-03'
+modified: '2026-10-05'
 specificationVersion: '0.23'
 tags:
 - Astrology
@@ -34,6 +42,10 @@ tags:
 - Dreams
 - Angel Numbers
 - Location
+- Mesoamerican Astrology
+- Vastu
+- Kabbalah
+- Ayurveda
 - spiritual
 - Wellness
 - MCP Server
@@ -54,6 +66,10 @@ tags_raw:
 - dreams
 - angel-numbers
 - location
+- mesoamerican-astrology
+- vastu
+- kabbalah
+- ayurveda
 - spiritual
 - wellness
 - mcp-server
@@ -512,6 +528,135 @@ apis:
     url: https://roxyapi.com/mcp/docs
   - type: ToolCrosswalk
     url: mcp/roxyapi-tool-crosswalk.yml
+- aid: roxyapi:roxyapi-ayurveda-api
+  name: RoxyAPI Ayurveda API
+  description: >-
+    Ayurveda API for dosha profiles, the dinacharya daily routine and the ritucharya seasonal regimen,
+    with a verse cited on every value. Read the vata, pitta and kapha constitution from a verified sidereal
+    birth chart, compute brahma muhurta and the six dosha periods from the real sunrise at any location,
+    resolve the Ayurvedic season from actual solar ingress instants under two published conventions, and
+    serve the catalogue of three doshas, fifteen sub-doshas, six tastes and twenty qualities straight
+    from the primary texts. Deterministic, cacheable and localized. One key covers every RoxyAPI domain,
+    with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Ayurveda
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-ayurveda-api-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted, per domain)
+    url: https://roxyapi.com/api/v2/ayurveda/openapi.json
+  - type: Documentation
+    url: https://roxyapi.com/products/ayurveda-api
+  - type: MCPServer
+    url: https://roxyapi.com/mcp/ayurveda
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+- aid: roxyapi:roxyapi-kabbalah-api
+  name: RoxyAPI Kabbalah API
+  description: >-
+    Kabbalah API for gematria, the 72 names, the Tree of Life and the Hebrew birthday. Score a Hebrew
+    word or a Latin name across 11 rabbinic ciphers with the per letter breakdown, every candidate Hebrew
+    spelling shown and the rule that chose one, plus a cited equal value lexicon. The 72 names are derived
+    from the verses rather than copied from a table, the birth name is dated by the exact position of
+    the Sun or by the civil wheel as you choose, and the sephirot, the 22 paths and the 22 letters come
+    back under typed school variants cross linked to the tarot deck. One key covers every RoxyAPI domain,
+    with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Kabbalah
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-kabbalah-api-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted, per domain)
+    url: https://roxyapi.com/api/v2/kabbalah/openapi.json
+  - type: Documentation
+    url: https://roxyapi.com/products/kabbalah-api
+  - type: MCPServer
+    url: https://roxyapi.com/mcp/kabbalah
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+- aid: roxyapi:roxyapi-mesoamerican-astrology-api
+  name: RoxyAPI Mesoamerican Astrology API
+  description: >-
+    Calculate Mayan astrology day signs, the Tzolkin sacred round, the Haab year, the full Long Count
+    and the Aztec tonalpohualli from any date: day sign and coefficient, trecena, Calendar Round, Lord
+    of the Night, Year Bearer and the five point Cruz Maya, each with a composed reading. The correlation
+    constant that makes two Mayan calculators disagree is a typed parameter, and every response echoes
+    the conventions it was computed under, so a saved chart stays reproducible. Both naming traditions
+    ship on every sign, the Yucatec spelling and the Kʼicheʼ name daykeepers actually use, and readings
+    come back in every language the API ships. One key covers every RoxyAPI domain, with Remote MCP and
+    typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Mesoamerican Astrology
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-mesoamerican-astrology-api-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted, per domain)
+    url: https://roxyapi.com/api/v2/mesoamerican-astrology/openapi.json
+  - type: Documentation
+    url: https://roxyapi.com/products/mesoamerican-astrology-api
+  - type: MCPServer
+    url: https://roxyapi.com/mcp/mesoamerican-astrology
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
+- aid: roxyapi:roxyapi-vastu-api
+  name: RoxyAPI Vastu API
+  description: >-
+    Vastu Shastra API for directional home and plot analysis: entrance padas with the classical effect
+    of each of the 32 perimeter positions, the Vastu Purusha Mandala projected over a real plot on the
+    81 pada or the 64 pada grid, room placement checks over a closed room enum, Ayadi shadvarga across
+    three text families, plot shape and ground level under two schools that genuinely disagree, and griha
+    pravesh dates composed over a verified panchang. Every verdict carries the chapter and verse it rests
+    on as a typed field, or says plainly that it is convention. Directional design from Indian architecture,
+    sitting beside our feng shui endpoints on one key, with Remote MCP and typed SDKs.
+  humanURL: https://roxyapi.com/api-reference
+  baseURL: https://roxyapi.com/api/v2
+  tags:
+  - Vastu
+  properties:
+  - type: OpenAPI
+    url: openapi/roxyapi-vastu-api-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted, per domain)
+    url: https://roxyapi.com/api/v2/vastu/openapi.json
+  - type: Documentation
+    url: https://roxyapi.com/products/vastu-api
+  - type: MCPServer
+    url: https://roxyapi.com/mcp/vastu
+  - type: PostmanCollection
+    url: https://www.postman.com/roxylabs-7113570/roxyapi
+  - type: LLMsTxt
+    url: https://roxyapi.com/llms.txt
+  - type: AgentSkills
+    url: https://roxyapi.com/AGENTS.md
+  - type: Documentation
+    url: https://roxyapi.com/mcp/docs
 maintainers:
 - FN: RoxyAPI (RoxyLabs)
   url: https://roxyapi.com
@@ -609,6 +754,16 @@ common:
   url: https://roxyapi.com/policy/privacy
 - type: Postman
   url: https://www.postman.com/roxylabs-7113570/roxyapi
+- type: APIsJSON
+  url: https://roxyapi.com/apis.json
+  description: Provider-hosted APIs.json index listing 19 APIs (18 domains plus the platform), regenerated on every
+    deploy.
+- type: OpenAPI
+  name: OpenAPI (provider-hosted)
+  url: https://roxyapi.com/api/v2/openapi.json
+  description: Full OpenAPI 3.1 contract, 261 operations, regenerated from the running service on every deploy.
+- type: License
+  url: https://roxyapi.com/policy/license
 x-enrichment:
   date: '2026-09-03'
   status: enriched
@@ -621,3 +776,21 @@ x-a2a:
   grade: "flavored"
   protocol_version: "1.0"
   control: 404
+x-correction-request:
+  requested: '2026-10-05'
+  source:
+  - https://github.com/api-evangelist/roxyapi/issues/1
+  request: 'Issue #1 (ph33nx), verified live 2026-10-05. https://roxyapi.com/apis.json returns 200 and lists 19 APIs
+    (18 domains plus the platform). https://roxyapi.com/api/v2/openapi.json returns 200, OpenAPI 3.1.0, version 2.0.0,
+    server https://roxyapi.com/api/v2, 261 paths and 261 operations across 20 tags (18 domains plus Usage and Languages);
+    Mesoamerican Astrology (18), Vastu (10), Kabbalah (12) and Ayurveda (8) are tags in it. 19 MCP servers at
+    https://roxyapi.com/mcp/{domain} answer initialize and tools/list unauthenticated: 258 domain tools plus 1 docs tool.
+    https://roxyapi.com/pricing (200) lists monthly plans ($39 / $149 / $349); https://roxyapi.com/policy/license (200)
+    is the commercial licence page; an invented /policy path returns a real 404.'
+  applied: '2026-10-05'
+  applied_note: Saved the live OpenAPI verbatim as openapi/_original/roxyapi-v2-openapi.json (the 210-operation archive
+    is a strict subset and is superseded) and re-split it, adding Mesoamerican Astrology, Vastu, Kabbalah and Ayurveda
+    API entries and refreshing the other 16 split specs. Description now reads 261 operations, 18 domains, 19 MCP
+    servers. deliveryModel set to a commercial hosted service from the pricing and licence pages. Added APIsJSON,
+    provider-hosted OpenAPI and License pointers, and refreshed mcp/roxyapi-mcp.yml to the 19 live servers and their
+    tool counts. The tool crosswalk was not regenerated for the four new domains.
