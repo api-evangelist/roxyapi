@@ -1,0 +1,54 @@
+edges:
+- partner_name: MCP Registry
+  partner: mcp
+  partner_match: register
+  type: register
+  channel: standard-directory
+  relationship: standard-participant
+  direction: partner-built
+  evidence: https://registry.modelcontextprotocol.io/v0/servers?search=com.roxyapi
+  contract_reference:
+    register: registry.modelcontextprotocol.io
+    spec_file: null
+    role: mcp-server-listing
+    registered_name: com.roxyapi/angel-numbers
+    register_id: com.roxyapi/angel-numbers
+    detected_by: sweep-agent-tools.py
+    detected: '2026-10-14'
+  mcp_registry:
+    servers:
+    - com.roxyapi/angel-numbers
+    - com.roxyapi/astrology
+    - com.roxyapi/ayurveda
+    - com.roxyapi/biorhythm
+    - com.roxyapi/chinese-astrology
+    - com.roxyapi/crystals
+    - com.roxyapi/docs
+    - com.roxyapi/dreams
+    - com.roxyapi/feng-shui
+    - com.roxyapi/forecast
+    - com.roxyapi/human-design
+    - com.roxyapi/iching
+    - com.roxyapi/kabbalah
+    - com.roxyapi/location
+    - com.roxyapi/mesoamerican-astrology
+    - com.roxyapi/numerology
+    - com.roxyapi/tarot
+    - com.roxyapi/vastu
+    - com.roxyapi/vedic-astrology
+    hosted_remote: 19
+    local_package: 0
+    transports:
+      streamable-http: 19
+    auth_declared: 18
+    catalog_declared: true
+    namespace_domains:
+    - roxyapi.com
+  matched_by:
+  - namespace-domain
+  detected_by: sweep-agent-tools.py
+  first_seen: '2026-10-14'
+generated: '2026-10-14'
+method: searched
+checked:
+- https://registry.modelcontextprotocol.io/v0/servers
