@@ -80,10 +80,28 @@ edges:
     detected: '2026-10-15'
   detected_by: sweep-ai-agents.py
   first_seen: '2026-10-15'
+- partner_name: WordPress (own)
+  partner: wordpress
+  partner_match: mirror
+  mirror_match: domain
+  type: marketplace
+  relationship: platform-app
+  direction: third-party
+  channel: partner-built
+  marketplace: own
+  evidence: https://wordpress.org/plugins/roxyapi/
+  mirror_of: wordpress/integrations/wordpress-integration-edges.yml
+  apps:
+  - 'RoxyAPI: Astrology, Vedic, Forecast, Human Design, Numerology'
+  listing_count: 1
+  detected: '2026-10-15'
+  detected_by: mirror-platform-listings.py
+  category: WordPress plugin
 generated: '2026-10-14'
 method: searched
 checked:
 - https://a2aregistry.org/api/agents
 - https://registry.modelcontextprotocol.io/v0/servers
+- wordpress/integrations/wordpress-integration-edges.yml
 source:
 - https://a2aregistry.org/api/agents
