@@ -57,3 +57,122 @@
   relationship: platform-app
   status: not-a-workflow
   arazzo: null
+- slug: roxyapi-go-module-proxy
+  label: Go module proxy
+  partner_name: Go module proxy
+  category: official SDK (Go)
+  type: register
+  channel: package-registry
+  evidence: https://pkg.go.dev/github.com/RoxyAPI/sdk-go
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: Go module proxy (public registry JSON)
+    spec_file: null
+    language: Go
+    packages:
+    - name: github.com/RoxyAPI/sdk-go
+      version: v1.1.7
+      released: '2026-10-16'
+      released_field: Time
+      lapsed: false
+      page: https://pkg.go.dev/github.com/RoxyAPI/sdk-go
+      repo_leg: github-org:roxyapi
+      publisher_leg: org:roxyapi
+      matched_by: github-org
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
+- slug: roxyapi-npm-registry
+  label: npm registry
+  partner: npm
+  partner_name: npm registry
+  category: official SDK (JavaScript/TypeScript)
+  type: register
+  channel: package-registry
+  evidence: https://www.npmjs.com/package/@roxyapi/sdk
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: npm registry (public registry JSON)
+    spec_file: null
+    language: JavaScript/TypeScript
+    packages:
+    - name: '@roxyapi/sdk'
+      version: 1.2.100
+      released: '2026-10-16'
+      released_field: modified
+      lapsed: false
+      page: https://www.npmjs.com/package/@roxyapi/sdk
+      repo_leg: domain:roxyapi.com
+      publisher_leg: org:roxyapi
+      matched_by: domain
+    - name: '@roxyapi/ui'
+      version: 0.51.2
+      released: '2026-10-15'
+      released_field: modified
+      lapsed: false
+      page: https://www.npmjs.com/package/@roxyapi/ui
+      repo_leg: domain:roxyapi.com
+      publisher_leg: org:roxyapi
+      matched_by: domain
+    - name: '@roxyapi/ui-react'
+      version: 0.51.2
+      released: '2026-10-15'
+      released_field: modified
+      lapsed: false
+      page: https://www.npmjs.com/package/@roxyapi/ui-react
+      repo_leg: domain:roxyapi.com
+      publisher_leg: org:roxyapi
+      matched_by: domain
+    - name: '@roxyapi/ui-vue'
+      version: 0.51.2
+      released: '2026-10-15'
+      released_field: modified
+      lapsed: false
+      page: https://www.npmjs.com/package/@roxyapi/ui-vue
+      repo_leg: domain:roxyapi.com
+      publisher_leg: org:roxyapi
+      matched_by: domain
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
+- slug: roxyapi-nuget-gallery
+  label: NuGet Gallery
+  partner: nuget
+  partner_name: NuGet Gallery
+  category: official SDK (.NET)
+  type: register
+  channel: package-registry
+  evidence: https://www.nuget.org/packages/RoxyApi.Sdk
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: NuGet Gallery (public registry JSON)
+    spec_file: null
+    language: .NET
+    packages:
+    - name: RoxyApi.Sdk
+      version: 1.1.7
+      released: '2026-10-16'
+      released_field: published
+      lapsed: false
+      page: https://www.nuget.org/packages/RoxyApi.Sdk
+      repo_leg: domain:roxyapi.com
+      publisher_leg: org:roxyapi
+      matched_by: domain
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
