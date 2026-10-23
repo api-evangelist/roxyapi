@@ -215,6 +215,36 @@ edges:
     detected: '2026-10-19'
   detected_by: sweep-ai-agents.py
   first_seen: '2026-10-15'
+- partner_name: Packagist
+  partner: packagist
+  partner_match: register
+  type: register
+  direction: provider-built
+  category: official SDK (PHP)
+  evidence: https://packagist.org/packages/roxyapi/sdk
+  channel: package-registry
+  relationship: distribution-channel
+  contract_reference:
+    register: Packagist (public registry JSON)
+    spec_file: null
+    language: PHP
+    packages:
+    - name: roxyapi/sdk
+      version: v1.2.0
+      released: '2026-10-21'
+      released_field: time
+      lapsed: false
+      page: https://packagist.org/packages/roxyapi/sdk
+      repo_leg: github-org:roxyapi
+      publisher_leg: org:roxyapi
+      matched_by: github-org
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-php-dart-elixir-package-registries.py
+    detected: '2026-10-22'
+  detected_by: sweep-php-dart-elixir-package-registries.py
+  first_seen: '2026-10-22'
 generated: '2026-10-14'
 method: searched
 checked:
@@ -228,5 +258,8 @@ checked:
 - https://repo1.maven.org/maven2
 - https://rubygems.org/api/v1
 - wordpress/integrations/wordpress-integration-edges.yml
+- https://hex.pm/api
+- https://packagist.org/packages
+- https://pub.dev/api
 source:
 - https://a2aregistry.org/api/agents
